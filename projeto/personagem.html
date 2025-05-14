@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starling</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #eefdf7; 
+        }
+
+        .header {
+            background-color: #019774; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1d1d35;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #1d1d35;
+            margin-left: 1rem;
+        }
+
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .image-container {
+            flex: 1 1 300px; 
+            max-width: 400px;
+            margin-right: 2rem;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            border: 1px solid #eefdf7; 
+        }
+
+        .text-container {
+            flex: 1 1 400px; 
+            max-width: 600px;
+            align-content: center;
+            
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #1d1d35;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            color: #1d1d35;
+        }
+
+        .read-more {
+            align-items: center;
+            display: inline-block;
+            background-color: #619c87;
+            color: #1d1d35;
+            padding: 0.8rem 1.5rem;
+            text-decoration: none;
+            border-radius: 5px;
+            align-content: center;
+        }
+
+        .article {
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .article h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .article .author {
+            font-style: italic;
+            color: #555;
+            margin-bottom: 1.5rem;
+        }
+
+        .article p {
+            margin-bottom: 1.5rem;
+        }
+        .content-art {
+            padding: 2rem;
+        }
+
+        .text-column {
+            flex: 1; 
+            padding-right: 2rem;
+            text-align: justify;
+        }
+
+        .image-column {
+            flex: 1; 
+        }
+
+        .image-with-stars {
+            text-align: center; 
+        }
+
+        .image-with-stars img {
+            max-width: 100%; 
+            height: auto;
+        }
+
+        .quote-column {
+            flex: 1;
+            background-color: #619c87; 
+            padding: 1.5rem;
+            border-radius: 5px;
+        }
+
+        .quote {
+            font-style: italic;
+            margin: 0;
+        }
+
+        .quote cite {
+            display: block;
+            text-align: right;
+            margin-top: 1rem;
+            font-style: normal;
+            color: #1d1d35;
+        }
+
+        .footer {
+            background-color: #019774;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .footer p {
+            margin: 0.5rem 0;
+        }
+
+        .social-icons {
+            margin-top: 1rem;
+        }
+
+        .social-icons a {
+            color: #1d1d35;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .image-container {
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
+
+            .footer {
+                padding: 1rem 0.5rem; 
+            }
+            .content-art {
+                padding: 1rem;
+            }
+            .article h1 {
+                font-size: 2rem;
+            }
+            .image-with-stars {
+                flex-direction: column;
+                align-items: center;
+            }
+            .image-with-stars img {
+                max-width: 80%;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Starling</div>
+        <nav class="menu">
+            <a href="index.html">Home</a>
+            <a href="#">Personagens</a>
+            <a href="materia.html">Matérias</a>
+        </nav>
+    </header>
+
+    <main class="content">
+        <div class="image-container">
+            <img src="img/capa-livro.png" alt="Os Sete Maridos de Evelyn Hugo">
+        </div>
+        <div class="text-container">
+            <div class="text-column">
+                <h1>Evelyn e eu</h1>
+                <p>Evelyn era uma mulher de uma complexidade tremenda, e o tempo que passei com ela foi tão complicado quanto sua imagem, sua vida e a lenda que se construiu ao redor de sua figura.</p>
+            </div>
+            <a href="materia-individual/vivant/06-2017.html" class="read-more">Leia Mais</a>
+        </div>
+    </main>
+
+    <main class="content-art">
+        <article class="article">
+            <div class="text-column">
+                <h1>Monique Grant</h1>
+            </div>
+            <div class="text-column">
+                <p>Monique Grant é uma jornalista de nível inferior que tem a responsabilidade de entrevistar Evelyn Hugo, embora, inicialmente, ela não compreenda o motivo pelo qual Evelyn a convocou especificamente. Ao longo dos diversos dias de entrevistas, Monique constata que possui várias semelhanças com Evelyn, e à medida que as entrevistas avançam, Monique manifesta sua habilidade em reivindicar o que deseja, tanto de Evelyn quanto de seu superior, Frankie, e começa a admirar Evelyn por exibir essa mesma competência ao longo de sua trajetória.</p>
+            </div>
+            <div class="quote-column">
+                <blockquote class="quote">
+                    <p>"Desligo o telefone e solto o ar com força. Eu dou conta dessa porra toda."</p>
+                    <cite>- página 34</cite>
+                </blockquote>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="text-column">
+                <h1>Evelyn Hugo</h1>
+            </div>
+            <div class="text-column">
+                <p>Evelyn Hugo é a protagonista da narrativa e o foco das entrevistas da repórter Monique Grant. Aos 79 anos, Evelyn, uma das maiores celebridades da Antiga Hollywood, persuade Monique a redigir sua biografia, no entanto, sem explicar os motivos de sua escolha. Esse comportamento manipulador e enigmático é representativo de Evelyn, que sacrificou seu nome, identidade e ética para conquistar notoriedade e êxito. Seus sete matrimônios ocorreram em busca de uma probabilidade amplificada de fama e sucesso.</p>
+            </div>
+            <div class="quote-column">
+                <blockquote class="quote">
+                    <p>"Porque eles são só maridos. A Evelyn Hugo sou eu."</p>
+                    <cite>- página 352</cite>
+                </blockquote>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="text-column">
+                <h1>Celia St James</h1>
+            </div>
+            <div class="text-column">
+                <p>Celia St. James é uma atriz e o amor da vida de Evelyn. Celia impressiona Evelyn com seu talento na atuação durante os ensaios para "Mulherzinhas", mas as duas iniciam uma relação vantajosa quando Celia oferece a Evelyn orientações em atuação em troca de sua colaboração em aparições públicas. Com o tempo, Celia e Evelyn se envolvem romanticamente que revela Celia como ingênua e idealista frente ao realismo pragmático de Evelyn (Celia nasceu em uma família rica e nunca precisou enfrentar dificuldades financeiras, enquanto Evelyn surgiu de origens humildes).</p>
+            </div>
+            <div class="quote-column">
+                <blockquote class="quote">
+                    <p>"E, para quem se sentir tentado a dar um beijo na tela da tevê, por favor cuidado para não lascar o dente."</p>
+                    <cite>- página 279</cite>
+                </blockquote>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="text-column">
+                <h1>O pobre, Ernie Diaz</h1>
+            </div>
+            <div class="text-column">
+                <p>Ernie Diaz é o primeiro cônjuge de Evelyn. Embora sua união com Evelyn possibilite que ela vá para Hollywood e inicie sua trajetória como atriz, ele demonstra escassa consideração pelos anseios dela e anseia que ela atue como uma esposa convencional da década de 1950. Quando Evelyn o abandona a pedido dos responsáveis pelo Sunset Studio, Ernie fica devastado, revelando que estava totalmente ignorante sobre o fato de Evelyn estar se beneficiando dele.</p>
+            </div>
+            <div class="quote-column">
+                <blockquote class="quote">
+                    <p>"Fui para casa e avisei Ernie que ia pedir a separação. Ele chorou por seis horas seguidas."</p>
+                    <cite>- página 52</cite>
+                </blockquote>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="text-column">
+                <h1>O maldito, Don Adler</h1>
+            </div>
+            <div class="text-column">
+                <p>Don Adler é o segundo cônjuge de Evelyn. Nascido em uma família de atores, Don experimenta uma imensa pressão para também se transformar em uma grande celebridade cinematográfica, resultando em sua elevada sensibilidade diante de críticas desfavoráveis. Apesar de Evelyn nutrir amor por ele e considerar sua ligação autêntica, Don inicia a agredi-la fisicamente logo após o casamento. Sua propensão a violentar e empurrar Evelyn manifesta-se em períodos de tensão.</p>
+            </div>
+            <div class="quote-column">
+                <blockquote class="quote">
+                    <p>“Nós não somos iguais, querida. E sinto muito se tratei você bem demais a ponto de se esquecer disso.”</p>
+                    <cite>- página 77</cite>
+                </blockquote>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="text-column">
+                <h1>O insaciável, Mick Riva</h1>
+            </div>
+            <div class="text-column">
+                <p>Mick Riva é uma celebridade pop e o terceiro cônjuge de Evelyn. Mick divulga sua admiração por Evelyn ao manifestar seu anseio de unir-se a ela durante entrevistas, insinuando que ele é um homem extremamente autoconfiante que consegue visualizar Evelyn correspondendo a seu interesse. Quando Evelyn opta por fugir com Mick para atrair a atenção da imprensa, ela compreende que ele é um homem egocêntrico que busca constantemente manter a vantagem.</p>
+            </div>
+            <div class="quote-column">
+                <blockquote class="quote">
+                    <p>“Ele gosta de rejeitar pessoas. Gosta de ser condescendente desse jeito.”</p>
+                    <cite>- página 170</cite>
+                </blockquote>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="text-column">
+                <h1>O esperto, Rex North</h1>
+            </div>
+            <div class="text-column">
+                <p>Rex North é o quarto cônjuge de Evelyn. As semelhanças que ele compartilha com Evelyn, ou seja, seu pragmatismo, que inclui a alteração de seu nome para alcançar êxito como uma estrela de cinema, assim como Evelyn fez, o tornam querido para ela e estabelecem os alicerces para um matrimônio mutuamente vantajoso (embora quase inteiramente desprovido de amor).</p>
+            </div>
+            <div class="quote-column">
+                <blockquote class="quote">
+                    <p>“E acho que sempre vou amar Rex North, um pouquinho que seja, por causa disso.”</p>
+                    <cite>- página 185</cite>
+                </blockquote>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="text-column">
+                <h1>O brilhante, generoso e sofrido, Harry Cameron</h1>
+            </div>
+            <div class="text-column">
+                <p>Harry Cameron é um produtor cinematográfico que se torna o melhor amigo de Evelyn ao chegar a Hollywood; eles se casam e têm uma filha (Connor) juntos. Embora Harry procure manter certa distância de Evelyn, com o objetivo de que sua identidade secreta como um homem homossexual, ele acaba reunindo coragem para revelar a ela sobre seu envolvimento com o esposo de Celia, John Braverman. O casameto com Evelyn possibilita que Harry mantenha discretamente sua relação com John (enquanto Evelyn e Celia prosseguem com seu próprio vínculo clandestino).</p>
+            </div>
+            <div class="quote-column">
+                <blockquote class="quote">
+                    <p>"Tudo bem se você desabar, eu te seguro. Então eu desabei. E Harry me segurou."</p>
+                    <cite>- página 179</cite>
+                </blockquote>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="text-column">
+                <h1>O decepcionante, Max Girard</h1>
+            </div>
+            <div class="text-column">
+                <p>Max Girard é um cineasta francês e o sexto esposo de Evelyn. Após conhecê-la, ele a seleciona para seus filmes Boute-en-Train e Three A. M. , sob a condição de que ela aceite filmar cenas de nudez. O vínculo entre Max e Evelyn se torna sexual e romântico após o lançamento de seu filme, All for Us, que concede a ambos um Oscar. No entanto, ela rapidamente se dá conta de que ele está mais interessado nela como figura pública do que como indivíduo, e que prefere utilizá-la para promover sua imagem pública.</p>
+            </div>
+            <div class="quote-column">
+                <blockquote class="quote">
+                    <p>"Eu não me incomodo com uma infidelidade ou outra, minha cara. Se a coisa for com respeito. Sem deixar nenhuma prova."</p>
+                    <cite>- página 284</cite>
+                </blockquote>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="text-column">
+                <h1>O pacato, Robert Jamison</h1>
+            </div>
+            <div class="text-column">
+                <p>MRobert Jamison é irmão de Celia e o sétimo e último esposo de Evelyn. Ele aceita se mudar para a Espanha com Celia, Evelyn e Connor. Apesar de Evelyn permitir que ele tenha quantos relacionamentos amorosos desejar, ele se vincula a Connor e torna-se uma figura paterna e mentor para ela.</p>
+            </div>
+            <div class="quote-column">
+                <blockquote class="quote">
+                    <p>"Robert sempre disse que casou comigo porque faria qualquer coisa por Celia. Mas acho que ele fez isso porque era sua chance de ter uma família."</p>
+                    <cite>- página 319</cite>
+                </blockquote>
+            </div>
+        </article>
+    </main>
+
+    <footer class="footer">
+        <p>Todos os direitos reservados © Copyright 2025</p>
+        <p>Desenvolvido por Melyssa Souza Araújo</p>
+        <div class="social-icons">
+            <a href="https://www.instagram.com/melyssa.melmel?igsh=NHBjYm5menc2anJx" target="_blank" class="instagram">Instagram</a>
+            <a href="https://x.com/melyssamelmel?t=dnBj-D-6-WCyVD5lY4SFnw&s=09" target="_blank" class="x">X</a>
+        </div>
+    </footer>
+</body>
+</html>

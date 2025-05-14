@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starling</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #eefdf7; 
+        }
+
+        .header {
+            background-color: #019774; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1d1d35;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #1d1d35;
+            margin-left: 1rem;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .article {
+            max-width: 1000px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .article h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-align: center; 
+            color: #1d1d35;
+        }
+
+        .article-content {
+            display: flex; 
+            justify-content: space-around;
+        }
+
+        .text-column {
+            flex: 1; 
+            padding: 1.5rem;
+            background-color: #eefdf7; 
+            border-radius: 5px;
+            margin: 0 1rem; 
+            text-align: justify;
+        }
+
+        .text-column h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #1d1d35;
+        }
+
+        .text-column p {
+            margin-bottom: 1.5rem;
+            color: #1d1d35;
+        }
+
+        .read-more {
+            display: inline-block;
+            background-color: #619c87;
+            color: #1d1d35;
+            padding: 0.8rem 1.5rem;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .footer {
+            background-color: #019774;
+            color: #1d1d35;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .footer p {
+            margin: 0.5rem 0;
+        }
+
+        .social-icons {
+            margin-top: 1rem;
+        }
+
+        .social-icons a {
+            color: #1d1d35;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 1rem;
+            }
+
+            .article h1 {
+                font-size: 2rem;
+            }
+
+            .article-content {
+                flex-direction: column;
+            }
+
+            .text-column {
+                margin: 1rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Starling</div>
+        <nav class="menu">
+            <a href="index.html">Home</a>
+            <a href="personagem.html">Personagens</a>
+            <a href="#">Matérias</a>
+        </nav>
+    </header>
+
+    <main class="content">
+        <article class="article">
+            <h1>Vivant</h1>
+            
+            <div class="article-content">
+                <div class="text-column">
+                    <h2>Evelyn e eu</h2>
+                    <p>Evelyn era uma mulher de uma complexidade tremenda, e o tempo que passei com ela foi tão complicado quanto sua imagem, sua vida e a lenda que se construiu ao redor de sua figura.</p>
+                    <a href="materia-individual/vivant/06-2017.html" class="read-more">Leia Mais</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="article">
+            <h1>New York Tribune</h1>
+            
+            <div class="article-content">
+                <div class="text-column">
+                    <h2>Evelyn Hugo leiloa vestidos</h2>
+                    <p>A lenda do cinema dos anos 1960 vai leiloar seus mais memoráveis vestidos a fim de arrecadar fundos para pesquisas de combate ao câncer de mama.</p>
+                    <a href="materia-individual/new-york-tribune/02-03-2017.html" class="read-more">Leia Mais</a>
+                </div>
+                <div class="text-column">
+                    <h2>Morre musa do cinema</h2>
+                    <p>Os primeiros relatos não confirmam a causa da morte, mas fontes diversas afirmam que o caso está sendo tradado como overdose acidental.</p>
+                    <a href="materia-individual/new-york-tribune/26-03-2017.html" class="read-more">Leia Mais</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="article">
+            <h1>Thespill.com</h1>
+            
+            <div class="article-content">
+                <div class="text-column">
+                    <h2>Evelyn Hugo pronta para abrir o jogo</h2>
+                    <p>Evelyn Hugo, a musa loira mais linda do mundo, vai leiloar vestidos e dar uma entrevista, coisa que não faz há décadas.</p>
+                    <a href="materia-individual/thespill.com/04-03-2017.html" class="read-more">Leia Mais</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="article">
+            <h1>Sub Rosa</h1>
+            
+            <div class="article-content">
+                <div class="text-column">
+                    <h2>Don e Ev, e para sempre</h2>
+                    <p>O mais cobiçado dos solteiros escolheu ninguém menos que a loiraça do momento para ser sua noiva.</p>
+                    <a href="materia-individual/sub-rosa/04-03-1957.html" class="read-more">Leia Mais</a>
+                </div>
+                <div class="text-column">
+                    <h2>A frieza de Evelyn</h2>
+                    <p>Por que um casal de gente bonita com uma casa de cinco quartos não iria querer encher o lugar de crianças?</p>
+                    <a href="materia-individual/sub-rosa/22-06-1959.html" class="read-more">Leia Mais</a>
+                </div>
+            </div>
+            <div class="article-content">
+                <div class="text-column">
+                    <h2>Rezem por Don e Evelyn</h2>
+                    <p>À primeira vista Evelyn estava negando a Don a possibilidade de ter filhos, mas a natureza não está ajudando.</p>
+                    <a href="materia-individual/sub-rosa/29-06-1959.html" class="read-more">Leia Mais</a>
+                </div>
+                <div class="text-column">
+                    <h2>Fim de Adler e Hugo</h2>
+                    <p>Don Adler, de novo o solteiro mais cobiçado de Hollywood? Don e Evelyn decidiram pôr um ponto-final na relação!</p>
+                    <a href="materia-individual/sub-rosa/30-12-1959.html" class="read-more">Leia Mais</a>
+                </div>
+            </div>
+            <div class="article-content">
+                <div class="text-column">
+                    <h2>Don Adler e Ruby Reilly, noivos?</h2>
+                    <p>Don e Ruby ficaram mais próximos depois que Don se divorciou da bombástica Evelyn Hugo.</p>
+                    <a href="materia-individual/sub-rosa/23-10-1961.html" class="read-more">Leia Mais</a>
+                </div>
+                <div class="text-column">
+                    <h2>Festas do pijama de Evelyn e Celia</h2>
+                    <p>Quando a proximidade deixa de ser natural? Pessoas próximas confirmam que elas parecem... um casalzinnho</p>
+                    <a href="materia-individual/sub-rosa/01-11-1961.html" class="read-more">Leia Mais</a>
+                </div>
+            </div>
+            <div class="article-content">
+                <div class="text-column">
+                    <h2>O coração partido de Evelyn Hugo</h2>
+                    <p>A pobre Evelyn está tendo muita dificuldade para encontrar o amor.</p>
+                    <a href="materia-individual/sub-rosa/12-12-1961.html" class="read-more">Leia Mais</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="article">
+            <h1>PhotoMoment</h1>
+            
+            <div class="article-content">
+                <div class="text-column">
+                    <h2>Vida de Festeira</h2>
+                    <p>Celia St. James está ganhando fama na cidade! A jovem dama da Geórgia sabe como fazer amizade com as pessoas certas.</p>
+                    <a href="materia-individual/photomoment/02-11-1959.html" class="read-more">Leia Mais</a>
+                </div>
+                <div class="text-column">
+                    <h2>Evelyn, verde não lhe cai bem</h2>
+                    <p>Evelyn Hugo apareceu na Audience Appreciation Awards com um vestido de seda verde. A marca registrada está começando a virar sinônimo de tédio.</p>
+                    <a href="materia-individual/photomoment/01-02-1960.html" class="read-more">Leia Mais</a>
+                </div>
+            </div>
+            <div class="article-content">
+                <div class="text-column">
+                    <h2>Mick Riva gamado em Evelyn</h2>
+                    <p>Depois de se apresentar no Trocadero, Mick Riva relevou que passaria uma noite com Evelyn Hugo.</p>
+                    <a href="materia-individual/photomoment/15-09-1961.html" class="read-more">Leia Mais</a>
+                </div>
+                <div class="text-column">
+                    <h2>Riva e Hugo perdem a cabeça</h2>
+                    <p>Já ouviu falar em casamento às pressas? E em separação relâmpago?</p>
+                    <a href="materia-individual/photomoment/04-12-1961.html" class="read-more">Leia Mais</a>
+                </div>
+            </div>
+            <div class="article-content">
+                <div class="text-column">
+                    <h2>Evelyn Hugo e Rex North casados!</h2>
+                    <p>Os dois se conheceram durante as gravações do longa Anna Kaiênina e se apaixonaram logo de cara. Os dois pombinhos vão lotar os cinemas nas próximas semanas.</p>
+                    <a href="materia-individual/photomoment/26-11-1962.html" class="read-more">Leia Mais</a>
+                </div>
+                <div class="text-column">
+                    <h2>Celia St. James comprometida com John Braverman</h2>
+                    <p>A superestrela já vinha em uma sequência de sucessos no cinema, e agora ela tem ainda mais a celebrar, porque encontrou seu amor.</p>
+                    <a href="materia-individual/photomoment/10-12-1962.html" class="read-more">Leia Mais</a>
+                </div>
+            </div>
+            <div class="article-content">
+                <div class="text-column">
+                    <h2>Evelyn Hugo casa com Harry Cameron</h2>
+                    <p>Seria o cinco o número da sorte? Harry e Evelyn trabalham juntos desde os anos 50, eles admitiram estar tendo um caso no ano passado.</p>
+                    <a href="materia-individual/photomoment/14-08-1967.html" class="read-more">Leia Mais</a>
+                </div>
+                <div class="text-column">
+                    <h2>Evelyn e Harry têm uma menininha!</h2>
+                    <p>Evelyn enfim viroumãe! Connor Margot Cameron nasceu na última quinta-feira, dizem que o papai Harry cameron está "nas nuvens".</p>
+                    <a href="materia-individual/photomoment/23-05-1975.html" class="read-more">Leia Mais</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="article">
+            <h1>Hollywood Digest</h1>
+            
+            <div class="article-content">
+                <div class="text-column">
+                    <h2>Evelyn Hugo interpretará Anna Kariênina</h2>
+                    <p>Todos estavam curiosos para saber qual seria o projeto seguinte da srta. Hugo. Anna Kariênina é uma escolha interessante.</p>
+                    <a href="materia-individual/hollywod-digest/02-10-1961.html" class="read-more">Leia Mais</a>
+                </div>
+                <div class="text-column">
+                    <h2>Anna Kariênina fatura alto na bilheteria</h2>
+                    <p>O aguardadíssimo longa Anna Kariênina lotou os cinemas na última setxa-feira e no fim de semana. Já tem gente dizendo que estatuetas do Oscar podem estar a caminho.</p>
+                    <a href="materia-individual/hollywod-digest/17-12-1962.html" class="read-more">Leia Mais</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="article">
+            <h1>Now This</h1> 
+            
+            <div class="article-content">
+                <div class="text-column">
+                    <h2>Celia St. James e Joan Marker, melhores amigas</h2>
+                    <p>Celia e a recém-chegada a Hollywood são o momento da cidade. Estamos torcendo para que as duas tenham um plano de estrelar um filme juntas.</p>
+                    <a href="materia-individual/now-this/03-07-1980.html" class="read-more">Leia Mais</a>
+                </div>
+                <div class="text-column">
+                    <h2>Evelyn se divorcia de Harry para casar com Max Girard</h2>
+                    <p>Segundo fontes próximas, Evelyn e Harry estavam separados fazia algum tempo. O casamento tinha evoluído para uma relação de amizade nos últimos anos.</p>
+                    <a href="materia-individual/now-this/11-06-1982.html" class="read-more">Leia Mais</a>
+                </div>
+            </div>
+            <div class="article-content">
+                <div class="text-column">
+                    <h2>Divórcio de Evelyn e Max vira briga com relatos de traição</h2>
+                    <p>"Ele tá tão furioso que está falando de tudo para atingi-la", afirma uma pessoa do convívio do antigo casal.</p>
+                    <a href="materia-individual/now-this/01-07-1988.html" class="read-more">Leia Mais</a>
+                </div>
+                <div class="text-column">
+                    <h2>Morre o produtor Harry Cameron</h2>
+                    <p>Produtor e ex-marido de Evelyn Hugo, morreu neste fim de semana aos cinquenta e oito anos.</p>
+                    <a href="materia-individual/now-this/28-02-1989.html" class="read-more">Leia Mais</a>
+                </div>
+            </div>
+            <div class="article-content">
+                <div class="text-column">
+                    <h2>Criança rebelde</h2>
+                    <p>Aos catorze anos, a filha de uma atriz deixou de frequentar o prestigioso colégio onde estuda e costuma ser vista em casas noturnas em Nova York.</p>
+                    <a href="materia-individual/now-this/04-09-1989.html" class="read-more">Leia Mais</a>
+                </div>
+                <div class="text-column">
+                    <h2>Evelyn casada pela sétima vez</h2>
+                    <p>Evelyn Hugo se casou no último sábado com Robert Jamison. Os dois se conheceram numa festa e se apaixonaram loucamente.</p>
+                    <a href="materia-individual/now-this/08-01-1990.html" class="read-more">Leia Mais</a>
+                </div>
+            </div>
+            <div class="article-content">
+                <div class="text-column">
+                    <h2>Morre a rainha das  telas Celia St. James</h2>
+                    <p>Vencedora de três Oscars, a atriz morreu na última semana com sessenta e um anos.</p>
+                    <a href="materia-individual/now-this/05-07-2000.html" class="read-more">Leia Mais</a>
+                </div>
+            </div>
+        </article>
+    </main>
+
+    <footer class="footer">
+        <p>Todos os direitos reservados © Copyright 2025</p>
+        <p>Desenvolvido por Melyssa Souza Araújo</p>
+        <div class="social-icons">
+            <a href="https://www.instagram.com/melyssa.melmel?igsh=NHBjYm5menc2anJx" target="_blank" class="instagram">Instagram</a>
+            <a href="https://x.com/melyssamelmel?t=dnBj-D-6-WCyVD5lY4SFnw&s=09" target="_blank" class="x">X</a>
+        </div>
+    </footer>
+</body>
+</html>

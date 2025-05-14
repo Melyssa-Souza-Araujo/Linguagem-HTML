@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starling</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #eefdf7; 
+    }
+
+        .header {
+            background-color: #019774; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1d1d35;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #1d1d35;
+            margin-left: 1rem;
+        }
+
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .image-container {
+            flex: 1 1 300px; 
+            max-width: 400px;
+            margin-right: 2rem;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            border: 1px solid #eefdf7; 
+        }
+
+        .text-container {
+            flex: 1 1 400px; 
+            max-width: 600px;
+            align-content: center;
+            
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #1d1d35;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            color: #1d1d35;
+        }
+
+        .read-more {
+            align-items: center;
+            display: inline-block;
+            background-color: #619c87; 
+            color: #1d1d35;
+            padding: 0.8rem 1.5rem;
+            text-decoration: none;
+            border-radius: 5px;
+            align-content: center;
+        }
+
+        .article {
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .article h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .article .author {
+            font-style: italic;
+            color: #1d1d35;
+            margin-bottom: 1.5rem;
+        }
+
+        .article p {
+            margin-bottom: 1.5rem;
+        }
+        .content-art {
+            padding: 2rem;
+        }
+
+        .text-column {
+            flex: 1; 
+            padding-right: 2rem;
+            text-align: justify;
+        }
+
+        .image-column {
+            flex: 1; 
+        }
+
+        .image-with-stars {
+            text-align: center; 
+        }
+
+        .image-with-stars img {
+            max-width: 100%; 
+            height: auto;
+        }
+
+        .footer {
+            background-color: #019774;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .footer p {
+            margin: 0.5rem 0;
+        }
+
+        .social-icons {
+            margin-top: 1rem;
+        }
+
+        .social-icons a {
+            color: #1d1d35;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+
+        .mobile-menu {
+            display: none !important; 
+            flex-direction: column;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #019774;
+            width: 100%;
+            align-items: flex-start;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .mobile-menu.mobile-open {
+            display: flex !important; 
+        }
+
+        .mobile-menu a {
+            margin: 0.5rem 0;
+            padding: 0.7rem 1rem;
+            display: block;
+            width: 100%;
+            text-align: left;
+        }
+
+        .mobile-menu-button {
+            background: none;
+            color: #1d1d35;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        @media (max-width: 769px) {
+            .content {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .image-container {
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
+
+            .footer {
+                padding: 1rem 0.5rem; 
+            }
+            .content-art {
+                padding: 1rem;
+            }
+            .article h1 {
+                font-size: 2rem;
+            }
+            .image-with-stars {
+                flex-direction: column;
+                align-items: center;
+            }
+            .image-with-stars img {
+                max-width: 80%;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Starling</div>
+        <nav class="menu">
+            <a href="#">Home</a>
+            <a href="personagem.html">Personagens</a>
+            <a href="materia.html">Matérias</a>
+        </nav>
+    </header>
+
+    <main class="content">
+        <div class="image-container">
+            <img src="img/capa-livro.png" alt="Os Sete Maridos de Evelyn Hugo">
+        </div>
+        <div class="text-container">
+            <div class="text-column">
+                <h1>Evelyn Hugo leiloa vestidos</h1>
+                <p>A lenda do cinema dos anos 1960 vai leiloar seus mais memoráveis vestidos a fim de arrecadar fundos para pesquisas de combate ao câncer de mama.</p>
+            </div>
+            <a href="materia-individual/new-york-tribune/02-03-2017.html" class="read-more">Leia Mais</a>
+        </div>
+    </main>
+
+    <main class="content-art">
+        <article class="article">
+            <div class="text-column">
+                <h1>"Os Sete Maridos de Evelyn Hugo": Uma Jornada de Glamour, Sacrifício e Verdades Escondidas</h1>
+                <p class="author">Por Melyssa Souza Araújo, em 28 de março de 2025</p>
+            </div>
+            <div class="text-column">
+                <p>Em um universo onde a notoriedade se configura tanto como um sagrado quanto como um cativeiro, Os Sete Maridos de Evelyn Hugo (2017), da escritora estadunidense Taylor Jenkins Reid, se destaca como um romance que transcende o simples entretenimento ao investigar a complexidade humana por trás dos brilhos dos holofotes.</p>
+                <p>Com mais de 50 mil cópias comercializadas no Brasil e reconhecimento mundial impulsionado pelo BookTok, a obra não apenas alcançou o prestígio de best-seller como se prepara para ser adaptada para as telas da Netflix, prometendo reavivar o fascínio por sua icônica protagonista.</p>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="text-column">
+                <h1>Evelyn Hugo: Uma Diva Feita de Luz e Sombras</h1>
+            </div>
+            <div class="article-content">
+                <div class="text-column">
+                    <p>Aos 79 anos, a fictícia ícone de Hollywood opta por desvendar sua trajetória à jornalista Monique Grant, uma decisão aparentemente incompreensível que oculta vínculos profundos entre o passado e o presente. Evelyn, caracterizada como uma combinação de Marilyn Monroe, Elizabeth Taylor e Rita Hayworth, não é meramente uma figura de glamour: é uma sobrevivente. Nascida Evelyn Herrera, filha de uma imigrante cubana, ela reinventa-se ao suprimir suas origens, tingir os cabelos de louro e adotar um sobrenome "francês" para ascender em uma Hollywood dominada por machismo e preconceito.</p>
+                </div>
+                <div class="image-column">
+                    <div class="image-with-stars">
+                        <img src="img/evelyn.png" alt="Evelyn Hugo">
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="text-column">
+                <h1>Sete Casamentos, Uma Vida de Segredos</h1>
+            </div>
+            <div class="article-content">
+                <div class="text-column">
+                    <p>A narrativa se organiza em torno dos sete casamentos de Evelyn, cada um simbolizando uma etapa de sua ascensão e queda. Desde uniões estratégicas até relacionamentos abusivos, como o com Don Adler, que a subjuga à violência doméstica, os casamentos são véus para resguardar seu maior segredo: o amor por Celia St. James, atriz e companheira de vida que desafia as convenções heteronormativas da década de 1950. Esse romance, tão intenso quanto tragicamente silenciado, torna-se o núcleo da trama, questionando o custo da autencidade em um mundo que exige disfarces.</p>
+                </div>
+                <div class="image-column">
+                    <div class="image-with-stars">
+                        <img src="img/evelyn-e-celia.png" alt="Evelyn Hugo e Celia St. James">
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="text-column">
+                <h1>Mais que Fofocas de Hollywood: Um Retrato Social</h1>
+            </div>
+            <div class="text-column">
+                <p>Além dos escânsalos e trajes deslumbrantes, Reid articula críticas incisivas ao sexismo, à homofobia e à exploração na indústria cinematográfica. Evelyn, por exemplo, é sexualizada desde a adolescência, compelida a posar como sweater girl para promover sua imagem, enquanto Celia enfrenta a invisibilidade de sua orientação sexual. A obra também revela a dualidade do jornalismo, por meio de Monique, que renuncia à frieza da imparcialidade para se aprofundar na narrativa repleta de humanidade e culpa.</p>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="text-column">
+                <h1>Sobre a Autora</h1>
+            </div>
+            <div class="article-content">
+                <div class="text-column">
+                    <p>Taylor nasceu em Acton, no estado de Massachusetts, em 1983.Iniciou sua trajetótia literária durante sua ocupação em uma escola de educação segundária, até obter um contrato de publicação. Atuou na produção cinematográfica, dedicando-se à seleção de elencos por 3 anos, até concluir seus estudos universitários e assegurar outra posição profissional.</p>
+                </div>
+                <div class="image-column">
+                    <div class="image-with-stars">
+                        <img src="img/autora.png" alt="Taylor Jenkins Reid">
+                    </div>
+                </div>
+            </div>
+        </article>
+    </main>
+
+    <footer class="footer">
+        <p>Todos os direitos reservados © Copyright 2025</p>
+        <p>Desenvolvido por Melyssa Souza Araújo</p>
+        <div class="social-icons">
+            <a href="https://www.instagram.com/melyssa.melmel?igsh=NHBjYm5menc2anJx" target="_blank" class="instagram">Instagram</a>
+            <a href="https://x.com/melyssamelmel?t=dnBj-D-6-WCyVD5lY4SFnw&s=09" target="_blank" class="x">X</a>
+        </div>
+    </footer>
+</body>
+</html>
