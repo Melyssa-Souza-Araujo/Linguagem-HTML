@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starling</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #eefdf7; 
+    }
+
+        .header {
+            background-color: #019774; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1d1d35;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #1d1d35;
+            margin-left: 1rem;
+        }
+
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .image-container {
+            flex: 1 1 300px; 
+            max-width: 400px;
+            margin-right: 2rem;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            border: 1px solid #eefdf7; 
+        }
+
+        .text-container {
+            flex: 1 1 400px; 
+            max-width: 600px;
+            align-content: center;
+            
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #1d1d35;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            color: #1d1d35;
+        }
+
+        .read-more {
+            align-items: center;
+            display: inline-block;
+            background-color: #619c87; 
+            color: #1d1d35;
+            padding: 0.8rem 1.5rem;
+            text-decoration: none;
+            border-radius: 5px;
+            align-content: center;
+        }
+
+        .article {
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .article h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .article p {
+            margin-bottom: 1.5rem;
+        }
+
+        .text-column {
+            flex: 1; 
+            padding-right: 2rem;
+            text-align: justify;
+        }
+
+        .footer {
+            background-color: #019774;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .footer p {
+            margin: 0.5rem 0;
+        }
+
+        .social-icons {
+            margin-top: 1rem;
+        }
+
+        .social-icons a {
+            color: #1d1d35;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .footer {
+                padding: 1rem 0.5rem; 
+            }
+            .content-art {
+                padding: 1rem;
+            }
+            .article h1 {
+                font-size: 2rem;
+            }
+            }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Starling</div>
+        <nav class="menu">
+            <a href="../../index.html">Home</a>
+            <a href="../../personagem.html">Personagens</a>
+            <a href="../../materia.html">Matérias</a>
+        </nav>
+    </header>
+
+    <main class="content-art">
+        <article class="article">
+            <div class="text-column">
+                <h1>Evelyn e eu</h1>
+                <p class="author">Por Monique Grant, junho de 2017</p>
+            </div>
+            <div class="text-column">
+                <p>Quando a lendária atriz, produtora e filantropa Evelyn Hugo morreu, alguns meses atrás, ela e eu estávamos em pleno processo de escrita de suas memórias.</p>
+                <p>Sendo bem sincera, afirmar que foi uma honra passar com Evelyn suas duas últimas semanas de vida seria ao mesmo tempo subestimar — e até certo ponto omitir — a verdade.</p>
+                <p>Evelyn era uma mulher de uma complexidade tremenda, e o tempo que passei com ela foi tão complicado quanto sua imagem, sua vida e a lenda que se construiu ao redor de sua figura. Até hoje me esforço para entender quem foi Evelyn e o impacto que exerceu sobre mim. Em determinadas ocasiões pareço convencida de que a admiro mais que qualquer pessoa que conheci, e em outras penso nela como uma mentirosa e traidora.</p>
+                <p>Acho que Evelyn teria ficado contente com isso, inclusive. Ela demonstrava não ter mais interesse em despertar adoração ou escândalo. Seu foco principal passou a ser a verdade.</p>
+                <p>Depois de reler centenas de vezes as transcrições de seus relatos, e de repassar na minha mente cada momento que passamos juntas, acho que posso dizer que conheço Evelyn melhor do que a mim mesma. E sei que o que Evelyn gostaria de revelar nestas páginas, junto com as fotos lindíssimas feitas pouco antes de sua morte, seria uma verdade surpreendente, mas muito bonita.</p>
+                <p>E a verdade é a seguinte: Evelyn Hugo era bissexual e passou a maior parte da vida loucamente apaixonada por sua colega atriz Celia St. James.</p>
+                <p>Ela gostaria de revelar isso porque o amor que sentia por Celia era do tipo de tirar o fôlego e partir o coração.</p>
+                <p>Ela gostaria de revelar isso porque seu amor por Celia St. James talvez tenha sido seu ato mais político.</p>
+                <p>Ela gostaria de revelar isso porque, ao longo da vida, se conscientizou da importância de dar visibilidade à comunidade LGBTQ+.</p>
+                <p>Mas, acima de tudo, ela gostaria de revelar isso porque era a coisa mais sincera, real e profunda de sua vida.</p>
+                <p>E, perto do fim, ela se sentiu pronta para expor a realidade.</p>
+                <p>Então cabe a mim revelar a verdadeira Evelyn.</p>
+                <p>As páginas a seguir são um trecho da biografia Os sete maridos de Evelyn Hugo, a ser lançada no ano que vem.</p>
+                <p>Escolhi esse título porque certa vez perguntei a ela se não tinha vergonha de ter se casado tantas vezes.</p>
+                <p>Eu disse: “Isso não te incomoda? Que seus maridos tenham se tornado um assunto tão importante, mencionado tantas vezes nas manchetes, que quase ofuscaram você e seu trabalho? Que aquilo que todo mundo menciona quando fala de você são os sete maridos de Evelyn Hugo?”.</p>
+                <p>E a resposta foi pura Evelyn Hugo.</p>
+                <p>“Não”, ela me disse. “Porque eles são só maridos. A Evelyn Hugo sou eu. E, de qualquer forma, acho que, quando souberem a verdade, as pessoas vão se interessar muito mais pela minha esposa.”</p>
+            </div>
+        </article>
+    </main>
+
+    <main class="content">
+        <a href="../../materia.html" class="read-more">Voltar</a>
+    </main>
+
+    <footer class="footer">
+        <p>Todos os direitos reservados © Copyright 2025</p>
+        <p>Desenvolvido por Melyssa Souza Araújo</p>
+        <div class="social-icons">
+            <a href="https://www.instagram.com/melyssa.melmel?igsh=NHBjYm5menc2anJx" target="_blank" class="instagram">Instagram</a>
+            <a href="https://x.com/melyssamelmel?t=dnBj-D-6-WCyVD5lY4SFnw&s=09" target="_blank" class="x">X</a>
+        </div>
+    </footer>
+</body>
+</html>
