@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Texto com Gradiente Arco-Íris</title>
+<style>
+.texto-gradiente {
+  font-size: 3em;
+  font-weight: bold;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.animado-arco-iris {
+  animation: mudarCorArcoIris 10s linear infinite;
+}
+
+@keyframes mudarCorArcoIris {
+  0% {
+    background-image: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
+  }
+  20% {
+    background-image: conic-gradient(yellow, lime, aqua, blue, magenta, red, red);
+  }
+  40% {
+    background-image: conic-gradient(lime, aqua, blue, magenta, red, red, yellow);
+  }
+  60% {
+    background-image: conic-gradient(aqua, blue, magenta, red, yellow, lime, lime);
+  }
+  80% {
+    background-image: conic-gradient(blue, magenta, red, yellow, lime, aqua, aqua);
+  }
+  100% {
+    background-image: conic-gradient(magenta, red, yellow, lime, aqua, blue, blue);
+  }
+}
+</style>
+</head>
+<body>
+
+<h1 class="texto-gradiente animado-arco-iris">Texto com Gradiente</h1>
+
+</body>
+</html>
