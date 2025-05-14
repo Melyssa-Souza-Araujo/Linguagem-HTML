@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starling</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #eefdf7; 
+    }
+
+        .header {
+            background-color: #019774; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1d1d35;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #1d1d35;
+            margin-left: 1rem;
+        }
+
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .image-container {
+            flex: 1 1 300px; 
+            max-width: 400px;
+            margin-right: 2rem;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            border: 1px solid #eefdf7; 
+        }
+
+        .text-container {
+            flex: 1 1 400px; 
+            max-width: 600px;
+            align-content: center;
+            
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #1d1d35;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            color: #1d1d35;
+        }
+
+        .read-more {
+            align-items: center;
+            display: inline-block;
+            background-color: #619c87; 
+            color: #1d1d35;
+            padding: 0.8rem 1.5rem;
+            text-decoration: none;
+            border-radius: 5px;
+            align-content: center;
+        }
+
+        .article {
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .article h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .article p {
+            margin-bottom: 1.5rem;
+        }
+
+        .text-column {
+            flex: 1; 
+            padding-right: 2rem;
+            text-align: justify;
+        }
+
+        .footer {
+            background-color: #019774;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .footer p {
+            margin: 0.5rem 0;
+        }
+
+        .social-icons {
+            margin-top: 1rem;
+        }
+
+        .social-icons a {
+            color: #1d1d35;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .footer {
+                padding: 1rem 0.5rem; 
+            }
+            .content-art {
+                padding: 1rem;
+            }
+            .article h1 {
+                font-size: 2rem;
+            }
+            }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Starling</div>
+        <nav class="menu">
+            <a href="../../index.html">Home</a>
+            <a href="../../personagem.html">Personagens</a>
+            <a href="../../materia.html">Matérias</a>
+        </nav>
+    </header>
+
+    <main class="content-art">
+        <article class="article">
+            <div class="text-column">
+                <h1>Fim de linha para Adler e Hugo!</h1>
+                <p class="author">Por Sub Rosa, 30 de dezembro de 1959</p>
+            </div>
+            <div class="text-column">
+                <p>Don Adler, de novo o solteiro mais cobiçado de Hollywood?</p>
+                <p>Don e Evelyn decidiram pôr um ponto-final na relação! Depois de dois anos de casamento, Don entrou com o pedido de divórcio de Evelyn Hugo.</p>
+                <p>Ficamos tristes de ver os pombinhos se separando, mas estaríamos mentindo se disséssemos que fomos pegos de surpresa. Ouvimos rumores de que a ascensão de Don vai levá-lo às alturas, e Evelyn estava ficando invejosa e despeitada.</p>
+                <p>Para sorte de Don, ele renovou seu contrato com o Sunset Studios — o que deve ter deixado o mandachuva Ari Sullivan com um sorriso no rosto —, e ainda tem três filmes a ser lançados este ano. Esse Don não perde tempo.</p>
+                <p>Enquanto isso, apesar de o filme mais recente de Evelyn, Mulherzinhas, estar indo bem nas bilheterias e ter sido bem recebido pela crítica, o Sunset a retirou de sua nova produção Os curingas, e a substituiu por Ruby Reilly.</p>
+                <p>Será que o canto do cisne está próximo para Evelyn no Sunset?</p>
+            </div>
+        </article>
+    </main>
+
+    <main class="content">
+        <a href="../../materia.html" class="read-more">Voltar</a>
+    </main>
+
+    <footer class="footer">
+        <p>Todos os direitos reservados © Copyright 2025</p>
+        <p>Desenvolvido por Melyssa Souza Araújo</p>
+        <div class="social-icons">
+            <a href="https://www.instagram.com/melyssa.melmel?igsh=NHBjYm5menc2anJx" target="_blank" class="instagram">Instagram</a>
+            <a href="https://x.com/melyssamelmel?t=dnBj-D-6-WCyVD5lY4SFnw&s=09" target="_blank" class="x">X</a>
+        </div>
+    </footer>
+</body>
+</html>

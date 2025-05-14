@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starling</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #eefdf7; 
+    }
+
+        .header {
+            background-color: #019774; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1d1d35;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #1d1d35;
+            margin-left: 1rem;
+        }
+
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .image-container {
+            flex: 1 1 300px; 
+            max-width: 400px;
+            margin-right: 2rem;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            border: 1px solid #eefdf7; 
+        }
+
+        .text-container {
+            flex: 1 1 400px; 
+            max-width: 600px;
+            align-content: center;
+            
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #1d1d35;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            color: #1d1d35;
+        }
+
+        .read-more {
+            align-items: center;
+            display: inline-block;
+            background-color: #619c87; 
+            color: #1d1d35;
+            padding: 0.8rem 1.5rem;
+            text-decoration: none;
+            border-radius: 5px;
+            align-content: center;
+        }
+
+        .article {
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .article h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .article p {
+            margin-bottom: 1.5rem;
+        }
+
+        .text-column {
+            flex: 1; 
+            padding-right: 2rem;
+            text-align: justify;
+        }
+
+        .footer {
+            background-color: #019774;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .footer p {
+            margin: 0.5rem 0;
+        }
+
+        .social-icons {
+            margin-top: 1rem;
+        }
+
+        .social-icons a {
+            color: #1d1d35;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .footer {
+                padding: 1rem 0.5rem; 
+            }
+            .content-art {
+                padding: 1rem;
+            }
+            .article h1 {
+                font-size: 2rem;
+            }
+            }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Starling</div>
+        <nav class="menu">
+            <a href="../../index.html">Home</a>
+            <a href="../../personagem.html">Personagens</a>
+            <a href="../../materia.html">Matérias</a>
+        </nav>
+    </header>
+
+    <main class="content-art">
+        <article class="article">
+            <div class="text-column">
+                <h1>A frieza de Evelyn</h1>
+                <p class="author">Por Sub Rosa, 22 de junho de 1959</p>
+            </div>
+            <div class="text-column">
+                <p>Por que um casal de gente bonita com uma casa maravilhosa de cinco quartos não iria querer encher o lugar de crianças? Essa é uma pergunta que precisa ser feita a Don Adler e Evelyn Hugo.</p>
+                <p>Ou talvez apenas a Evelyn.</p>
+                <p>Don quer bebezinhos, e com certeza estamos todos babando de curiosidade para saber como seria a prole de duas criaturas tão lindas. Com certeza essa criança seria a coisa mais encantadora do mundo.</p>
+                <p>Mas Evelyn não quer nem saber.</p>
+                <p>Em vez disso, só fala de sua carreira, e de seu novo filme, Mulherzinhas.</p>
+                <p>Não é só isso, Evelyn nem sequer se esforça em manter a casa limpa ou atender aos pedidos mais elementares do marido, e nem ao menos trata com gentileza as pessoas que a ajudam.</p>
+                <p>Em vez disso, prefere sair para passear com moças solteiras como Celia St. James!</p>
+                <p>O pobre Don em casa, ansiando por um bebê, enquanto Evelyn está por aí curtindo a vida.</p>
+                <p>Naquela casa tudo se resume a Evelyn, Evelyn, Evelyn.</p>
+                <p>E isso deixa seu marido muito insatisfeito.</p>
+
+            </div>
+        </article>
+    </main>
+
+    <main class="content">
+        <a href="../../materia.html" class="read-more">Voltar</a>
+    </main>
+
+    <footer class="footer">
+        <p>Todos os direitos reservados © Copyright 2025</p>
+        <p>Desenvolvido por Melyssa Souza Araújo</p>
+        <div class="social-icons">
+            <a href="https://www.instagram.com/melyssa.melmel?igsh=NHBjYm5menc2anJx" target="_blank" class="instagram">Instagram</a>
+            <a href="https://x.com/melyssamelmel?t=dnBj-D-6-WCyVD5lY4SFnw&s=09" target="_blank" class="x">X</a>
+        </div>
+    </footer>
+</body>
+</html>
