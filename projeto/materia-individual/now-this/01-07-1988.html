@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starling</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #eefdf7; 
+    }
+
+        .header {
+            background-color: #019774; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1d1d35;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #1d1d35;
+            margin-left: 1rem;
+        }
+
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .image-container {
+            flex: 1 1 300px; 
+            max-width: 400px;
+            margin-right: 2rem;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            border: 1px solid #eefdf7; 
+        }
+
+        .text-container {
+            flex: 1 1 400px; 
+            max-width: 600px;
+            align-content: center;
+            
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #1d1d35;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            color: #1d1d35;
+        }
+
+        .read-more {
+            align-items: center;
+            display: inline-block;
+            background-color: #619c87; 
+            color: #1d1d35;
+            padding: 0.8rem 1.5rem;
+            text-decoration: none;
+            border-radius: 5px;
+            align-content: center;
+        }
+
+        .article {
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .article h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .article p {
+            margin-bottom: 1.5rem;
+        }
+
+        .text-column {
+            flex: 1; 
+            padding-right: 2rem;
+            text-align: justify;
+        }
+
+        .footer {
+            background-color: #019774;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .footer p {
+            margin: 0.5rem 0;
+        }
+
+        .social-icons {
+            margin-top: 1rem;
+        }
+
+        .social-icons a {
+            color: #1d1d35;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .footer {
+                padding: 1rem 0.5rem; 
+            }
+            .content-art {
+                padding: 1rem;
+            }
+            .article h1 {
+                font-size: 2rem;
+            }
+            }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">Starling</div>
+        <nav class="menu">
+            <a href="../../index.html">Home</a>
+            <a href="../../personagem.html">Personagens</a>
+            <a href="../../materia.html">Matérias</a>
+        </nav>
+    </header>
+
+    <main class="content-art">
+        <article class="article">
+            <div class="text-column">
+                <h1>Divórcio de Evelyn Hugo e Max Girard vira briga em meio a relatos de traição</h1>
+                <p class="author">Por Now This, 1 de julho de 1988</p>
+            </div>
+            <div class="text-column">
+                <p>Evelyn Hugo está prestes a comparecer à vara de família mais uma vez. Ela deu entrada nos papéis de divórcio esta semana, alegando “diferenças irreconciliáveis”. E, apesar de toda sua prática no assunto, parece que dessa vez a coisa vai se complicar.</p>
+                <p>Fontes dizem que Max Girard vai pedir pensão alimentícia, e segundo relatos, o diretor estaria falando mal de Hugo por toda a cidade.</p>
+                <p>“Ele está tão furioso que está falando de tudo para atingi-la”, afirma uma pessoa do convívio do antigo casal. “Pode pensar na ofensa que for, ele já falou. Ela é traidora, é lésbica, lhe deve um Oscar. Está na cara que está arrasado.”</p>
+                <p>Hugo foi vista na semana passada com um homem muito mais jovem. Jack Easton, deputado do partido Democrata pelo estado de Vermont, tem apenas vinte e nove anos. Portanto é duas décadas mais novo que Evelyn. E, se as fotos do jantar dos dois em Los Angeles servem de indicação, parece que há um romance surgindo.</p>
+                <p>Evelyn Hugo não tem uma ficha muito limpa, mas, nesse caso, uma coisa parece ser clara: os comentários de Girard parecem motivados por puro rancor.</p>
+            </div>
+        </article>
+    </main>
+
+    <main class="content">
+        <a href="../../materia.html" class="read-more">Voltar</a>
+    </main>
+
+    <footer class="footer">
+        <p>Todos os direitos reservados © Copyright 2025</p>
+        <p>Desenvolvido por Melyssa Souza Araújo</p>
+        <div class="social-icons">
+            <a href="https://www.instagram.com/melyssa.melmel?igsh=NHBjYm5menc2anJx" target="_blank" class="instagram">Instagram</a>
+            <a href="https://x.com/melyssamelmel?t=dnBj-D-6-WCyVD5lY4SFnw&s=09" target="_blank" class="x">X</a>
+        </div>
+    </footer>
+</body>
+</html>
