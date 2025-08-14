@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galeria de Fotos</title>
+  <style>
+    * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
+}
+
+header {
+  background-color: #444;
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  padding: 20px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.photo {
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  background: white;
+}
+
+.photo img {
+  width: 100%;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+
+.photo img:hover {
+  transform: scale(1.05);
+}
+
+footer {
+  background-color: #222;
+  color: white;
+  text-align: center;
+  padding: 15px 0;
+  margin-top: 40px;
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Galeria de Fotos</h1>
+  </header>
+
+  <main class="gallery">
+    <div class="photo"><img src="foto/1.jpg" alt="Foto 1"></div>
+    <div class="photo"><img src="foto/2.jpg" alt="Foto 2"></div>
+    <div class="photo"><img src="foto/3.jpg" alt="Foto 3"></div>
+    <div class="photo"><img src="foto/4.jpg" alt="Foto 4"></div>
+    <div class="photo"><img src="foto/5.jpeg" alt="Foto 5"></div>
+    <div class="photo"><img src="foto/6.jpeg" alt="Foto 6"></div>
+    <div class="photo"><img src="foto/7.jpg" alt="Foto 7"></div>
+    <div class="photo"><img src="foto/8.jpg" alt="Foto 8"></div>
+    <div class="photo"><img src="foto/9.jpg" alt="Foto 9"></div>
+    <div class="photo"><img src="foto/10.jpg" alt="Foto 10"></div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Minha Galeria</p>
+  </footer>
+</body>
+</html>
