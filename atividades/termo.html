@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jogo de Palavra 5 Letras</title>
+<style>
+  body {
+    background-color: #5a505a;
+    color: white;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  h1 {
+    margin-bottom: 10px;
+  }
+  #board {
+    display: grid;
+    grid-template-columns: repeat(5, 50px);
+    grid-gap: 5px;
+    margin-bottom: 15px;
+  }
+  .tile {
+    width: 50px;
+    height: 50px;
+    font-weight: bold;
+    font-size: 24px;
+    text-align: center;
+    line-height: 50px;
+    border-radius: 5px;
+    user-select: none;
+  }
+  .black {
+    background-color: #262626;
+    color: white;
+  }
+  .green {
+    background-color: #6aaa64;
+    color: white;
+  }
+  .yellow {
+    background-color: #c9b458;
+    color: white;
+  }
+  #inputRow {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+  }
+  #guessInput {
+    width: 150px;
+    font-size: 20px;
+    padding: 5px;
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    text-align: center;
+  }
+  #guessButton {
+    font-size: 20px;
+    margin-left: 10px;
+    cursor: pointer;
+  }
+  #message {
+    margin-top: 15px;
+    font-weight: bold;
+  }
+  #restartButton {
+    margin-top: 20px;
+    font-size: 18px;
+    padding: 8px 16px;
+    cursor: pointer;
+    display: none;
+    border-radius: 5px;
+    border: none;
+    background-color: #6aaa64;
+    color: white;
+  }
+  #restartButton:hover {
+    background-color: #549d4b;
+  }
+</style>
+</head>
+<body>
+  <h1>Jogo de Palavra 5 Letras</h1>
+  <div id="board"></div>
+
+  <div id="inputRow">
+    <input type="text" id="guessInput" maxlength="5" autocomplete="off" autofocus />
+    <button id="guessButton">Chutar</button>
+  </div>
+
+  <div id="message"></div>
+  <button id="restartButton">Jogar Novamente</button>
+
+<script>
+  const palavras = [
+    "ginga", "minha", "carta", "pular", "força", "aroma", "visto", "banco", "teste", "rosto", 
+    "sagaz", "âmago", "termo", "negro", "êxito", "mexer", "nobre", "senso", "afeto", "ética",
+    "algoz", "assim", "tênue", "sobre", "seção", "poder", "porém", "cerne", "sanar", "inato", 
+    "plena", "fazer", "mútua", "aquém", "vigor", "sutil", "fosse", "ideia", "audaz", "moral"
+  ];
+
+  const tentativasMax = 6;
+  let palavraSecreta;
+  let tentativas;
+  const board = document.getElementById("board");
+  const input = document.getElementById("guessInput");
+  const button = document.getElementById("guessButton");
+  const message = document.getElementById("message");
+  const restartButton = document.getElementById("restartButton");
+
+  function iniciaJogo() {
+    palavraSecreta = palavras[Math.floor(Math.random() * palavras.length)].toUpperCase();
+    tentativas = 0;
+    board.innerHTML = "";
+    for (let i = 0; i < tentativasMax; i++) {
+      criaLinhaVazia();
+    }
+    input.disabled = false;
+    button.disabled = false;
+    input.value = "";
+    input.focus();
+    message.textContent = `Tentativa 0 de ${tentativasMax}`;
+    restartButton.style.display = "none";
+  }
+
+  function criaLinhaVazia() {
+    for (let i = 0; i < 5; i++) {
+      const tile = document.createElement("div");
+      tile.classList.add("tile");
+      tile.textContent = "";
+      tile.dataset.index = i;
+      board.appendChild(tile);
+    }
+  }
+
+  function atualizaLinha(letras, cores) {
+    const start = tentativas * 5;
+    for (let i = 0; i < 5; i++) {
+      const tile = board.children[start + i];
+      tile.textContent = letras[i];
+      tile.className = "tile";
+      if (cores[i] === "green") {
+        tile.classList.add("green");
+      } else if (cores[i] === "yellow") {
+        tile.classList.add("yellow");
+      } else {
+        tile.classList.add("black");
+      }
+    }
+  }
+
+  function checaPalavra(palpite) {
+    const letrasPalpite = palpite.split("");
+    const letrasPalavra = palavraSecreta.split("");
+    const cores = Array(5).fill("black");
+
+    for (let i = 0; i < 5; i++) {
+      if (letrasPalpite[i] === letrasPalavra[i]) {
+        cores[i] = "green";
+        letrasPalavra[i] = null;
+        letrasPalpite[i] = null; 
+      }
+    }
+
+    for (let i = 0; i < 5; i++) {
+      if (letrasPalpite[i] !== null) {
+        const idx = letrasPalavra.indexOf(letrasPalpite[i]);
+        if (idx !== -1) {
+          cores[i] = "yellow";
+          letrasPalavra[idx] = null; 
+        }
+      }
+    }
+    return cores;
+  }
+
+  function fimDeJogo(vitoria) {
+    input.disabled = true;
+    button.disabled = true;
+    restartButton.style.display = "inline-block";
+    if (vitoria) {
+      message.textContent = "Parabéns! Você acertou a palavra: " + palavraSecreta;
+    } else {
+      message.textContent = "Fim de jogo! A palavra correta era: " + palavraSecreta;
+    }
+  }
+
+  button.addEventListener("click", () => {
+    let palpite = input.value.toUpperCase();
+    if (palpite.length !== 5) {
+      message.textContent = "Digite uma palavra com 5 letras!";
+      return;
+    }
+    if (!/^[A-ZÇ]+$/.test(palpite)) {
+      message.textContent = "Digite apenas letras (A-Z e Ç)!";
+      return;
+    }
+
+    const cores = checaPalavra(palpite);
+    atualizaLinha(palpite.split(""), cores);
+
+    if (palpite === palavraSecreta) {
+      fimDeJogo(true);
+      return;
+    }
+
+    tentativas++;
+
+    if (tentativas >= tentativasMax) {
+      fimDeJogo(false);
+      return;
+    }
+    input.value = "";
+    input.focus();
+    message.textContent = `Tentativa ${tentativas} de ${tentativasMax}`;
+  });
+
+  restartButton.addEventListener("click", () => {
+    iniciaJogo();
+  });
+
+  iniciaJogo();
+
+</script>
+</body>
+</html>
