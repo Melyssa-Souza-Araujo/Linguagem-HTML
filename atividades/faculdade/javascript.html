@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Javascript</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        h2 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        #demo, #demo2, #demo3 {
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        img {
+            height: 150px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h2>O que o JavaScript pode fazer?</h2>
+    <p id="demo">JavaScript pode alterar o conteúdo HTML.</p>
+    <button type="button" onclick='document.getElementById("demo").innerHTML = "Olá mundo! Estou usando JavaScript!"'>Aperte Aqui!</button>
+    <button type="button" onclick='document.getElementById("demo").innerHTML = "JavaScript pode alterar o conteúdo HTML."'>Aperte Aqui!</button>
+    <p>Alterar o valor da imagem.</p>
+    <img src="lampada-1.jpg" alt="apagado" id="myImage"> <br> <br>
+    <button type="button" onclick="document.getElementById('myImage').src='lampada-2.jpg'">Acender</button>
+    <button type="button" onclick="document.getElementById('myImage').src='lampada-1.jpg'">Apagar</button>
+    <p id="demo2">Alterar o estilo do CSS.</p>
+    <button type="button" onclick="document.getElementById('demo2').style.fontSize='35px'">Aumentar</button>
+    <button type="button" onclick="document.getElementById('demo2').style.fontSize='16px'">Diminuir</button>
+    <p>Aparecer e desaparecer.</p>
+    <p id="demo3">Use esse texto para teste.</p>
+    <button type="button" onclick="document.getElementById('demo3').style.display='none'">Desaparecer</button>
+    <button type="button" onclick="document.getElementById('demo3').style.display='block'">Aparecer</button>
+</body>
+</html>
