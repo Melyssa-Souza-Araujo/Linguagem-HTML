@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP1 da P2 - Tabela JSON</title>
+    <style>
+        /* CSS */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Estilização para a primeira linha (cabeçalho) */
+        th {
+            background-color: #007bff; /* Cor de fundo azul */
+            color: white; /* Fonte de cor branca */
+            padding: 12px 15px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        td {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        /* Estilo para linhas pares, apenas para deixar mais legível */
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Relatório de Alunos</h1>
+
+    <table id="tabela-alunos">
+        <thead>
+            <tr>
+                <th>NOME COMPLETO</th> <th>CÓDIGO IDENTIFICADOR (RA)</th> </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+
+    <p>A tabela contém **4 células de dados** (2 nomes e 2 códigos RA), além das 2 células de título.</p>
+
+    <script>
+        // JavaScript para carregar os dados do JSON e preencher a tabela
+        
+        const dadosJSON = [
+            {
+                "nome_completo": "Ana Paula Silva",
+                "codigo_ra": "1234567"
+            },
+            {
+                "nome_completo": "Bruno Costa Mendes",
+                "codigo_ra": "7654321"
+            }
+        ];
+
+        const tabelaCorpo = document.querySelector('#tabela-alunos tbody');
+
+        dadosJSON.forEach(aluno => {
+            // Cria uma nova linha na tabela
+            const linha = document.createElement('tr');
+            
+            // Cria e adiciona a célula do Nome
+            const celulaNome = document.createElement('td');
+            celulaNome.textContent = aluno.nome_completo;
+            linha.appendChild(celulaNome);
+            
+            // Cria e adiciona a célula do Código/RA
+            const celulaRA = document.createElement('td');
+            celulaRA.textContent = aluno.codigo_ra;
+            linha.appendChild(celulaRA);
+            
+            // Adiciona a linha completa ao corpo da tabela
+            tabelaCorpo.appendChild(linha);
+        });
+    </script>
+
+</body>
+</html>
