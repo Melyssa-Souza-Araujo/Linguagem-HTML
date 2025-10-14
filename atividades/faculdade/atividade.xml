@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<alunos>
+  <aluno RA="G73EJ1">
+    <identificacao>
+      <nome>Melyssa</nome>
+      <sobrenome>Souza</sobrenome>
+      <RA>G73EJ1</RA> 
+    </identificacao>
+    <curso>Sistemas de Informação</curso>
+    <disciplinas>
+      <disciplina codigo="INF101" semestre="1">
+        <nome_disciplina>Programação Orientada a Objetos</nome_disciplina>
+        <nota>9.5</nota>
+      </disciplina>
+      <disciplina codigo="MAT205" semestre="2">
+        <nome_disciplina>Cálculo Diferencial e Integral</nome_disciplina>
+        <nota>7.8</nota>
+      </disciplina>
+    </disciplinas>
+  </aluno>
+
+  <aluno RA="R15FEI3">
+    <identificacao>
+      <nome>João</nome>
+      <sobrenome>Pereira</sobrenome>
+      <RA>R15FEI3</RA>
+    </identificacao>
+    <curso>Análise e Desenvolvimento de Sistemas</curso>
+    <disciplinas>
+      <disciplina codigo="ADS302" semestre="3">
+        <nome_disciplina>Estrutura de Dados</nome_disciplina>
+        <nota>8.0</nota>
+      </disciplina>
+      <disciplina codigo="ADS401" semestre="4">
+        <nome_disciplina>Redes de Computadores</nome_disciplina>
+        <nota>6.5</nota>
+      </disciplina>
+    </disciplinas>
+  </aluno>
+
+  <aluno RA="R99ABZ0">
+    <identificacao>
+      <nome>Felipe</nome>
+      <sobrenome>Rodrigues</sobrenome>
+      <RA>R99ABZ0</RA>
+    </identificacao>
+    <curso>Engenharia da Computação</curso>
+    <disciplinas>
+      <disciplina codigo="ENG501" semestre="5">
+        <nome_disciplina>Sistemas Operacionais</nome_disciplina>
+        <nota>7.2</nota>
+      </disciplina>
+    </disciplinas>
+  </aluno>
+</alunos>
