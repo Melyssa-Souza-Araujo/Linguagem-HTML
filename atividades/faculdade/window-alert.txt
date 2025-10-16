@@ -1,0 +1,11 @@
+//window alert
+<script>
+window.onload = function () {
+  var heading = document.createElement("h1");
+  var heading_text = document.createTextNode("Big Head!");
+  heading.appendChild(heading_text);
+  document.body.appendChild(heading);
+};
+</script>
+
+<body onload="window.alert('Welcome to my home page!');"></body>
