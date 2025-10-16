@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>JSON com JavaScript</title>
+    <style>
+        /* Estilos básicos para a visualização, se necessário */
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+        header {
+            background-color: #f0f0f0;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        article {
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        article h2 {
+            margin-top: 0;
+            color: darkblue;
+        }
+    </style>
+</head>
+<body>
+    
+    <h2>JSON com JavaScript</h2>
+    <p id="mensagem"></p>
+
+    <script>
+        // Objeto JSON inicial (aparentemente para testes ou fallback)
+        const superHeroesStatic = {
+            "squadName": "Super squad",
+            "homeTown": "Retro City",
+            "formed": 2016,
+            "secretBase": "Super tower",
+            "active": true,
+            "members": [
+                {
+                    "name": "Molecule Man",
+                    "age": 29,
+                    "secretIdentity": "Dan Jukes",
+                    "powers": ["Radiation resistance", "Turning tiny", "Radiation blast"]
+                },
+                {
+                    "name": "Madame Uppercut",
+                    "age": 39,
+                    "secretIdentity": "Jane Wilson",
+                    "powers": ["Million tonne punch", "Damage resistance", "Superhuman reflexes"]
+                },
+                {
+                    "name": "Eternal Flame",
+                    "age": 1000000,
+                    "secretIdentity": "Unknown",
+                    "powers": ["Immortality", "Heat Immunity", "Inferno", "Teleportation", "Interdimensional travel"]
+                }
+            ]
+        };
+
+        // Testes de acesso ao objeto (linhas 34 e 35 da 2ª imagem)
+        // document.getElementById("mensagem").innerHTML = "Mensagem: " + superHeroesStatic["members"][1]["powers"][2];
+        document.getElementById("mensagem").innerHTML = "Mensagem: " + superHeroesStatic["members"][0]["name"];
+
+
+        // CORREÇÃO: Declarar <header> e <section> no escopo principal para evitar repetição (2ª imagem)
+        const header = document.createElement("header");
+        document.body.appendChild(header);
+        const section = document.createElement("section");
+        document.body.appendChild(section);
+
+
+        // Função assíncrona para buscar e popular os dados
+        async function populate() {
+            // URL do JSON externo (que será usado para popular de fato)
+            const requestURL = 'https://mdn.github.io/learning-area/javascript/oojs/json/superheroes.json';
+            // Linha que estava na imagem: const request = new Request(requestURL);
+            
+            const response = await fetch(requestURL); // Uso direto do fetch
+            const superHeroes = await response.json(); // Objeto com dados reais do JSON
+
+            populateHeader(superHeroes);
+            populateHeroes(superHeroes);
+        }
+
+        // Função para popular o cabeçalho (1ª imagem)
+        function populateHeader(obj) {
+            const myId = document.createElement('h1');
+            myId.textContent = obj.squadName;
+            header.appendChild(myId);
+
+            const myParagrafo = document.createElement('p');
+            // CORREÇÃO 2: Fechar template string e separar appendChild
+            myParagrafo.textContent = `Hometown: ${obj.homeTown}`; 
+            header.appendChild(myParagrafo);
+        }
+
+        // Função para popular os heróis (1ª imagem)
+        function populateHeroes(obj) {
+            const heroes = obj.members;
+
+            for (const hero of heroes) {
+                const myArticle = document.createElement('article');
+                const myH2 = document.createElement('h2');
+                const myPara1 = document.createElement('p');
+                const myPara2 = document.createElement('p');
+                const myPara3 = document.createElement('p');
+                const myList = document.createElement('ul');
+
+                myH2.textContent = hero.name;
+                myPara1.textContent = `Secret Identity: ${hero.secretIdentity}`;
+                myPara2.textContent = `Age: ${hero.age}`;
+                myPara3.textContent = 'Superpowers:';
+                
+                const superPowers = hero.powers;
+                for (const power of superPowers) {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = power;
+                    myList.appendChild(listItem);
+                } // Fecha o for (powers)
+
+                myArticle.appendChild(myH2);
+                myArticle.appendChild(myPara1);
+                myArticle.appendChild(myPara2);
+                myArticle.appendChild(myPara3);
+                myArticle.appendChild(myList);
+
+                section.appendChild(myArticle);
+            } // Fecha o for (heroes)
+        } // Fecha a função populateHeroes
+
+        // Chama a função principal para iniciar o carregamento dos dados
+        populate();
+
+    </script>
+</body>
+</html>
