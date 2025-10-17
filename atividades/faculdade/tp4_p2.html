@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP4 da P2 - Processamento de Nomes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        input[type="text"] {
+            padding: 8px;
+            margin-bottom: 10px;
+            width: 90%;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .container {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+        }
+        .section {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #ccc;
+        }
+        h2 {
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        /* Estilos para a Tabela JSON (Com borda) */
+        #tabela-json table {
+            width: 100%;
+            border-collapse: collapse; /* Colapsa as bordas */
+        }
+        #tabela-json th, #tabela-json td {
+            border: 1px solid black; /* Borda visível */
+            padding: 8px;
+            text-align: left;
+        }
+        #tabela-json th {
+            background-color: #f2f2f2;
+        }
+
+        /* Estilos para a Tabela XML (Sem borda, com fundo alternado) */
+        #tabela-xml table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #tabela-xml th, #tabela-xml td {
+            border: none; /* Sem borda */
+            padding: 8px;
+            text-align: left;
+        }
+        #tabela-xml th {
+            background-color: #e0e0e0;
+        }
+        /* Cor de fundo alternada */
+        #tabela-xml tr:nth-child(even) {
+            background-color: #f0f0f0; /* Cinza claro para linhas pares */
+        }
+        #tabela-xml tr:nth-child(odd) {
+            background-color: white; /* Branco para linhas ímpares */
+        }
+
+        /* Para exibir o conteúdo JSON e XML gerado */
+        pre {
+            background-color: #eee;
+            padding: 10px;
+            border: 1px dashed #999;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>TP4 da P2 - Processamento de Nomes</h1>
+
+    <div id="entrada">
+        <h2>1. Inserir Nomes (3)</h2>
+        <label for="nome1">Nome 1:</label><br>
+        <input type="text" id="nome1" value="Alice"><br>
+
+        <label for="nome2">Nome 2:</label><br>
+        <input type="text" id="nome2" value="Bruno"><br>
+
+        <label for="nome3">Nome 3:</label><br>
+        <input type="text" id="nome3" value="Carla"><br>
+
+        <button onclick="processarNomes()">Processar e Exibir</button>
+    </div>
+
+    <div class="container">
+        <div class="section">
+            <h2>2. Conteúdo JSON Gerado</h2>
+            <pre id="json-output">Clique em "Processar e Exibir" para gerar o JSON.</pre>
+
+            <h2>4. Exibir JSON (Tabela com Borda)</h2>
+            <div id="tabela-json"></div>
+        </div>
+
+        <div class="section">
+            <h2>3. Conteúdo XML Gerado</h2>
+            <pre id="xml-output">Clique em "Processar e Exibir" para gerar o XML.</pre>
+
+            <h2>5. Exibir XML (Tabela sem Borda, Fundo Alternado)</h2>
+            <div id="tabela-xml"></div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Função de validação: verifica se a string contém algum número (0-9).
+         * @param {string} nome O nome a ser validado.
+         * @returns {boolean} Retorna true se não contiver números, false caso contrário.
+         */
+        function validarNome(nome) {
+            // Expressão regular /[\d]/ ou /[0-9]/ verifica se há dígitos (números) na string
+            return !/\d/.test(nome);
+        }
+
+        function processarNomes() {
+            // 1. Coletar os 3 nomes
+            const nome1 = document.getElementById('nome1').value.trim();
+            const nome2 = document.getElementById('nome2').value.trim();
+            const nome3 = document.getElementById('nome3').value.trim();
+            
+            // Validação de preenchimento
+            if (!nome1 || !nome2 || !nome3) {
+                alert("Por favor, insira os 3 nomes.");
+                return;
+            }
+
+            // **Nova Validação: Não aceitar números no nome**
+            if (!validarNome(nome1)) {
+                alert(`O nome 1 ("${nome1}") não pode conter números.`);
+                return;
+            }
+            if (!validarNome(nome2)) {
+                alert(`O nome 2 ("${nome2}") não pode conter números.`);
+                return;
+            }
+            if (!validarNome(nome3)) {
+                alert(`O nome 3 ("${nome3}") não pode conter números.`);
+                return;
+            }
+            // Fim da Nova Validação
+
+            const nomes = [
+                { id: 1, nome: nome1 },
+                { id: 2, nome: nome2 },
+                { id: 3, nome: nome3 }
+            ];
+
+            // 2. Criar Conteúdo JSON
+            const jsonConteudo = JSON.stringify({ participantes: nomes }, null, 2);
+            document.getElementById('json-output').textContent = jsonConteudo;
+            
+            // 3. Criar Conteúdo XML
+            let xmlConteudo = '<?xml version="1.0" encoding="UTF-8"?>\n';
+            xmlConteudo += '<participantes>\n';
+            nomes.forEach(item => {
+                xmlConteudo += `  <participante>\n`;
+                xmlConteudo += `    <id>${item.id}</id>\n`;
+                xmlConteudo += `    <nome>${item.nome}</nome>\n`;
+                xmlConteudo += `  </participante>\n`;
+            });
+            xmlConteudo += '</participantes>';
+            document.getElementById('xml-output').textContent = xmlConteudo;
+
+            // 4. Exibir JSON em Tabela com Borda
+            exibirJsonEmTabela(nomes);
+
+            // 5. Exibir XML em Tabela sem Borda e Fundo Alternado
+            exibirXmlEmTabela(xmlConteudo); 
+        }
+
+        // Função para exibir o JSON
+        function exibirJsonEmTabela(dados) {
+            let html = '<table>';
+            html += '<thead><tr><th>ID</th><th>Nome</th></tr></thead>';
+            html += '<tbody>';
+            
+            dados.forEach(item => {
+                html += `<tr><td>${item.id}</td><td>${item.nome}</td></tr>`;
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('tabela-json').innerHTML = html;
+        }
+
+        // Função para exibir o XML
+        function exibirXmlEmTabela(xmlString) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+            
+            if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
+                document.getElementById('tabela-xml').innerHTML = "<p>Erro ao processar o XML.</p>";
+                return;
+            }
+
+            const participantes = xmlDoc.getElementsByTagName("participante");
+            
+            let html = '<table>';
+            html += '<thead><tr><th>ID</th><th>Nome</th></tr></thead>';
+            html += '<tbody>';
+            
+            for (let i = 0; i < participantes.length; i++) {
+                const id = participantes[i].getElementsByTagName("id")[0].textContent;
+                const nome = participantes[i].getElementsByTagName("nome")[0].textContent;
+                
+                html += `<tr><td>${id}</td><td>${nome}</td></tr>`;
+            }
+
+            html += '</tbody></table>';
+            document.getElementById('tabela-xml').innerHTML = html;
+        }
+
+        // Executar ao carregar para mostrar o exemplo inicial
+        document.addEventListener('DOMContentLoaded', processarNomes);
+    </script>
+
+</body>
+</html>
