@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    </head>
+<body>
+    <header>
+        <p>header</p>
+    </header>
+    <section>
+        <h2>Super-heróis com JavaScript</h2>
+        <p id="mensagem">
+            Mensagem: SuperHerois com JS
+        </p>
+        <p>A primeira super-heroína da lista (membros[0]) é ${superHerois['membros'][0]['nome']}.</p>
+        <p>A segunda super-heroína da lista (membros[1]) é ${superHerois['membros'][1]['nome']}.</p>
+    </section>
+
+    <script>
+        // CORREÇÃO: Declarar 'header' e 'section' no escopo principal para evitar repetição
+        const header = document.createElement('header');
+        document.body.appendChild(header);
+        const section = document.createElement('section');
+        document.body.appendChild(section);
+
+        async function populate() {
+            // Obter dados do Internet
+            const requestURL = 'https://mdn.github.io/learning-area/javascript/oojs/json/superheroes.json';
+            const request = new Request(requestURL);
+
+            const response = await fetch(request);
+            const superHerois = await response.json(); // Pega do Internet
+
+            populateHeader(superHerois);
+            populateSection(superHerois);
+        }
+
+        // ... (Estrutura JSON de Exemplo, se o fetch falhar ou for para teste) ...
+        const superHerois = { // Vai pegar do Internet
+            "squadName": "Super hero squad",
+            "homeTown": "Metro City",
+            "formed": 2016,
+            "secretBase": "Super tower",
+            "active": true,
+            "members": [
+                {
+                    "name": "Molecule Man",
+                    "age": 29,
+                    "secretIdentity": "Dan Jukes",
+                    "powers": [
+                        "Radiation resistance",
+                        "Turning tiny",
+                        "Radiation blast"
+                    ]
+                },
+                {
+                    "name": "Madame Uppercut",
+                    "age": 39,
+                    "secretIdentity": "Jane Wilson",
+                    "powers": [
+                        "Million-ton punch",
+                        "Damage resistance",
+                        "Superhuman reflexes"
+                    ]
+                },
+                {
+                    "name": "Eternal Flame",
+                    "age": 1000000,
+                    "secretIdentity": "Unknown",
+                    "powers": [
+                        "Immortality",
+                        "Heat immunity",
+                        "Inferno",
+                        "Teleportation",
+                        "Interdimensional travel"
+                    ]
+                }
+            ]
+        };
+
+        function populateHeader(superHerois) {
+            const h1 = document.createElement('h1');
+            h1.textContent = superHerois.squadName;
+            header.appendChild(h1);
+
+            const p = document.createElement('p');
+            p.textContent = `HomeTown: ${superHerois.homeTown} // Formed: ${superHerois.formed}`;
+            header.appendChild(p);
+
+            const section = document.querySelector('section'); // Aqui pode ser a correção
+            // ... (restante da função) ...
+        }
+
+        // Função para criar a seção de heróis
+        function showHeros(herois) {
+            const section = document.querySelector('section'); // Pode ser a correção
+            for (const hero of herois) {
+                const myArticle = document.createElement('article');
+                const myH2 = document.createElement('h2');
+                const myPara1 = document.createElement('p');
+                const myPara2 = document.createElement('p');
+                const myPara3 = document.createElement('p');
+                const myList = document.createElement('ul');
+
+                myH2.textContent = hero.name;
+                myPara1.textContent = `Secret Identity: ${hero.secretIdentity}`;
+                myPara2.textContent = `Age: ${hero.age}`;
+                myPara3.textContent = 'Superpowers:';
+
+                for (const power of hero.powers) {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = power;
+                    myList.appendChild(listItem);
+                }
+
+                myArticle.appendChild(myH2);
+                myArticle.appendChild(myPara1);
+                myArticle.appendChild(myPara2);
+                myArticle.appendChild(myPara3);
+                myArticle.appendChild(myList);
+
+                section.appendChild(myArticle); // Adiciona o artigo à seção
+            }
+        }
+
+        populate(); // Chama a função principal
+    </script>
+</body>
+</html>
