@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acumulador de Nomes em Tabela (Validação)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        #nomeInput {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        #adicionarBtn {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        #adicionarBtn:hover {
+            background-color: #0056b3;
+        }
+
+        .oculto {
+            display: none;
+        }
+
+        /* Estilos da Tabela */
+        #tabelaContainer {
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Acumulador de Nomes</h1>
+
+        <div class="input-group">
+            <input type="text" id="nomeInput" placeholder="Digite um nome...">
+            <button id="adicionarBtn">Adicionar Nome</button>
+        </div>
+
+        <div id="tabelaContainer" class="oculto">
+            <h2>Lista de Nomes</h2>
+        </div>
+    </div>
+
+    <script>
+        const listaDeNomes = [];
+
+        const nomeInput = document.getElementById('nomeInput');
+        const adicionarBtn = document.getElementById('adicionarBtn');
+        const tabelaContainer = document.getElementById('tabelaContainer');
+        let tabelaCorpo; 
+
+        function renderizarTabela() {
+            if (!tabelaCorpo) {
+                tabelaCorpo = document.createElement('div');
+                tabelaContainer.appendChild(tabelaCorpo);
+            }
+
+            let tabelaHTML = '<table>';
+            tabelaHTML += '<thead><tr><th>#</th><th>Nome Adicionado</th></tr></thead>';
+            tabelaHTML += '<tbody>';
+
+            listaDeNomes.forEach((nome, index) => {
+                tabelaHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${nome}</td>
+                    </tr>
+                `;
+            });
+
+            tabelaHTML += '</tbody></table>';
+
+            tabelaCorpo.innerHTML = tabelaHTML;
+
+            if (listaDeNomes.length > 0) {
+                tabelaContainer.classList.remove('oculto');
+            }
+        }
+
+        function adicionarNome() {
+            const nome = nomeInput.value.trim();
+
+            // 1. Valida se o campo não está vazio
+            if (!nome) {
+                alert('Por favor, digite um nome válido.');
+                return;
+            }
+
+            // 2. Validação: Checa se o nome consiste SOMENTE em dígitos (números).
+            // A regex /^\d+$/ significa:
+            // ^ : Começa na string
+            // \d+ : Tem um ou mais dígitos (0-9)
+            // $ : Termina na string
+            if (/^\d+$/.test(nome)) {
+                alert('O nome não pode ser composto apenas por números. Por favor, digite um nome válido.');
+                nomeInput.value = ''; // Limpa o campo
+                nomeInput.focus();
+                return; // Impede a continuação da função
+            }
+
+            // 3. Se a validação passou:
+            
+            // Adiciona o nome ao ARRAY (acumula)
+            listaDeNomes.push(nome);
+
+            // Limpa o campo de input
+            nomeInput.value = '';
+            nomeInput.focus();
+
+            // Atualiza a tabela na tela e garante a visibilidade
+            renderizarTabela();
+        }
+
+        // Adiciona o evento de clique ao botão
+        adicionarBtn.addEventListener('click', adicionarNome);
+
+        // Permite adicionar o nome apertando Enter no campo de texto
+        nomeInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                adicionarNome();
+            }
+        });
+    </script>
+
+</body>
+</html>
