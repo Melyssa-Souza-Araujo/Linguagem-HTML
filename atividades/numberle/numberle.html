@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numberle - Math Wordle Game</title>
+    <style>
+        :root {
+            --color-correct: #6aa84f; /* Verde */
+            --color-present: #f9cb9c; /* Laranja/Areia */
+            --color-absent: #777; /* Cinza */
+            --color-default: #d9d9d9; /* Cor padrão da célula */
+            --color-keyboard-default: #e0e0e0;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding-top: 20px;
+        }
+        .container {
+            text-align: center;
+            max-width: 500px; 
+            width: 90%; 
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .message {
+            color: red;
+            font-weight: bold;
+            min-height: 20px; 
+            margin-bottom: 15px;
+        }
+        .game-grid {
+            display: flex; 
+            flex-direction: column; 
+            gap: 6px; 
+            margin-bottom: 20px;
+            align-items: center; 
+            padding: 10px;
+        }
+        .row {
+            display: flex;
+            gap: 6px; 
+        }
+        .cell {
+            /* Tamanho compacto e quadrado com responsividade */
+            width: 9vw; 
+            height: 9vw;
+            max-width: 45px; 
+            max-height: 45px; 
+            border: 2px solid #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-transform: uppercase;
+            background-color: #fff;
+            transition: background-color 0.3s, border-color 0.3s;
+            user-select: none;
+            cursor: default;
+            box-sizing: border-box; 
+            border-radius: 4px;
+        }
+        .cell.correct {
+            background-color: var(--color-correct);
+            color: white;
+            border-color: var(--color-correct);
+        }
+        .cell.present {
+            background-color: var(--color-present);
+            color: #333;
+            border-color: var(--color-present);
+        }
+        .cell.absent {
+            background-color: var(--color-absent);
+            color: white;
+            border-color: var(--color-absent);
+        }
+        .keyboard {
+            width: 100%;
+            max-width: 450px; 
+            margin-top: 10px;
+        }
+        .key-row {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 8px;
+        }
+        .key {
+            background-color: var(--color-keyboard-default);
+            border: none;
+            border-radius: 5px;
+            padding: 10px 5px; 
+            font-size: 0.9em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.1s;
+            height: 45px;
+            box-sizing: border-box;
+            flex-grow: 1; 
+            text-align: center;
+            min-width: 25px;
+        }
+        .key:active {
+            background-color: #c0c0c0;
+        }
+        .action-key {
+            background-color: #a0a0a0;
+            color: white;
+            flex-grow: 1.5;
+        }
+        .enter-key {
+            flex-grow: 2; 
+        }
+        .delete-key {
+            flex-grow: 1.5;
+        }
+        .key.correct {
+            background-color: var(--color-correct);
+            color: white;
+        }
+        .key.present {
+            background-color: var(--color-present);
+            color: #333;
+        }
+        .key.absent {
+            background-color: var(--color-absent);
+            color: white;
+        }
+        @keyframes reveal {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .cell.animate-reveal {
+            animation: reveal 0.3s ease-out;
+        }
+        @keyframes pop-up {
+            0% { transform: translateY(10px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        .message.animate-message {
+            animation: pop-up 0.5s ease-out;
+        }
+        #game-actions {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            min-height: 40px; 
+        }
+        #restart-button {
+            padding: 10px 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: white;
+            background-color: var(--color-correct); 
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #restart-button:hover {
+            background-color: #5b8a45;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Numberle</h1>
+
+        <div id="game-grid" class="game-grid"></div>
+        <div id="game-actions">
+            <button id="restart-button" style="display: none;">Jogar Novamente</button>
+        </div>
+        <p id="message" class="message"></p>
+
+        <div id="keyboard" class="keyboard">
+            <div class="key-row numbers-row-top">
+                <button class="key num-key" data-key="1">1</button>
+                <button class="key num-key" data-key="2">2</button>
+                <button class="key num-key" data-key="3">3</button>
+                <button class="key num-key" data-key="4">4</button>
+                <button class="key num-key" data-key="5">5</button>
+                <button class="key num-key" data-key="6">6</button>
+                <button class="key num-key" data-key="7">7</button>
+                <button class="key num-key" data-key="8">8</button>
+                <button class="key num-key" data-key="9">9</button>
+                <button class="key num-key" data-key="0">0</button>
+            </div>
+
+            <div class="key-row operators-row">
+                <button class="key action-key" data-key="delete">⌫</button>
+                <button class="key operator-key" data-key="+">+</button>
+                <button class="key operator-key" data-key="-">-</button>
+                <button class="key operator-key" data-key="*">×</button>
+                <button class="key operator-key" data-key="/">÷</button>
+                <button class="key operator-key" data-key="=">=</button>
+                <button class="key action-key enter-key" data-key="enter">Enter</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const NUM_TRIES = 6;
+        const EQUATION_LENGTH = 9; 
+        const keyboardKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-', '*', '/', '='];
+        const VALID_EQUATIONS = [
+            ['1', '0', '+', '2', '0', '=', '3', '0', ''],  
+            ['5', '0', '+', '4', '0', '=', '9', '0', ''],   
+            ['1', '0', '0', '-', '5', '0', '=', '5', '0'],   
+            ['1', '0', '*', '3', '+', '5', '=', '3', '5'],   
+            ['9', '0', '/', '2', '+', '5', '=', '5', '0'],  
+            ['8', '5', '/', '5', '+', '1', '=', '1', '8'],   
+            ['1', '2', '0', '/', '6', '-', '5', '=', '1', '5'] 
+        ];
+
+        let targetEquation = []; 
+        let gridState = [];      
+        let currentRow = 0;
+        let currentColumn = 0;
+        let gameIsOver = false;
+
+        const gameGrid = document.getElementById('game-grid');
+        const keyboard = document.getElementById('keyboard');
+        const messageDisplay = document.getElementById('message');
+        const restartButton = document.getElementById('restart-button'); 
+
+        function setupGrid() {
+            gameGrid.innerHTML = '';
+            gridState = [];
+
+            for (let i = 0; i < NUM_TRIES; i++) {
+                const row = document.createElement('div');
+                row.classList.add('row');
+                row.dataset.row = i;
+                gridState[i] = new Array(EQUATION_LENGTH).fill(''); 
+                
+                for (let j = 0; j < EQUATION_LENGTH; j++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.col = j;
+                    row.appendChild(cell);
+                }
+                gameGrid.appendChild(row);
+            }
+        }
+
+        function generateTargetEquation() {
+            const validNineCharEquations = VALID_EQUATIONS.filter(eq => eq.join('').trim().length >= EQUATION_LENGTH);
+            const equationSource = validNineCharEquations.length > 0 ? validNineCharEquations : VALID_EQUATIONS;
+            const randomIndex = Math.floor(Math.random() * equationSource.length);
+
+            while (targetEquation.length < EQUATION_LENGTH) {
+                targetEquation.push('');
+            }
+
+            console.log("Equação Secreta (somente para debug):", targetEquation.join('').replace(/ /g, ''));
+        }
+
+        function setupEventListeners() {
+            keyboard.removeEventListener('click', handleKeyboardClick);
+            document.removeEventListener('keydown', handleKeydown);
+            restartButton.removeEventListener('click', resetGame);
+
+            keyboard.addEventListener('click', handleKeyboardClick);
+            document.addEventListener('keydown', handleKeydown);
+            restartButton.addEventListener('click', resetGame);
+        }
+
+        function handleKeyboardClick(e) {
+            if (gameIsOver) return;
+
+            const keyElement = e.target.closest('.key');
+            if (!keyElement) return;
+
+            const key = keyElement.dataset.key;
+            handleKeyInput(key);
+        }
+
+        function handleKeydown(e) {
+            if (gameIsOver) return;
+            
+            let key = e.key.toLowerCase();
+
+            if (key === 'backspace') key = 'delete';
+            if (key === 'enter') key = 'enter';
+            
+            if (keyboardKeys.includes(key) || key === 'delete' || key === 'enter') {
+                handleKeyInput(key);
+                e.preventDefault(); 
+            }
+        }
+
+        function handleKeyInput(key) {
+            if (gameIsOver) return;
+
+            if (key === 'enter') {
+                checkGuess();
+            } else if (key === 'delete') {
+                deleteLastChar();
+            } else if (keyboardKeys.includes(key)) {
+                if (currentColumn < EQUATION_LENGTH) {
+                    updateCell(key);
+                }
+            }
+        }
+
+        function updateCell(char) {
+            const rowElement = gameGrid.querySelector(`.row[data-row="${currentRow}"]`);
+            const cellElement = rowElement.querySelector(`.cell[data-col="${currentColumn}"]`);
+            
+            cellElement.textContent = char.toUpperCase();
+            gridState[currentRow][currentColumn] = char;
+            currentColumn++;
+        }
+
+        function deleteLastChar() {
+            if (currentColumn > 0) {
+                currentColumn--;
+                const rowElement = gameGrid.querySelector(`.row[data-row="${currentRow}"]`);
+                const cellElement = rowElement.querySelector(`.cell[data-col="${currentColumn}"]`);
+
+                cellElement.textContent = '';
+                gridState[currentRow][currentColumn] = '';
+            }
+        }
+
+        function checkGuess() {
+            const guess = gridState[currentRow];
+            
+            if (currentColumn !== EQUATION_LENGTH) {
+                showMessage('Equação incompleta. Preencha todos os espaços.');
+                return;
+            }
+
+            const guessString = guess.join('').replace(/ /g, '').toLowerCase(); 
+            const equalsIndex = guessString.indexOf('=');
+
+            if (equalsIndex === -1 || guessString.indexOf('=', equalsIndex + 1) !== -1 || equalsIndex === 0 || equalsIndex === guessString.length - 1) {
+                showMessage('A equação deve ter um sinal de igual (=) e conteúdo nos dois lados.');
+                return;
+            }
+            
+            const [leftSide, rightSide] = guessString.split('=');
+            
+            let isMathValid = false;
+            try {
+                const result = eval(leftSide); 
+                const targetResult = parseFloat(rightSide);
+                
+                if (!isNaN(result) && result === targetResult) {
+                    isMathValid = true;
+                }
+            } catch (e) {}
+
+            if (!isMathValid) {
+                showMessage('Resultado errado ou sintaxe da expressão inválida (ex: operador duplo).');
+                return;
+            }
+            
+            const rowElement = gameGrid.querySelector(`.row[data-row="${currentRow}"]`);
+            const feedback = getFeedbackColors(guess, targetEquation);
+            applyFeedback(rowElement, feedback);
+            updateKeyboard(guess, feedback);
+
+            if (feedback.every(color => color === 'correct')) {
+                gameIsOver = true;
+                showMessage('Você Venceu! 🏆', true);
+                restartButton.style.display = 'block'; 
+            } else if (currentRow === NUM_TRIES - 1) {
+                gameIsOver = true;
+                showMessage(`Fim de Jogo. A equação era: ${targetEquation.join('').replace(/ /g, '')}`, true);
+                restartButton.style.display = 'block'; 
+            } else {
+                currentRow++;
+                currentColumn = 0;
+                showMessage('');
+            }
+        }
+
+        function getFeedbackColors(guess, target) {
+            const feedback = new Array(EQUATION_LENGTH).fill('absent');
+            const targetCounts = {};
+
+            target.filter(c => c !== '').forEach(char => {
+                targetCounts[char] = (targetCounts[char] || 0) + 1;
+            });
+
+            for (let i = 0; i < EQUATION_LENGTH; i++) {
+                if (guess[i] === target[i] && target[i] !== '') {
+                    feedback[i] = 'correct';
+                    targetCounts[guess[i]]--;
+                }
+            }
+
+            for (let i = 0; i < EQUATION_LENGTH; i++) {
+                if (feedback[i] === 'absent' && guess[i] !== '') {
+                    const char = guess[i];
+                    if (targetCounts[char] > 0) {
+                        feedback[i] = 'present';
+                        targetCounts[char]--;
+                    }
+                }
+            }
+            return feedback;
+        }
+
+        function applyFeedback(rowElement, feedback) {
+            const cells = rowElement.querySelectorAll('.cell');
+            cells.forEach((cell, index) => {
+                cell.classList.add(feedback[index]);
+                cell.style.animationDelay = `${index * 0.1}s`;
+                cell.classList.add('animate-reveal');
+            });
+        }
+
+        function updateKeyboard(guess, feedback) {
+            guess.forEach((char, index) => {
+                if (char === '') return;
+                
+                const color = feedback[index];
+                const keyElement = keyboard.querySelector(`.key[data-key="${char.toLowerCase()}"]`);
+                if (keyElement) {
+                    if (keyElement.classList.contains('correct')) {
+                        return; 
+                    } else if (color === 'correct') {
+                        keyElement.classList.remove('present', 'absent');
+                        keyElement.classList.add('correct');
+                    } else if (color === 'present' && !keyElement.classList.contains('correct')) {
+                        keyElement.classList.remove('absent');
+                        keyElement.classList.add('present');
+                    } else if (color === 'absent' && !keyElement.classList.contains('correct') && !keyElement.classList.contains('present')) {
+                        keyElement.classList.add('absent');
+                    }
+                }
+            });
+        }
+
+        function showMessage(msg, isFinal = false) {
+            messageDisplay.textContent = msg;
+            if (isFinal) {
+                messageDisplay.style.color = msg.includes('Venceu') ? 'green' : 'red';
+            } else {
+                messageDisplay.style.color = 'red';
+            }
+            messageDisplay.classList.add('animate-message');
+            setTimeout(() => {
+                messageDisplay.classList.remove('animate-message');
+            }, 1000);
+        }
+
+        function resetGame() {
+            currentRow = 0;
+            currentColumn = 0;
+            gameIsOver = false;
+
+            showMessage('');
+            restartButton.style.display = 'none';
+
+            setupGrid();
+            generateTargetEquation();
+
+            keyboard.querySelectorAll('.key').forEach(key => {
+                key.classList.remove('correct', 'present', 'absent');
+            });
+
+            setupEventListeners(); 
+        }
+
+        function initGame() {
+            setupGrid();
+            generateTargetEquation();
+            setupEventListeners();
+        }
+
+        initGame();
+    </script>
+</body>
+</html>
