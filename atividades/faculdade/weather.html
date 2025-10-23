@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <title>Testando API Gratuita</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 24px; background: #f4f6f8; }
+      .card { background: #fff; padding: 18px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
+      input, button { padding: 8px; margin-top: 6px; border-radius: 6px; border: 1px solid #ccc; }
+      button { background-color: #0366d6; color: #fff; border: none; cursor: pointer; }
+      .result { margin-top: 18px; padding: 12px; background: #f1f7ff; border-radius: 8px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+      th, td { padding: 6px; border: 1px solid #ccc; text-align: center; }
+      th { background: #e0e0e0; }
+    </style>
+  </head>
+<body>
+  <main class="card">
+    <h2>Pesquisar Local e escolher unidades</h2>
+    <form id="form">
+      <label>
+        Cidade / Localização:
+        <input id="city" name="city" type="text" placeholder="Ex: São Paulo" style="width:100%;" />
+      </label>
+
+      <div class="units" aria-label="Unidades de temperatura">
+        <label><input id="chkC" type="radio" name="unit" value="c"> Celsius (c)</label>
+        <label><input id="chkF" type="radio" name="unit" value="f"> Fahrenheit (f)</label>
+      </div>
+
+      <button type="submit">Consultar</button>
+    </form>
+
+    <div id="output" class="result" hidden></div>
+  </main>
+
+  <script>
+    const form = document.getElementById('form');
+    const output = document.getElementById('output');
+
+    form.addEventListener('submit', async function (ev) {
+      ev.preventDefault();
+
+      const city = document.getElementById('city').value.trim();
+      const unitInput = document.querySelector('input[name="unit"]:checked');
+
+      if (!city) {
+        output.hidden = false;
+        output.innerHTML = '<strong>Erro:</strong> informe a cidade.';
+        output.style.color = '#922';
+        return;
+      }
+
+      if (!unitInput) {
+        output.hidden = false;
+        output.innerHTML = '<strong>Atenção:</strong> selecione uma unidade (C ou F).';
+        output.style.color = '#944d00';
+        return;
+      }
+
+      const unit = unitInput.value;
+
+      output.hidden = false;
+      output.style.color = '#032f62';
+      output.innerHTML = 'Consultando dados...';
+
+      await carregar(city, unit);
+    });
+
+    async function carregar(city, unit) {
+      const url = `https://yahoo-weather5.p.rapidapi.com/weather?location=${encodeURIComponent(city)}&format=json&u=${unit}`;
+      const options = {
+        method: 'GET',
+        headers: {
+          'x-rapidapi-key': '32a64c624amsh122ea55e0af0d8ap1bd284jsnca5700e2f2eb',
+          'x-rapidapi-host': 'yahoo-weather5.p.rapidapi.com'
+        }
+      };
+
+      try {
+        const response = await fetch(url, options);
+        if (!response.ok) throw new Error('Erro na resposta da API.');
+        const data = await response.json();
+
+        formataRetorno(data);
+      } catch (error) {
+        output.innerHTML = `<strong>Erro:</strong> ${error.message}`;
+        console.error(error);
+      }
+    }
+
+    function formataRetorno(data) {
+      const loc = data.location;
+      const obs = data.current_observation;
+      const forecasts = data.forecasts;
+
+      if (!loc || !obs) {
+        output.innerHTML = 'Não foi possível obter dados climáticos.';
+        return;
+      }
+
+      const html = `
+        <h3>Clima atual em ${loc.city}, ${loc.region} - ${loc.country}</h3>
+        <p><strong>Temperatura:</strong> ${obs.condition.temperature}°<br>
+           <strong>Condição:</strong> ${obs.condition.text}<br>
+           <strong>Umidade:</strong> ${obs.atmosphere.humidity}%<br>
+           <strong>Vento:</strong> ${obs.wind.speed} km/h (${obs.wind.direction})<br>
+           <strong>Nascer do sol:</strong> ${obs.astronomy.sunrise}<br>
+           <strong>Pôr do sol:</strong> ${obs.astronomy.sunset}</p>
+
+        <h4>Previsão para os próximos dias:</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Dia</th>
+              <th>Máx</th>
+              <th>Mín</th>
+              <th>Condição</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${forecasts.map(f => `
+              <tr>
+                <td>${f.day}</td>
+                <td>${f.high}°</td>
+                <td>${f.low}°</td>
+                <td>${f.text}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      `;
+
+      output.style.color = '#000';
+      output.hidden = false;
+      output.innerHTML = html;
+    }
+  </script>
+</body>
+</html>
