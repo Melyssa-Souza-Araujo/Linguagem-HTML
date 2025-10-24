@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP5 P2 - Cadastro de Alunos e Notas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #0056b3;
+        }
+        /* --- Estilização do Formulário --- */
+        #formCadastro {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+            align-self: flex-end; /* Alinha o botão com os campos */
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #btnLimpar {
+            background-color: #dc3545;
+            margin-top: 20px;
+            display: block;
+        }
+        #btnLimpar:hover {
+            background-color: #c82333;
+        }
+        /* --- Estilização da Tabela --- */
+        #tabelaAlunos {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        #tabelaAlunos th, #tabelaAlunos td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        #tabelaAlunos thead {
+            background-color: #f8f8f8;
+            cursor: pointer;
+        }
+        #tabelaAlunos th.sortable {
+            position: relative;
+        }
+        .sort-icon {
+            margin-left: 5px;
+            font-style: normal;
+            font-weight: normal;
+            float: right;
+        }
+        /* Indicadores de Classificação */
+        th[aria-sort="ascending"] .sort-icon::after {
+            content: " ▲";
+        }
+        th[aria-sort="descending"] .sort-icon::after {
+            content: " ▼";
+        }
+        th:not([aria-sort]) .sort-icon::after {
+            content: " ↔"; /* Símbolo neutro para coluna classificável */
+        }
+        /* --- REQUISITOS DE CORES --- */
+        /* Vermelho Claro: nota inferior a 5 */
+        .nota-inferior {
+            background-color: #ffcccc; /* Vermelho bem claro */
+            font-weight: bold;
+        }
+        /* Azul Claro: nota superior a 9 */
+        .nota-superior {
+            background-color: #cceeff; /* Azul bem claro */
+            font-weight: bold;
+        }
+        /* NOVO: Estilo para o filtro */
+        #filtroContainer {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        /* NOVO: Estilo para a mensagem de erro */
+        .error-message {
+            color: #dc3545; /* Cor vermelha para erro */
+            font-size: 0.85em;
+            margin-top: 5px;
+            font-weight: bold;
+            display: none; /* Escondida por padrão */
+        }
+        input.input-error {
+            border: 2px solid #dc3545; /* Borda vermelha no campo com erro */
+        }
+    </style>
+</head>
+<body>
+    <h1>Cadastro e Classificação de Alunos</h1>
+    <div class="container">
+        <form id="formCadastro">
+            <h2>Inserir Novo Aluno</h2>
+            <div class="form-group">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" required>
+            </div>
+            <div class="form-group">
+                <label for="endereco">Endereço:</label>
+                <input type="text" id="endereco" required>
+            </div>
+            <div class="form-group">
+                <label for="nota">Nota (0 a 10):</label>
+                <input type="number" id="nota" min="0" max="10" step="0.1" required>
+                <span id="notaError" class="error-message"></span>
+            </div>
+            <button type="submit" id="btnSalvar">Salvar Aluno</button>
+        </form>
+        <hr>
+        <h2>Tabela de Alunos</h2>
+        <div id="filtroContainer">
+            <label for="filtroNota">Filtrar Notas:</label>
+            <select id="filtroNota">
+                                <option value="todos">Todos os Alunos</option>
+                <option value="maior9">Notas Superiores a 9 (>9)</option>
+                <option value="menor5">Notas Menores que 5 (<5)</option>
+                <option value="entre5e9">Notas Entre 5 e 9 (5.0 a 9.0)</option>
+            </select>
+        </div>
+        <table id="tabelaAlunos">
+            <thead>
+                <tr>
+                    <th data-sort-key="nome" class="sortable">Nome <span class="sort-icon"></span></th>
+                    <th>Endereço</th>
+                    <th data-sort-key="nota" class="sortable">Nota <span class="sort-icon"></span></th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <button id="btnLimpar">Limpar Dados</button>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const formCadastro = document.getElementById('formCadastro');
+            const tabelaBody = document.querySelector('#tabelaAlunos tbody');
+            const tabelaHeaders = document.querySelectorAll('#tabelaAlunos th.sortable');
+            const btnLimpar = document.getElementById('btnLimpar');
+            // Referência ao seletor de filtro
+            const filtroNotaSelect = document.getElementById('filtroNota');
+
+            // Referências para o campo e mensagem de erro da nota
+            const inputNota = document.getElementById('nota');
+            const notaError = document.getElementById('notaError'); 
+
+            let alunos = [];
+            let classificacaoAtiva = { chave: 'nome', direcao: 'asc' }; // Estado inicial: Nome em ordem alfabética
+
+            // Funções auxiliares...
+            const limparErroNota = () => {
+                notaError.textContent = '';
+                notaError.style.display = 'none';
+                inputNota.classList.remove('input-error');
+            };
+
+            const mostrarErroNota = (mensagem) => {
+                notaError.textContent = mensagem;
+                notaError.style.display = 'block';
+                inputNota.classList.add('input-error');
+            };
+
+            const carregarAlunos = () => {
+                const dadosJSON = localStorage.getItem('alunosData');
+                if (dadosJSON) {
+                    alunos = JSON.parse(dadosJSON);
+                } else {
+                    alunos = [];
+                }
+                // Garante que a primeira carga é ordenada por nome (requisito 1)
+                classificarAlunos('nome', 'asc', false); 
+                document.querySelector('th[data-sort-key="nome"]').setAttribute('aria-sort', 'ascending');
+            };
+
+            const salvarAlunos = () => {
+                localStorage.setItem('alunosData', JSON.stringify(alunos));
+            };
+
+            const getClassificacaoCor = (nota) => {
+                if (nota < 5) {
+                    return 'nota-inferior';
+                } else if (nota > 9) {
+                    return 'nota-superior';
+                }
+                return '';
+            };
+
+            // Implementa a lógica dos filtros (REQUISITO 3 e 1 - "todos os alunos")
+            const filtrarAlunos = (listaAlunos, filtro) => {
+                switch (filtro) {
+                    case 'menor5':
+                        return listaAlunos.filter(aluno => aluno.nota < 5);
+                    case 'maior9':
+                        return listaAlunos.filter(aluno => aluno.nota > 9);
+                    case 'entre5e9':
+                        return listaAlunos.filter(aluno => aluno.nota >= 5 && aluno.nota <= 9);
+                    case 'todos':
+                    default:
+                        return listaAlunos; // Retorna todos os alunos
+                }
+            };
+
+            // Função que exibe os alunos (considerando o filtro)
+            const exibirAlunosNaTabela = (listaAlunos) => {
+                const filtroAtual = filtroNotaSelect.value;
+                const alunosFiltrados = filtrarAlunos(listaAlunos, filtroAtual);
+
+                tabelaBody.innerHTML = '';
+                alunosFiltrados.forEach(aluno => {
+                    const row = tabelaBody.insertRow();
+                    row.insertCell().textContent = aluno.nome;
+                    row.insertCell().textContent = aluno.endereco;
+                    
+                    let cellNota = row.insertCell();
+                    cellNota.textContent = aluno.nota.toFixed(1);
+                    cellNota.classList.add(getClassificacaoCor(aluno.nota));
+                });
+            };
+
+            // Função para classificar e salvar o estado de classificação
+            const classificarAlunos = (chave, direcao, updateActiveState = true) => {
+                alunos.sort((a, b) => {
+                    let valorA = a[chave];
+                    let valorB = b[chave];
+
+                    if (chave === 'nota') {
+                        valorA = parseFloat(valorA);
+                        valorB = parseFloat(valorB);
+                    } else {
+                        valorA = String(valorA).toLowerCase();
+                        valorB = String(valorB).toLowerCase();
+                    }
+
+                    if (valorA < valorB) {
+                        return direcao === 'asc' ? -1 : 1;
+                    }
+                    if (valorA > valorB) {
+                        return direcao === 'asc' ? 1 : -1;
+                    }
+                    return 0;
+                });
+
+                if (updateActiveState) {
+                    classificacaoAtiva = { chave, direcao };
+                }
+                
+                exibirAlunosNaTabela(alunos);
+            };
+
+            formCadastro.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                limparErroNota(); 
+
+                const nome = document.getElementById('nome').value.trim();
+                const endereco = document.getElementById('endereco').value.trim();
+                const nota = parseFloat(inputNota.value);
+
+                if (isNaN(nota) || nota < 0 || nota > 10) {
+                    const mensagem = `Erro: A nota deve ser entre 0.0 e 10.0. Você inseriu ${inputNota.value}.`;
+                    mostrarErroNota(mensagem);
+                    return; 
+                }
+                
+                if (!nome || !endereco) {
+                    alert('Por favor, preencha todos os campos (Nome e Endereço).');
+                    return;
+                }
+
+                const novoAluno = {
+                    nome: nome,
+                    endereco: endereco,
+                    nota: nota
+                };
+                
+                alunos.push(novoAluno);
+                salvarAlunos(); 
+
+                // Aplica a classificação ativa
+                classificarAlunos(classificacaoAtiva.chave, classificacaoAtiva.direcao);
+
+                // *** ESTE É O COMPORTAMENTO QUE PERMITE INSERIR MAIS DE UM ALUNO (REQUISITO 2) ***
+                formCadastro.reset(); // Limpa o formulário
+                document.getElementById('nome').focus(); // Foca no nome para nova adição
+            });
+
+            // Lógica de Classificação da Tabela ao clicar nos cabeçalhos
+            tabelaHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const chave = header.getAttribute('data-sort-key');
+                    let direcaoAtual = header.getAttribute('aria-sort');
+                    let novaDirecao = '';
+
+                    // Lógica de Classificação
+                    if (chave === 'nota') {
+                        // REQUISITO 3: Ordem inicial para nota é Descending (Maior para Menor)
+                        if (direcaoAtual === 'descending') {
+                            novaDirecao = 'ascending'; // Clica de novo, vai para Ascending
+                        } else if (direcaoAtual === 'ascending') {
+                            novaDirecao = null; // Clica de novo, remove a ordenação
+                        } else {
+                            novaDirecao = 'descending'; // Primeira vez, vai para Descending
+                        }
+                    } else { // Para "nome"
+                        // REQUISITO 1 (e padrão): Ordem inicial para nome é Ascending (A-Z)
+                        if (direcaoAtual === 'ascending') {
+                            novaDirecao = 'descending';
+                        } else if (direcaoAtual === 'descending') {
+                            novaDirecao = null;
+                        } else {
+                            novaDirecao = 'ascending';
+                        }
+                    }
+
+                    // Limpa o estado de classificação em todos os cabeçalhos
+                    tabelaHeaders.forEach(th => th.removeAttribute('aria-sort'));
+
+                    if (novaDirecao) {
+                        header.setAttribute('aria-sort', novaDirecao);
+                        const direcaoParaFuncao = novaDirecao === 'ascending' ? 'asc' : 'desc';
+                        classificarAlunos(chave, direcaoParaFuncao);
+                    } else {
+                        // Se removeu a ordenação, volta para a ordem inicial (Nome ASC)
+                        tabelaHeaders.forEach(th => th.removeAttribute('aria-sort'));
+                        document.querySelector('th[data-sort-key="nome"]').setAttribute('aria-sort', 'ascending');
+                        classificarAlunos('nome', 'asc');
+                    }
+                });
+            });
+
+            // Evento para o Filtro de Notas (garante que os outros filtros funcionam - REQUISITO 3)
+            filtroNotaSelect.addEventListener('change', () => {
+                // Ao mudar o filtro, re-exibe a lista mantendo a classificação ativa
+                exibirAlunosNaTabela(alunos); 
+            });
+
+            // Botão Limpar Dados
+            btnLimpar.addEventListener('click', () => {
+                if(confirm('Tem certeza que deseja limpar TODOS os dados de alunos? Esta ação é irreversível!')) {
+                    localStorage.removeItem('alunosData');
+                    alunos = [];
+                    // Reinicializa a visualização para o estado padrão
+                    filtroNotaSelect.value = 'todos'; 
+                    tabelaHeaders.forEach(th => th.removeAttribute('aria-sort'));
+                    document.querySelector('th[data-sort-key="nome"]').setAttribute('aria-sort', 'ascending');
+                    classificacaoAtiva = { chave: 'nome', direcao: 'asc' };
+                    exibirAlunosNaTabela(alunos);
+
+                    alert('Dados de alunos limpos com sucesso!');
+                }
+            });
+
+            // Inicialização: carrega, classifica por nome (asc) e exibe
+            carregarAlunos();
+            exibirAlunosNaTabela(alunos);
+        });
+    </script>
+</body>
+          </html>
