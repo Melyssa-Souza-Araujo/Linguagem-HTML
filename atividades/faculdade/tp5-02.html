@@ -42,7 +42,7 @@
             margin-bottom: 5px;
             font-weight: bold;
         }
-        input[type="text"], input[type="number"] {
+        input[type="text"], input[type="number"], select {
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -115,7 +115,16 @@
             background-color: #cceeff; /* Azul bem claro */
             font-weight: bold;
         }
-        
+        /* NOVO: Estilo para o filtro */
+        #filtroContainer {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
         /* NOVO: Estilo para a mensagem de erro */
         .error-message {
             color: #dc3545; /* Cor vermelha para erro */
@@ -151,6 +160,15 @@
         </form>
         <hr>
         <h2>Tabela de Alunos</h2>
+        <div id="filtroContainer">
+            <label for="filtroNota">Filtrar Notas:</label>
+            <select id="filtroNota">
+                <option value="todos">Todos os Alunos</option>
+                <option value="maior9">Notas Superiores a 9 (>9)</option>
+                <option value="menor5">Notas Menores que 5 (<5)</option>
+                <option value="entre5e9">Notas Entre 5 e 9 (5.0 a 9.0)</option>
+            </select>
+        </div>
         <table id="tabelaAlunos">
             <thead>
                 <tr>
@@ -170,12 +188,15 @@
             const tabelaBody = document.querySelector('#tabelaAlunos tbody');
             const tabelaHeaders = document.querySelectorAll('#tabelaAlunos th.sortable');
             const btnLimpar = document.getElementById('btnLimpar');
+            // NOVO: Referência ao seletor de filtro
+            const filtroNotaSelect = document.getElementById('filtroNota');
 
-            // NOVOS: Referências para o campo e mensagem de erro da nota
+            // Referências para o campo e mensagem de erro da nota
             const inputNota = document.getElementById('nota');
             const notaError = document.getElementById('notaError'); 
 
             let alunos = [];
+            let classificacaoAtiva = { chave: 'nome', direcao: 'asc' }; // Estado inicial: Nome em ordem alfabética
 
             // Função auxiliar para limpar mensagens de erro
             const limparErroNota = () => {
@@ -198,7 +219,9 @@
                 } else {
                     alunos = [];
                 }
-                return alunos;
+                // Garante que a primeira carga é ordenada por nome (requisito 1)
+                classificarAlunos('nome', 'asc', false); 
+                document.querySelector('th[data-sort-key="nome"]').setAttribute('aria-sort', 'ascending');
             };
 
             const salvarAlunos = () => {
@@ -214,9 +237,28 @@
                 return '';
             };
 
+            // NOVO: Função para aplicar o filtro
+            const filtrarAlunos = (listaAlunos, filtro) => {
+                switch (filtro) {
+                    case 'menor5':
+                        return listaAlunos.filter(aluno => aluno.nota < 5);
+                    case 'maior9':
+                        return listaAlunos.filter(aluno => aluno.nota > 9);
+                    case 'entre5e9':
+                        return listaAlunos.filter(aluno => aluno.nota >= 5 && aluno.nota <= 9);
+                    case 'todos':
+                    default:
+                        return listaAlunos;
+                }
+            };
+
+            // Função que exibe os alunos (agora considera o filtro)
             const exibirAlunosNaTabela = (listaAlunos) => {
+                const filtroAtual = filtroNotaSelect.value;
+                const alunosFiltrados = filtrarAlunos(listaAlunos, filtroAtual);
+
                 tabelaBody.innerHTML = '';
-                listaAlunos.forEach(aluno => {
+                alunosFiltrados.forEach(aluno => {
                     const row = tabelaBody.insertRow();
                     row.insertCell().textContent = aluno.nome;
                     row.insertCell().textContent = aluno.endereco;
@@ -227,7 +269,8 @@
                 });
             };
 
-            const classificarAlunos = (chave, direcao) => {
+            // Função para classificar e salvar o estado de classificação
+            const classificarAlunos = (chave, direcao, updateActiveState = true) => {
                 alunos.sort((a, b) => {
                     let valorA = a[chave];
                     let valorB = b[chave];
@@ -248,33 +291,34 @@
                     }
                     return 0;
                 });
+
+                if (updateActiveState) {
+                    classificacaoAtiva = { chave, direcao };
+                }
+                
                 exibirAlunosNaTabela(alunos);
             };
 
             formCadastro.addEventListener('submit', (e) => {
                 e.preventDefault();
                 
-                // Limpa erros anteriores
                 limparErroNota(); 
 
                 const nome = document.getElementById('nome').value.trim();
                 const endereco = document.getElementById('endereco').value.trim();
                 const nota = parseFloat(inputNota.value);
 
-                // NOVO: Validação explícita da nota
                 if (isNaN(nota) || nota < 0 || nota > 10) {
                     const mensagem = `Erro: A nota deve ser entre 0.0 e 10.0. Você inseriu ${inputNota.value}.`;
                     mostrarErroNota(mensagem);
-                    return; // Interrompe a submissão
+                    return; 
                 }
                 
-                // Validação de Nome e Endereço (redundante com 'required', mas bom para garantir)
                 if (!nome || !endereco) {
                     alert('Por favor, preencha todos os campos (Nome e Endereço).');
                     return;
                 }
 
-                // Se passou na validação, adiciona o aluno
                 const novoAluno = {
                     nome: nome,
                     endereco: endereco,
@@ -284,42 +328,61 @@
                 alunos.push(novoAluno);
                 salvarAlunos(); 
 
-                // Mantém a classificação ativa, se houver
-                const colunaAtiva = document.querySelector('th[aria-sort]');
-                if (colunaAtiva) {
-                    const chave = colunaAtiva.getAttribute('data-sort-key');
-                    const direcao = colunaAtiva.getAttribute('aria-sort') === 'ascending' ? 'asc' : 'desc';
-                    classificarAlunos(chave, direcao);
-                } else {
-                    exibirAlunosNaTabela(alunos);
-                }
+                // Aplica a classificação ativa
+                classificarAlunos(classificacaoAtiva.chave, classificacaoAtiva.direcao);
 
                 formCadastro.reset(); // Limpa o formulário
                 document.getElementById('nome').focus(); // Foca no nome para nova adição
             });
 
-            // Classificação da Tabela ao clicar nos cabeçalhos (Lógica inalterada)
+            // Lógica de Classificação da Tabela ao clicar nos cabeçalhos
             tabelaHeaders.forEach(header => {
                 header.addEventListener('click', () => {
                     const chave = header.getAttribute('data-sort-key');
                     let direcaoAtual = header.getAttribute('aria-sort');
-                    let novaDirecao = 'ascending';
+                    let novaDirecao = '';
 
-                    if (direcaoAtual === 'ascending') {
-                        novaDirecao = 'descending';
-                    } else if (direcaoAtual === 'descending') {
-                        novaDirecao = null;
+                    // Lógica de Classificação
+                    if (chave === 'nota') {
+                        // REQUISITO 3: Ordem inicial para nota é Descending (Maior para Menor)
+                        if (direcaoAtual === 'descending') {
+                            novaDirecao = 'ascending'; // Clica de novo, vai para Ascending
+                        } else if (direcaoAtual === 'ascending') {
+                            novaDirecao = null; // Clica de novo, remove a ordenação
+                        } else {
+                            novaDirecao = 'descending'; // Primeira vez, vai para Descending
+                        }
+                    } else { // Para "nome"
+                        // REQUISITO 1 (e padrão): Ordem inicial para nome é Ascending (A-Z)
+                        if (direcaoAtual === 'ascending') {
+                            novaDirecao = 'descending';
+                        } else if (direcaoAtual === 'descending') {
+                            novaDirecao = null;
+                        } else {
+                            novaDirecao = 'ascending';
+                        }
                     }
 
+                    // Limpa o estado de classificação em todos os cabeçalhos
                     tabelaHeaders.forEach(th => th.removeAttribute('aria-sort'));
 
                     if (novaDirecao) {
                         header.setAttribute('aria-sort', novaDirecao);
-                        classificarAlunos(chave, novaDirecao === 'ascending' ? 'asc' : 'desc');
+                        const direcaoParaFuncao = novaDirecao === 'ascending' ? 'asc' : 'desc';
+                        classificarAlunos(chave, direcaoParaFuncao);
                     } else {
-                        exibirAlunosNaTabela(alunos);
+                        // Se removeu a ordenação, volta para a ordem inicial (Nome ASC)
+                        tabelaHeaders.forEach(th => th.removeAttribute('aria-sort'));
+                        document.querySelector('th[data-sort-key="nome"]').setAttribute('aria-sort', 'ascending');
+                        classificarAlunos('nome', 'asc');
                     }
                 });
+            });
+
+            // NOVO: Evento para o Filtro de Notas
+            filtroNotaSelect.addEventListener('change', () => {
+                // Ao mudar o filtro, re-exibe a lista mantendo a classificação ativa
+                exibirAlunosNaTabela(alunos); 
             });
 
             // Botão Limpar Dados (Lógica inalterada)
@@ -327,13 +390,18 @@
                 if(confirm('Tem certeza que deseja limpar TODOS os dados de alunos? Esta ação é irreversível!')) {
                     localStorage.removeItem('alunosData');
                     alunos = [];
-                    exibirAlunosNaTabela(alunos);
+                    // Reinicializa a visualização para o estado padrão
+                    filtroNotaSelect.value = 'todos'; 
                     tabelaHeaders.forEach(th => th.removeAttribute('aria-sort'));
+                    document.querySelector('th[data-sort-key="nome"]').setAttribute('aria-sort', 'ascending');
+                    classificacaoAtiva = { chave: 'nome', direcao: 'asc' };
+                    exibirAlunosNaTabela(alunos);
+
                     alert('Dados de alunos limpos com sucesso!');
                 }
             });
 
-            // Inicialização
+            // Inicialização: carrega, classifica por nome (asc) e exibe
             carregarAlunos();
             exibirAlunosNaTabela(alunos);
         });
