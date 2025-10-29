@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jogo da Sequência de Setas</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #121212;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+  }
+
+  h1 {
+    margin-bottom: 20px;
+  }
+
+  /* Novo estilo para as estatísticas */
+  #estatisticas {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background: #1f1f1f;
+    border: 1px solid #333;
+  }
+
+  #estatisticas span {
+    display: block;
+    text-align: center;
+  }
+
+  .acerto-cor { color: #4caf50; font-weight: bold; }
+  .erro-cor { color: #e53935; font-weight: bold; }
+  .sequencia-cor { color: #2196f3; font-weight: bold; }
+
+
+  #setas {
+    display: flex;
+    gap: 10px;
+    margin: 20px;
+  }
+
+  .seta {
+    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    background: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    transition: background 0.3s;
+  }
+
+  .ativo {
+    background: #4caf50;
+  }
+
+  .erro {
+    background: #e53935;
+  }
+
+  #mensagem {
+    margin-top: 20px;
+    font-size: 1.2rem;
+  }
+
+  button {
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s;
+  }
+
+  button:hover {
+    background: #43a047;
+  }
+</style>
+</head>
+<body>
+  <h1>Jogo da Sequência de Setas</h1>
+  
+  <div id="estatisticas">
+    <span>Acertos: <span id="contagemAcertos" class="acerto-cor">0</span></span>
+    <span>Erros: <span id="contagemErros" class="erro-cor">0</span></span>
+    <span>Sequências: <span id="contagemSequencias" class="sequencia-cor">0</span></span>
+  </div>
+  
+  <div id="setas"></div>
+  <button id="iniciar">Iniciar Jogo</button>
+  <p id="mensagem"></p>
+
+<script>
+  const direcoes = ["↑", "↓", "←", "→"];
+  let sequencia = [];
+  let progresso = 0;
+  
+  // Variáveis para as estatísticas globais
+  let setasAcertadas = 0;
+  let setasErradas = 0;
+  let sequenciasCompletadas = 0;
+  
+  const setasContainer = document.getElementById("setas");
+  const mensagem = document.getElementById("mensagem");
+  const botao = document.getElementById("iniciar");
+  const estatisticasContainer = document.getElementById("estatisticas"); // Novo
+
+  // Função para atualizar o placar na tela
+  function atualizarEstatisticas() {
+    document.getElementById("contagemAcertos").textContent = setasAcertadas;
+    document.getElementById("contagemErros").textContent = setasErradas;
+    document.getElementById("contagemSequencias").textContent = sequenciasCompletadas;
+  }
+
+  // Função para gerar uma sequência aleatória de 10 setas
+  function gerarSequencia() {
+    return Array.from({ length: 10 }, () => direcoes[Math.floor(Math.random() * 4)]);
+  }
+
+  // Mostra a sequência para o jogador
+  async function mostrarSequencia() {
+    setasContainer.innerHTML = "";
+    for (let dir of sequencia) {
+      const div = document.createElement("div");
+      div.classList.add("seta");
+      div.textContent = dir;
+      setasContainer.appendChild(div);
+    }
+
+    const setas = document.querySelectorAll(".seta");
+    mensagem.textContent = "Memorize a sequência!";
+    for (let i = 0; i < setas.length; i++) {
+      await new Promise(res => setTimeout(res, 600));
+      setas[i].classList.add("ativo");
+      await new Promise(res => setTimeout(res, 400));
+      setas[i].classList.remove("ativo");
+    }
+
+    mensagem.textContent = "Agora, repita a sequência com as setas do teclado!";
+    setasContainer.innerHTML = "";
+  }
+
+  // Lida com as entradas do teclado
+  function lidarComEntrada(e) {
+    if (!sequencia.length) return;
+    const tecla = e.key;
+    let esperado = sequencia[progresso];
+
+    const mapa = {
+      ArrowUp: "↑",
+      ArrowDown: "↓",
+      ArrowLeft: "←",
+      ArrowRight: "→"
+    };
+
+    if (!mapa[tecla]) return; // ignora teclas inválidas
+    const seta = document.createElement("div");
+    seta.classList.add("seta");
+    seta.textContent = mapa[tecla];
+    setasContainer.appendChild(seta);
+
+    if (mapa[tecla] === esperado) {
+      progresso++;
+      setasAcertadas++; // Incrementa acertos
+      seta.classList.add("ativo");
+
+      if (progresso === sequencia.length) {
+        sequenciasCompletadas++; // Incrementa sequências completadas
+        mensagem.textContent = "🎉 Você venceu! Parabéns!";
+        document.removeEventListener("keydown", lidarComEntrada);
+      }
+    } else {
+      setasErradas++; // Incrementa erros
+      seta.classList.add("erro");
+      mensagem.textContent = "❌ Errou! Recomeçando...";
+      document.removeEventListener("keydown", lidarComEntrada);
+      setTimeout(iniciarJogo, 1500);
+    }
+    
+    atualizarEstatisticas(); // Atualiza o placar após cada movimento
+  }
+
+  function iniciarJogo() {
+    progresso = 0;
+    sequencia = gerarSequencia();
+    setasContainer.innerHTML = "";
+    mensagem.textContent = "Preparando sequência...";
+    // Garantir que as estatísticas iniciais estejam atualizadas
+    atualizarEstatisticas(); 
+    
+    setTimeout(async () => {
+      await mostrarSequencia();
+      setasContainer.innerHTML = "";
+      document.addEventListener("keydown", lidarComEntrada);
+    }, 1000);
+  }
+
+  botao.addEventListener("click", iniciarJogo);
+  
+  // Inicializa o placar quando a página carrega
+  atualizarEstatisticas(); 
+</script>
+</body>
+</html>
