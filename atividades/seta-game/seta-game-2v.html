@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arrow Hero - Ajuste Final de Precisão (Timing)</title>
+<style>
+/* Estilos Gerais (Mantidos) */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #121212;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+}
+
+h1 {
+    margin-bottom: 10px;
+    font-size: 2.5rem;
+    color: #00bcd4;
+}
+
+/* Estatísticas */
+#estatisticas {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background: #1f1f1f;
+    border: 1px solid #333;
+}
+
+.acerto-cor { color: #4caf50; font-weight: bold; }
+.erro-cor { color: #e53935; font-weight: bold; }
+.pontuacao-cor { color: #ffeb3b; font-weight: bold; }
+
+/* Área de Jogo */
+#game-area {
+    position: relative;
+    width: 280px; 
+    height: 500px;
+    background: #2a2a2a;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    border: 3px solid #00bcd4;
+}
+
+/* Container das Pistas/Colunas */
+#pistas-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+.pista {
+    width: 70px;
+    height: 100%;
+    position: relative;
+    box-sizing: border-box;
+    border-right: 1px dashed rgba(255, 255, 255, 0.1);
+}
+.pista:last-child {
+    border-right: none;
+}
+
+/* ALVO FIXO (ZONA DE PONTUAÇÃO OTIMIZADA) */
+.alvo {
+    position: absolute;
+    bottom: 0;
+    width: 70px;
+    height: 60px;
+    background: rgba(0, 0, 0, 0.6);
+    border-top: 5px solid #ffeb3b; /* A linha de acerto é amarela e grossa */
+    border-radius: 0 0 10px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: rgba(255, 255, 255, 0.3);
+    z-index: 10;
+    box-sizing: border-box;
+    transition: background 0.1s, border-top-color 0.1s;
+}
+
+/* Feedback do Alvo */
+.alvo-acerto {
+    background: rgba(76, 175, 80, 0.8);
+    border-top-color: #4caf50;
+    color: white;
+}
+.alvo-erro {
+    background: rgba(229, 57, 53, 0.8);
+    border-top-color: #e53935;
+    color: white;
+}
+
+/* Setas Caindo (Setas Dinâmicas) */
+.seta-caindo {
+    position: absolute;
+    top: -60px;
+    width: 68px;
+    height: 58px;
+    font-size: 2rem;
+    background: #3f51b5; 
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    z-index: 5;
+    /* A transição será definida dinamicamente no JS */
+}
+
+/* Mensagem */
+#mensagem {
+    margin-top: 20px;
+    font-size: 1.5rem;
+    height: 30px;
+    color: #ffeb3b;
+}
+
+/* Botão */
+button {
+    background: #00bcd4;
+    color: #121212;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: background 0.3s;
+    margin-top: 15px;
+}
+
+button:hover {
+    background: #00acc1;
+}
+</style>
+</head>
+<body>
+    <h1>Arrow Hero! (Ajustado)</h1>
+    
+    <div id="estatisticas">
+        <span>Pontuação: <span id="contagemPontuacao" class="pontuacao-cor">0</span></span>
+        <span>Acertos: <span id="contagemAcertos" class="acerto-cor">0</span></span>
+        <span>Erros/Perdidos: <span id="contagemErros" class="erro-cor">0</span></span>
+    </div>
+    
+    <div id="game-area">
+        <div id="pista-up" class="pista"></div>
+        <div id="pista-left" class="pista"></div>
+        <div id="pista-down" class="pista"></div>
+        <div id="pista-right" class="pista"></div>
+
+        <div id="alvo-up" class="alvo" style="left: 0;">↑</div>
+        <div id="alvo-left" class="alvo" style="left: 70px;">←</div>
+        <div id="alvo-down" class="alvo" style="left: 140px;">↓</div>
+        <div id="alvo-right" class="alvo" style="left: 210px;">→</div>
+    </div>
+    
+    <p id="mensagem">Pressione 'Iniciar Jogo'! Tente acertar na linha amarela.</p>
+    <button id="iniciar">Iniciar Jogo</button>
+
+<script>
+    const direcoes = {
+        ArrowUp: { simbolo: "↑", id: "up", alvo: "alvo-up", index: 0 },
+        ArrowLeft: { simbolo: "←", id: "left", alvo: "alvo-left", index: 1 },
+        ArrowDown: { simbolo: "↓", id: "down", alvo: "alvo-down", index: 2 },
+        ArrowRight: { simbolo: "→", id: "right", alvo: "alvo-right", index: 3 }
+    };
+
+    const gameArea = document.getElementById("game-area");
+    const mensagem = document.getElementById("mensagem");
+    const botao = document.getElementById("iniciar");
+
+    // Variáveis de Dificuldade
+    const VELOCIDADE_QUEDA = 2500; // Tempo em milissegundos para cair
+    const INTERVALO_GERACAO = 600; // Frequência de novas setas
+    
+    // JANELA DE ACERTO CRÍTICA (em milissegundos)
+    const JANELA_ACERTO_MS = 300; // <<--- AJUSTE CRÍTICO: Aumentado para 300ms
+    const ALTURA_AREA_JOGO = 500;
+    const ALTURA_SETA = 60;
+    const POSICAO_FINAL_Y = ALTURA_AREA_JOGO - (ALTURA_SETA - 2); // 442px - Ajuste para o centro da seta tocar a linha
+
+    // Variáveis do Jogo
+    let pontuacao = 0;
+    let setasAcertadas = 0;
+    let setasPerdidas = 0;
+    let jogoAtivo = false;
+    let geradorIntervalo;
+
+    // Array para rastrear TODAS as setas que estão caindo
+    let fallingArrows = {};
+    Object.keys(direcoes).forEach(key => fallingArrows[key] = []);
+
+    // Elementos de Estatísticas
+    const contagemPontuacao = document.getElementById("contagemPontuacao");
+    const contagemAcertos = document.getElementById("contagemAcertos");
+    const contagemErros = document.getElementById("contagemErros");
+
+    function atualizarEstatisticas() {
+        contagemPontuacao.textContent = pontuacao;
+        contagemAcertos.textContent = setasAcertadas;
+        contagemErros.textContent = setasPerdidas;
+    }
+
+    // Função para criar uma seta caindo
+    function criarSetaCaindo() {
+        if (!jogoAtivo) return;
+
+        const teclas = Object.keys(direcoes);
+        const teclaAleatoria = teclas[Math.floor(Math.random() * teclas.length)];
+        const info = direcoes[teclaAleatoria];
+        
+        const setaDiv = document.createElement("div");
+        setaDiv.classList.add("seta-caindo");
+        setaDiv.textContent = info.simbolo;
+        setaDiv.dataset.tecla = teclaAleatoria;
+        
+        // Posição horizontal
+        setaDiv.style.left = `${info.index * 70 + 1}px`;
+
+        // REGISTRO DE TEMPO
+        setaDiv.arrivalTime = Date.now() + VELOCIDADE_QUEDA; 
+        
+        gameArea.appendChild(setaDiv);
+        fallingArrows[teclaAleatoria].push(setaDiv);
+
+        // Inicia a animação de queda.
+        setTimeout(() => {
+            setaDiv.style.transition = `transform ${VELOCIDADE_QUEDA}ms linear`;
+            // MOVIMENTO ATÉ A POSIÇÃO CORRETA DO ALVO
+            setaDiv.style.transform = `translateY(${POSICAO_FINAL_Y}px)`; 
+        }, 50);
+
+        // Configura o tempo limite para verificar se a seta foi perdida
+        setTimeout(() => {
+            // Remove a seta do array
+            const index = fallingArrows[teclaAleatoria].indexOf(setaDiv);
+            if (index > -1) {
+                // Se ainda estiver no array (não foi acertada)
+                fallingArrows[teclaAleatoria].splice(index, 1);
+                
+                if (jogoAtivo) {
+                    setasPerdidas++;
+                    setaDiv.style.background = "#e53935"; // Feedback de erro
+                    atualizarEstatisticas();
+                }
+                
+                // Remove a seta do DOM
+                setTimeout(() => setaDiv.remove(), 500);
+            }
+        }, VELOCIDADE_QUEDA + JANELA_ACERTO_MS); // Espera o tempo de queda + a janela de acerto antes de marcar como erro.
+    }
+
+    // Função para lidar com o pressionar de teclas
+    function lidarComEntrada(e) {
+        if (!jogoAtivo) return;
+
+        const tecla = e.key;
+        if (!direcoes[tecla]) return;
+
+        e.preventDefault();
+        
+        const info = direcoes[tecla];
+        const alvo = document.getElementById(info.alvo);
+        const agora = Date.now();
+        
+        // 1. Encontra a seta mais antiga/próxima
+        const setasNaPista = fallingArrows[tecla];
+        
+        if (setasNaPista.length === 0) {
+             // Erro de tempo: pressionou a tecla, mas não havia seta caindo para ela
+             setasPerdidas++;
+             aplicarFeedback(alvo, 'erro');
+             atualizarEstatisticas();
+             return;
+        }
+
+        const setaMaisProxima = setasNaPista[0];
+        const tempoChegada = setaMaisProxima.arrivalTime;
+        
+        // 2. Calcula a diferença de tempo (em milissegundos)
+        const deltaTempo = Math.abs(agora - tempoChegada);
+
+        // 3. Verifica se a diferença está dentro da janela de acerto
+        if (deltaTempo <= JANELA_ACERTO_MS) {
+            // ACERTO!
+            setasAcertadas++;
+            pontuacao += 10;
+            
+            aplicarFeedback(alvo, 'acerto');
+            
+            // Remove a seta do array de rastreamento
+            setasNaPista.shift();
+            
+            // Feedback visual e remoção da seta
+            setaMaisProxima.style.transition = 'none';
+            setaMaisProxima.style.background = "#4caf50";
+            setaMaisProxima.style.opacity = '0';
+            setTimeout(() => setaMaisProxima.remove(), 50);
+
+        } else {
+            // ERRO (pressionou a tecla fora do timing - mas como a janela é grande, isso é raro)
+            setasPerdidas++;
+            aplicarFeedback(alvo, 'erro');
+        }
+
+        atualizarEstatisticas();
+    }
+    
+    // Aplica feedback visual ao alvo (temporariamente)
+    function aplicarFeedback(alvo, tipo) {
+        alvo.classList.remove('alvo-acerto', 'alvo-erro');
+        
+        if (tipo === 'acerto') {
+            alvo.classList.add('alvo-acerto');
+        } else if (tipo === 'erro') {
+            alvo.classList.add('alvo-erro');
+        }
+        
+        setTimeout(() => {
+            alvo.classList.remove('alvo-acerto', 'alvo-erro');
+        }, 100);
+    }
+
+    // Função principal de inicialização
+    function iniciarJogo() {
+        if (jogoAtivo) {
+            clearInterval(geradorIntervalo);
+            document.removeEventListener("keydown", lidarComEntrada);
+        }
+
+        // Limpar o estado anterior
+        pontuacao = 0;
+        setasAcertadas = 0;
+        setasPerdidas = 0;
+        document.querySelectorAll(".seta-caindo").forEach(seta => seta.remove());
+        Object.keys(fallingArrows).forEach(key => fallingArrows[key] = []); // Limpa o array de rastreamento
+
+        atualizarEstatisticas();
+
+        jogoAtivo = true;
+        mensagem.textContent = "Começou! Velocidade: 2.5s. Janela de Acerto: ± 300ms";
+        botao.textContent = "Reiniciar Jogo";
+        
+        geradorIntervalo = setInterval(criarSetaCaindo, INTERVALO_GERACAO);
+        document.addEventListener("keydown", lidarComEntrada);
+    }
+
+    botao.addEventListener("click", iniciarJogo);
+    
+    atualizarEstatisticas();
+</script>
+</body>
+</html>
