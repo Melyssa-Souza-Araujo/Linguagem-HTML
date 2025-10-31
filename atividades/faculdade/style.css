@@ -1,0 +1,142 @@
+body{
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        color: #333;
+        padding: 20px;
+        margin: 0;
+    }
+    .container{
+        max-width: 900px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    h1, h2{
+        text-align: center;
+        color: #0056b3;
+    }
+    #formCadastro{
+        display: grid;
+        grid-auto-columns: 1fr 1fr 1fr auto;
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    .form-group{
+        display: flex;
+        flex-direction: column;
+    }
+    label{
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    input[type="text"], input[type="number"], select{
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1em;
+    }
+    button{
+        padding: 10px 15px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1em;
+        transition: background-color 0.3s;
+    }
+    button:hover{
+        background-color: #0056b3;
+    }
+    #btnSalvar{
+        align-self: flex-end;
+    }
+    #btnLimpar{
+        background-color: #dc3545;
+        margin-top: 20px;
+        display: block;
+    }
+    #btnLimpar:hover{
+        background-color: #c82333;
+    }
+    #tabelaAlunos {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    }
+    #tabelaAlunos th, #tabelaAlunos td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+    }
+    #tabelaAlunos thead {
+    background-color: #f8f8f8;
+    }
+     #tabelaAlunos th.sortable {
+         position: relative;
+         cursor: pointer;
+     }
+    .sort-icon {
+    margin-left: 5px;
+    font-style: normal;
+    font-weight: normal;
+    float: right;
+    }
+    th[aria-sort="ascending"] .sort-icon::after { 
+        content: " ▲"; 
+    }
+    th[aria-sort="descending"] .sort-icon::after { 
+        content: " ▼"; 
+    }
+    th:not([aria-sort]) .sort-icon::after { 
+        content: " ↔"; 
+    }
+    .nota-inferior {
+         background-color: #ffcccc; /* Vermelho bem claro */
+         font-weight: bold;
+    }
+    .nota-superior {
+        background-color: #cceeff; /* Azul bem claro */
+        font-weight: bold;
+    }
+    #filtroContainer {
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .error-message {
+        color: #dc3545;
+        font-size: 0.85em;
+        margin-top: 5px;
+        font-weight: bold;
+        display: none;
+    }
+    input.input-error {
+        border: 2px solid #dc3545;
+    }
+    .btn-tabela {
+        padding: 5px 10px;
+        font-size: 0.85em;
+        margin: 2px;
+    }     
+    .btn-alterar {
+        background-color: #ffc107; /* Amarelo */
+        color: #333;
+    }
+    .btn-alterar:hover {
+        background-color: #e0a800;
+    }
+    .btn-excluir {
+        background-color: #dc3545; /* Vermelho */
+    }
+    .btn-excluir:hover {
+        background-color: #c82333;
+    }

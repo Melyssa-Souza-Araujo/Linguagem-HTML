@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP5 P2 - Cadastro de Alunos e Notas (Complemento)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Cadastro e Classificação de Alunos</h1>
+    <div class="container">
+        <form id="formCadastro">
+            <h2>Inserir Novo Aluno</h2>
+            <div class="form-group">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" required>
+            </div>
+            <div class="form-group">
+                <label for="endereco">Endereço:</label>
+                <input type="text" id="endereco" required>
+            </div>
+            <div class="form-group">
+                <label for="nota">Nota (0 a 10):</label>
+                <input type="number" id="nota" min="0" max="10" step="0.1" required>
+                <span id="notaError" class="error-message"></span>
+            </div>
+            <button type="submit" id="btnSalvar">Salvar Aluno</button>
+        </form>
+        <hr>
+        <h2>Tabela de Alunos</h2>
+        <div id="filtroContainer">
+            <label for="filtroNota">Filtrar Notas:</label>
+            <select id="filtroNota">
+                <option value="todos">Todos os Alunos</option>
+                <option value="maior9">Notas Superiores a 9 (>9)</option>
+                <option value="menor5">Notas Menores que 5 (<5)</option>
+                <option value="entre5e9">Notas Entre 5 e 9 (5.0 a 9.0)</option>
+            </select>
+        </div>
+        <table id="tabelaAlunos">
+            <thead>
+                <tr>
+                    <th data-sort-key="nome" class="sortable">Nome <span class="sort-icon"></span></th>
+                    <th>Endereço</th>
+                    <th data-sort-key="nota" class="sortable">Nota <span class="sort-icon"></span></th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <button id="btnLimpar">Limpar Todos os Dados</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
