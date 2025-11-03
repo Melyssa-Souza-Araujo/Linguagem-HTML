@@ -21,8 +21,8 @@ const flowchart = {
     },
     'vc_tem_boca': {
         question: 'Você tem boca?',
-        sim: 'me_beija_final',
-        nao: 'me_beija_final' // O meme leva a 'Me beija'
+        sim: 'beijo_goxtosu',
+        nao: 'mentira' // O meme leva a 'Me beija'
     },
     'mentira': {
         question: 'MENTIRA',
