@@ -16,7 +16,7 @@ const flowchart = {
     },
     'quer_beijar_alguem': {
         question: 'Você quer beijar alguém?',
-        sim: 'mentira',
+        sim: 'me_beija_entao',
         nao: 'vc_tem_boca'
     },
     'vc_tem_boca': {
@@ -34,7 +34,7 @@ const flowchart = {
     'me_beija_entao': {
         question: 'ME BEIJA então',
         sim: 'beijo_goxtosu',
-        nao: 'me_beija'
+        nao: 'vc_me_odeia'
     },
     'me_beija': {
         question: 'Me beija',
