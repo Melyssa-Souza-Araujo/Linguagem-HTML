@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>Criar conta</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #6366f1;
+        }
+
+        .btn-default {
+            background-color: #6366f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #ffffff;
+            cursor: pointer;
+            gap: 8px;
+            height: fit-content;
+            box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-default:hover {
+            background-color: #818cf8;
+        }
+
+        #form_container {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            height: 100%;
+            background-color: #f6f8ff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1);    
+        }
+
+        #form_header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #form_title {
+            font-weight: 500;
+            color: #272727;
+            position: relative;
+        }
+
+        #form_title::after {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 3px;
+            border-radius: 30px;
+            background-color: #6366f1;
+            left: 0;
+            bottom: 0;
+        }
+
+        #form {
+            display: flex;
+            justify-content: space-between;
+            flex-direction: column;
+            gap: 32px;
+            height: 100%;
+        }
+
+        #input_container {
+            display: grid;
+            gap: 24px;
+        }
+
+        .form-label {
+            font-size: 12px;
+            color: #404044;
+            font-weight: 500;
+        }
+
+        .input-field {
+            display: flex;
+            align-items: center;
+            background-color: #ffff;
+            border-radius: 8px;
+            box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-field i {
+            display: flex;
+            align-items: center;
+            width: 30px;
+            height: 20px;
+            color: #404044;
+        }
+
+        .form-control {
+            padding: 10px;
+            width: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+
+        .input-field .password-icon:hover {
+            cursor: pointer;
+            color: #676770;
+        }
+
+        .form-control:focus {
+            outline: none;
+        }
+
+        .input-box .input-field:focus-within {
+            outline: 2px solid #6366f1;
+        }
+
+        input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 1000px white inset !important;
+            color: #000;
+        }
+
+        .radio-container {
+            grid-column: span 2;
+        }
+
+        #gender_inputs {
+            display: flex;
+            gap: 20px;
+        }
+
+        .radio-box {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .form-control[type="radio"] {
+            accent-color: #6366f1;
+        }
+
+        @media screen and (max-width: 500px) {
+            #form_container {
+                width: 100%;
+                min-height: 100vh;
+                padding: 32px;
+            }
+
+            #input_container {
+                display: flex;
+                flex-direction: column;
+                gap: 38px;
+            }
+
+            .form-control[type="date"] {
+                background-color: #fff;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main id="form_container">
+        <div id="form_header">
+            <h1 id="form_title">
+                Criar conta
+            </h1>
+            <button class="btn-default">
+                <i class="fa-solid fa-right-to-bracket"></i>
+            </button>
+        </div>
+
+        <form action="" id="form">
+            <div id="input_container">
+                <div class="input-box">
+                    <label 
+                        for="name" 
+                        class="form-label"
+                    >
+                        Primeiro nome
+                    </label>
+                    <div class="input-field">
+                        <input 
+                            type="text"
+                            name="name"
+                            id="name"
+                            class="form-control"
+                            placeholder="Fulano"
+                        >
+                        <i class="fa-regular fa-user"></i>
+                    </div>
+                </div>
+
+                <div class="input-box">
+                    <label 
+                        for="last_name" 
+                        class="form-label"
+                    >
+                        Último nome
+                    </label>
+                    <div class="input-field">
+                        <input 
+                            type="text"
+                            name="last_name"
+                            id="last_name"
+                            class="form-control"
+                            placeholder="De Tal"
+                        >
+                        <i class="fa-regular fa-user"></i>
+                    </div>
+                </div>
+
+                <div class="input-box">
+                    <label 
+                        for="birthdate" 
+                        class="form-label"
+                    >
+                        Nascimento
+                    </label>
+                    <div class="input-field">
+                        <input 
+                            type="date"
+                            name="birthdate"
+                            id="birthdate"
+                            class="form-control"
+                        >
+                    </div>
+                </div>
+
+                <div class="input-box">
+                    <label 
+                        for="email" 
+                        class="form-label"
+                    >
+                        E-mail
+                    </label>
+                    <div class="input-field">
+                        <input 
+                            type="email"
+                            name="email"
+                            id="email"
+                            class="form-control"
+                            placeholder="exemplo@gmail.com"
+                        >
+                        <i class="fa-regular fa-envelope"></i>
+                    </div>
+                </div>
+
+                <div class="input-box">
+                    <label 
+                        for="password" 
+                        class="form-label"
+                    >
+                        Senha
+                    </label>
+                    <div class="input-field">
+                        <input 
+                            type="password"
+                            name="password"
+                            id="password"
+                            class="form-control"
+                            placeholder="*******"
+                        >
+                        <i class="fa-regular fa-eye-slash password-icon"></i>
+                    </div>
+                </div>
+
+                <div class="input-box">
+                    <label 
+                        for="confirm_password" 
+                        class="form-label"
+                    >
+                        Confirmar senha
+                    </label>
+                    <div class="input-field">
+                        <input 
+                            type="password"
+                            name="confirm_password"
+                            id="confirm_password"
+                            class="form-control"
+                            placeholder="*******"
+                        >
+                        <i class="fa-regular fa-eye-slash password-icon"></i>
+                    </div>
+                </div>
+
+                <div class="radio-container">
+                    <label class="form-label">
+                        Gênero
+                    </label>
+
+                    <div id="gender_inputs">
+                        <div class="radio-box">
+                            <input 
+                                type="radio"
+                                name="gender"
+                                id="female"
+                                class="form-control"
+                                value="female"
+                            >
+                            <label 
+                                for="female" 
+                                class="form-label"
+                            >
+                                Feminino
+                            </label>
+                        </div>
+
+                        <div class="radio-box">
+                            <input 
+                                type="radio"
+                                name="gender"
+                                id="male"
+                                class="form-control"
+                                value="male"
+                            >
+                            <label 
+                                for="male" 
+                                class="form-label"
+                            >
+                                Masculino
+                            </label>
+                        </div>
+
+                        <div class="radio-box">
+                            <input 
+                                type="radio"
+                                name="gender"
+                                id="other"
+                                class="form-control"
+                                value="other"
+                            >
+                            <label 
+                                for="other" 
+                                class="form-label"
+                            >
+                                Outro
+                            </label>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <button type="sumbit" class="btn-default">
+                <i class="fa-solid fa-check"></i>
+                Criar conta
+            </button>
+        </form>
+    </main>
+
+    <script>
+        const passwordIcons = document.querySelectorAll('.password-icon');
+
+        passwordIcons.forEach(icon => {
+            icon.addEventListener('click', function () {
+                const input = this.parentElement.querySelector('.form-control');
+                input.type = input.type === 'password' ? 'text' : 'password';
+                this.classList.toggle('fa-eye');
+            })
+        })
+    </script>
+</body>
+</html>
