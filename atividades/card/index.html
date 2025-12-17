@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>cropped corners</title>
+    <style>
+		*,
+		*::before,
+		*::after {
+			box-sizing: border-box;
+		}
+		* {
+			margin: 0;
+		}
+
+		:root {
+			--color-background: #000;
+			--color-text: #fff;
+		}
+
+		body {
+			background: var(--color-background);
+			color: var(--color-text);
+			font-family: monospace;
+			line-height: 1.5;
+		}
+		h2 {
+			font-size: 1.5rem;
+			line-height: 1.2;
+			text-transform: uppercase;
+			font-weight: 800;
+		}
+		h3 {
+			font-size: 0.6rem;
+			font-weight: 400;
+		}
+		img {
+			display: block;
+			width: 100%;
+			height: auto;
+		}
+
+		.border-outer,
+		.border-inner {
+			clip-path: polygon(
+				/* left, top edge */ var(--corner-size) 0%,
+				/* right, top edge */ calc(100% - var(--corner-size)) 0%,
+				/* right edge, top */ 100% var(--corner-size),
+				/* right edge, bottom */ 100% calc(100% - var(--corner-size)),
+				/* right, bottom edge */ calc(100% - var(--corner-size)) 100%,
+				/* left, bottom edge */ var(--corner-size) 100%,
+				/* left edge, bottom */ 0% calc(100% - var(--corner-size)),
+				/* left edge, top */ 0% var(--corner-size)
+			);
+		}
+		.border-outer {
+			background: var(--color-text);
+			padding: var(--border-width);
+			display: flex;
+			flex-direction: column;
+		}
+		.border-inner {
+			flex-grow: 1;
+			background: var(--color-background);
+		}
+		.cards {
+			display: flex;
+			min-height: 100dvh;
+			align-items: center;
+			justify-content: center;
+			flex-wrap: wrap;
+			gap: 1rem;
+		}
+
+		.card {
+			--corner-size: 1.75rem;
+			--border-width: 1px;
+			--image-column-width: 8rem;
+			--content-width: 19rem;
+			display: grid;
+			position: relative;
+			grid-template-columns: var(--image-column-width) calc(2 * var(--corner-size));
+			transition: grid-template-columns 450ms ease 50ms;
+			height: 28rem;
+			overflow:clip;
+			> * {
+				min-width: 0;
+				grid-row: 1;
+			}
+		}
+		.card-background {
+			grid-column: 1 / -1;
+			img {
+				height: 100%;
+				object-fit: cover;
+				width: calc(var(--image-column-width) + var(--corner-size));
+			}
+		}
+		.card-content {
+			grid-column: 2;
+			position: relative;
+		}
+		.card-copy {
+		}
+
+		.card-content-layout {
+			display: flex;
+			gap: 2rem;
+			position: absolute;
+			top: var(--corner-size);
+			left: var(--corner-size);
+			height: calc(100% - 6rem);
+			width: var(--content-width);
+			translate: -1rem 0;
+			transition: translate 450ms;
+		}
+		.card-copy {
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+		}
+		h2.vertical-title {
+			writing-mode: vertical-lr;
+		}
+
+		.toggle {
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			padding: 1rem;
+			input {
+				display: none;
+			}
+			svg {
+				transition: rotate 250ms;
+			}
+		}
+
+		.card:has(input:checked) {
+			grid-template-columns: var(--image-column-width) var(--content-width);
+			.card-content-layout {
+				translate: -4rem 0;
+			}
+		}
+
+		input:checked + svg {
+			line-height: 1;
+			rotate: 45deg;
+		}
+	</style>
+
+  </head>
+    
+  <body>
+  <div class="cards">
+	<div class="card">
+		<div class="card-background border-outer">
+			<div class="border-inner">
+				<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Venice_MAN_98_Statue_of_Odysseus_01.jpg/960px-Venice_MAN_98_Statue_of_Odysseus_01.jpg" />
+			</div>
+		</div>
+		<div class="card-content border-outer">
+			<div class="border-inner">
+				<div class="card-content-layout">
+					<h2 class="vertical-title">Odysseus</h2>
+					<div class="card-copy">
+						<h2>Odysseus</h2>
+						<h3>Odysseus is the clever, resilient king of Ithaca, renowned for his wit and determination.</h3>
+						<p>The Odyssey recounts Odysseus' long struggle to return home after the Trojan War, as he survives divine hostility, monsters, and constant hardship through ingenuity and endurance. His journey tests his identity and judgment, and when he finally reaches Ithaca, he uses strategy and disguise to defeat the suitors and restore order to his house and kingdom.</p>
+					</div>
+
+				</div>
+				<label class="toggle">
+					<input type="radio" name="accordion" id="Odysseus" checked />
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus">
+						<line x1="12" y1="5" x2="12" y2="19"></line>
+						<line x1="5" y1="12" x2="19" y2="12"></line>
+					</svg>
+				</label>
+			</div>
+		</div>
+	</div>
+
+	<div class="card">
+		<div class="card-background border-outer">
+			<div class="border-inner">
+				<img src="https://www.pafa.org/sites/default/files/artworkpics/1851_2_l.jpg" />
+			</div>
+		</div>
+		<div class="card-content border-outer">
+			<div class="border-inner">
+				<div class="card-content-layout">
+					<h2 class="vertical-title">Penelope</h2>
+					<div class="card-copy">
+						<h2>Penelope</h2>
+						<h3>Penelope is Odysseus’s loyal and intelligent wife, admired for her patience and cunning.</h3>
+						<p>While besieged by suitors, Penelope maintains stability in Ithaca by using clever delays and protecting her household. Her steadfastness and subtle intelligence balance Odysseus’s adventures, and her careful testing of him upon his return provides the emotional resolution of the epic.</p>
+					</div>
+				</div>
+				<label class="toggle">
+					<input type="radio" name="accordion" id="Penelope" />
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus">
+						<line x1="12" y1="5" x2="12" y2="19"></line>
+						<line x1="5" y1="12" x2="19" y2="12"></line>
+					</svg>
+				</label>
+
+			</div>
+		</div>
+	</div>
+	<div class="card">
+		<div class="card-background border-outer">
+			<div class="border-inner">
+				<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Telemachos_Saarbruecken.jpg/500px-Telemachos_Saarbruecken.jpg" />
+			</div>
+		</div>
+		<div class="card-content border-outer">
+			<div class="border-inner">
+				<div class="card-content-layout">
+					<h2 class="vertical-title">Telemachus</h2>
+					<div class="card-copy">
+						<h2>Telemachus</h2>
+						<h3>Telemachus is the young son of Odysseus who grows from a passive youth into a capable heir.</h3>
+						<p>Telemachus’s journey marks his transformation into adulthood as he seeks news of his father and learns leadership from figures like Nestor and Menelaus. His newfound confidence culminates in fighting alongside Odysseus to reclaim their household and help restore rightful order in Ithaca.</p>
+					</div>
+				</div>
+				<label class="toggle">
+					<input type="radio" name="accordion" id="Telemachus" />
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus">
+						<line x1="12" y1="5" x2="12" y2="19"></line>
+						<line x1="5" y1="12" x2="19" y2="12"></line>
+					</svg>
+				</label>
+
+			</div>
+		</div>
+	</div>
+</div>
+    
+  </body>
+  
+</html>
