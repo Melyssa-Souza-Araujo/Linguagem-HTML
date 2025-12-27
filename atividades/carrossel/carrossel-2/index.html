@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carousels</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css"
+    />
+    <script src="https://unpkg.com/akar-icons-fonts"></script>
+  </head>
+  <body>
+    <nav>
+      <img src="logo.svg" />
+      <div class="search">
+        <input type="text" placeholder="Search" />
+        <i class="ai-search"></i>
+      </div>
+      <div class="buttons">
+        <button>
+          <i class="ai-home-alt1"></i>
+        </button>
+        <button>
+          <i class="ai-heart"></i>
+        </button>
+        <button>
+          <i class="ai-shopping-bag"></i>
+        </button>
+        <button>
+          <i class="ai-star"></i>
+        </button>
+      </div>
+    </nav>
+    <div class="container"></div>
+    <section class="creative-showcase--slider">
+      <div class="banner-horizental">
+        <div class="swiper swiper-container-h">
+          <div class="swiper-wrapper">
+            <div class="swiper-slide">
+              <div
+                class="slide-bg"
+                style="background-image: url(2.jpg)"
+                data-swiper-parallax="1152"
+              >
+                <div class="slide-container">
+                  <div class="slide-row">
+                    <div class="slider-content">
+                      <h3 class="slide-subtitle" data-swiper-parallax="-500">
+                        BMW
+                      </h3>
+                      <h2 class="slide-heading" data-swiper-parallax="-1000">
+                        <span>Performance</span>
+                      </h2>
+                      <p data-swiper-parallax="-1500">
+                        BMW’s precision engineering delivers exhilarating
+                        acceleration, responsive handling, and an unmatched
+                        driving experience on every road.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div
+                class="slide-bg"
+                style="background-image: url(3.jpg)"
+                data-swiper-parallax="1152"
+              >
+                <div class="slide-container">
+                  <div class="slide-row">
+                    <div class="slider-content">
+                      <h3 class="slide-subtitle" data-swiper-parallax="-500">
+                        BMW
+                      </h3>
+                      <h2 class="slide-heading" data-swiper-parallax="-1000">
+                        <span>Design</span>
+                      </h2>
+                      <p data-swiper-parallax="-1500">
+                        Sleek contours, iconic kidney grilles, and premium
+                        materials combine to create BMW’s timeless, elegant
+                        automotive artistry.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div
+                class="slide-bg"
+                style="background-image: url(5.jpg)"
+                data-swiper-parallax="1152"
+              >
+                <div class="slide-container">
+                  <div class="slide-row">
+                    <div class="slider-content">
+                      <h3 class="slide-subtitle" data-swiper-parallax="-500">
+                        BMW
+                      </h3>
+                      <h2 class="slide-heading" data-swiper-parallax="-1000">
+                        <span>Technology</span>
+                      </h2>
+                      <p data-swiper-parallax="-1500">
+                        Innovative infotainment, advanced driver-assistance
+                        systems, and intuitive digital interfaces define BMW’s
+                        cutting-edge smart mobility experience.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="swiper-pagination"></div>
+        </div>
+      </div>
+    </section>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>
