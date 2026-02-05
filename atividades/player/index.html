@@ -108,6 +108,20 @@
 
         /* Utilitários */
         .hidden { display: none; }
+
+        #filter-area {
+            margin-top: 10px;
+        }
+
+        #genre-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            background: var(--card-bg);
+            color: white;
+        }
+
     </style>
 </head>
 <body>
@@ -117,8 +131,15 @@
             <h1>CineStream</h1>
             <div class="search-container">
                 <input type="text" id="search-input" placeholder="O que vamos assistir hoje?" onkeyup="filterItems()">
-                <button class="filter-btn">Filtro</button>
+                <button class="filter-btn" onclick="toggleFilter()">Filtro</button>
             </div>
+            <div id="filter-area" class="hidden">
+            <select id="genre-select" onchange="applyFilters()">
+                <option value="">Todos</option>
+                <option value="Filme">Filme</option>
+                <option value="Série">Série</option>
+                <option value="Anime">Anime</option>
+            </select>
         </header>
 
         <div class="container">
@@ -163,7 +184,7 @@
             {
                 id: 4,
                 title: "Ninja vs Gokudo",
-                type: "Mangá/Anime",
+                type: "Anime",
                 img: "https://tse4.mm.bing.net/th/id/OIP.Oj4m2LywshvOMO5SEYP7bAHaKk?rs=1&pid=ImgDetMain&o=7&rm=3",
                 desc: "A batalha épica entre clãs ninja e a máfia moderna.",
                 episodes: ["Início da Guerra", "Sombras na Noite"]
@@ -201,6 +222,24 @@
             );
             loadGrid(filtered);
         }
+
+        function toggleFilter() {
+            document.getElementById('filter-area').classList.toggle('hidden');
+        }
+        function applyFilters() {
+        const term = document.getElementById('search-input').value.toLowerCase();
+        const genre = document.getElementById('genre-select').value;
+
+        const filtered = contentData.filter(item => {
+            const matchText = item.title.toLowerCase().includes(term);
+            const matchGenre = genre === "" || item.type === genre;
+            return matchText && matchGenre;
+        });
+
+        loadGrid(filtered);
+    }
+
+
 
         // Mostrar Detalhes
         function showDetails(id) {
