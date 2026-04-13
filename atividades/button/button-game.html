@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Jogo do Botão</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #1e1e2f;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      text-align: center;
+      background: #2c2c44;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    #contador {
+      font-size: 50px;
+      margin: 20px 0;
+    }
+
+    #chance {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #ffcc00;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      background: #4caf50;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #45a049;
+    }
+
+    #mensagem {
+      margin-top: 15px;
+      font-size: 18px;
+      min-height: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Jogo do Botão 🎲</h1>
+    <div id="contador">0</div>
+    <div id="chance">Chance de perder: 0%</div>
+    <button onclick="clicar()">Clique aqui</button>
+    <div id="mensagem"></div>
+  </div>
+
+  <script>
+    let contador = 0;
+    let chancePerder = 0;
+
+    function clicar() {
+      let sorte = Math.random();
+
+      if (sorte < chancePerder) {
+        contador = 0;
+        chancePerder = 0;
+        document.getElementById("mensagem").innerText = "💥 Você perdeu tudo!";
+      } else {
+        contador++;
+
+        // aumenta entre 0.5% e 2%
+        let aumento = (Math.random() * 1.5 + 0.5) / 100;
+        chancePerder += aumento;
+
+        // limita em 100%
+        if (chancePerder > 1) {
+          chancePerder = 1;
+        }
+
+        document.getElementById("mensagem").innerText = "✅ +1 ponto!";
+      }
+
+      document.getElementById("contador").innerText = contador;
+      document.getElementById("chance").innerText =
+        "Chance de perder: " + (chancePerder * 100).toFixed(2) + "%";
+    }
+  </script>
+
+</body>
+</html>
