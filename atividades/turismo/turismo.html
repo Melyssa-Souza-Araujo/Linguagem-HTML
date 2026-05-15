@@ -3,35 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxy Voyages - Turismo Espacial</title>
+    <title>Galaxy Voyages - Agência de Turismo Espacial</title>
     
-    <!-- CSS integrado para estilização da página -->
     <style>
-        /* Variáveis de cores para facilitar o Modo Claro/Escuro */
+        /* ==========================================================================
+           1. VARIÁVEIS DE AMBIENTE (DESIGN SYSTEM)
+           ========================================================================== */
         :root {
-            --bg-principal: #0b0d17;
-            --bg-card: #151928;
+            --bg-gradiente: linear-gradient(135deg, #050508 0%, #111625 100%);
+            --bg-card: rgba(21, 25, 40, 0.7);
+            --border-card: rgba(255, 255, 255, 0.1);
             --texto-principal: #ffffff;
-            --texto-secundario: #d2d4d9;
-            --cor-destaque: #4ffbdf;
+            --texto-secundario: #b0b3b8;
+            --cor-astro: #4ffbdf;
+            --sombra: rgba(0, 0, 0, 0.4);
         }
 
-        /* Classe que o JavaScript vai aplicar para ativar o Modo Claro */
+        /* Classe injetada pelo JavaScript para o Modo Claro */
         .modo-claro {
-            --bg-principal: #f4f5f7;
-            --bg-card: #ffffff;
-            --texto-principal: #0b0d17;
-            --texto-secundario: #4a4a4a;
-            --cor-destaque: #0066cc;
+            --bg-gradiente: linear-gradient(135deg, #f0f2f5 0%, #e4e7eb 100%);
+            --bg-card: rgba(255, 255, 255, 0.8);
+            --border-card: rgba(0, 0, 0, 0.1);
+            --texto-principal: #1c1e21;
+            --texto-secundario: #606770;
+            --cor-astro: #0066cc;
+            --sombra: rgba(0, 0, 0, 0.1);
+        }
+
+        /* ==========================================================================
+           2. ESTILOS GERAIS E ESTRUTURA
+           ========================================================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-principal);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-gradiente);
             color: var(--texto-principal);
-            margin: 0;
-            padding: 0;
-            transition: background-color 0.4s, color 0.4s; /* Transição suave ao mudar de modo */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.5s ease, color 0.3s ease;
         }
 
         header {
@@ -39,166 +54,229 @@
             justify-content: space-between;
             align-items: center;
             padding: 20px 5%;
-            background-color: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-card);
         }
 
-        /* Botão de alternar tema */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        /* Botão de alternar tema com efeito Hover */
         .btn-tema {
-            background-color: var(--cor-destaque);
+            background-color: var(--cor-astro);
             color: #000;
             border: none;
-            padding: 10px 15px;
+            padding: 10px 20px;
+            font-weight: 600;
+            border-radius: 30px;
             cursor: pointer;
-            font-weight: bold;
-            border-radius: 20px;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .btn-tema:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
         }
 
         main {
-            max-width: 900px;
+            flex: 1;
+            max-width: 800px;
+            width: 100%;
             margin: 40px auto;
             padding: 0 20px;
         }
 
-        .banner {
+        /* Banner Hero */
+        .hero {
             text-align: center;
-            padding: 40px 20px;
-            background: linear-gradient(135deg, #1f1c2c, #928dab);
-            border-radius: 15px;
-            color: white;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
 
-        /* Seção de Seleção (Formulário interativo) */
-        .simulador {
-            background-color: var(--bg-card);
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            margin-top: 30px;
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--texto-principal), var(--cor-astro));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        select, button.btn-calcular {
+        /* ==========================================================================
+           3. FORMULÁRIO E CARD INTERATIVO
+           ========================================================================== */
+        .card-simulador {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 32px var(--sombra);
+            backdrop-filter: blur(8px); /* Efeito de vidro borrado ao fundo */
+        }
+
+        .grupo-campo {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--texto-secundario);
+        }
+
+        input[type="text"], select {
             width: 100%;
             padding: 12px;
-            margin-top: 10px;
-            border-radius: 6px;
-            font-size: 16px;
-        }
-
-        select {
-            background-color: var(--bg-principal);
+            border-radius: 8px;
+            border: 1px solid var(--border-card);
+            background: rgba(0, 0, 0, 0.05);
             color: var(--texto-principal);
-            border: 1px solid var(--texto-secundario);
+            font-size: 1rem;
+            transition: border-color 0.3s;
         }
 
-        button.btn-calcular {
-            background-color: var(--cor-destaque);
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: var(--cor-astro);
+        }
+
+        .btn-enviar {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--cor-astro);
             color: #000;
             border: none;
+            border-radius: 8px;
+            font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
-            margin-bottom: 15px;
+            transition: background 0.3s;
         }
 
-        .resultado {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--cor-destaque);
-            text-align: center;
-            padding: 10px;
-            border: 1px dashed var(--cor-destaque);
-            display: none; /* Inicialmente escondido, o JS vai mostrar */
+        .btn-enviar:hover {
+            filter: brightness(1.2);
+        }
+
+        /* Painel de Resultado Oculto */
+        .painel-resultado {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--cor-astro);
+            display: none; /* Controlado pelo JS */
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         footer {
             text-align: center;
             padding: 20px;
+            border-top: 1px solid var(--border-card);
             color: var(--texto-secundario);
-            font-size: 14px;
+            font-size: 0.85rem;
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h2>🚀 Galaxy Voyages</h2>
-        <!-- Botão que vai disparar a função JavaScript -->
-        <button class="btn-tema" onclick="alternarTema()">Mudar Modo</button>
+        <div class="logo">🚀 Galaxy Voyages</div>
+        <!-- Removido o 'onclick' do HTML seguindo as boas práticas -->
+        <button id="botao-tema" class="btn-tema">Alternar Visual</button>
     </header>
 
     <main>
-        <section class="banner">
-            <h1>O Universo espera por você</h1>
-            <p>Deixe a órbita terrestre para trás e faça as malas para o destino dos seus sonhos.</p>
+        <section class="hero">
+            <h1>Explore as Fronteiras do Universo</h1>
+            <p style="color: var(--texto-secundario);">Reserve o seu assento nos voos comerciais interplanetários mais seguros da galáxia.</p>
         </section>
 
-        <section>
-            <h2>Nossos Destinos Populares</h2>
-            <p style="color: var(--texto-secundario);">Oferecemos pacotes com tudo incluso: traje espacial de última geração, alimentação criogênica gourmet e gravidade artificial simulada.</p>
-        </section>
+        <!-- Formulário de Simulação Avançado -->
+        <section class="card-simulador">
+            <form id="formulario-viagem">
+                <div class="grupo-campo">
+                    <label for="nome-astronauta">Nome do Passageiro(a):</label>
+                    <input type="text" id="nome-astronauta" placeholder="Ex: Neil Armstrong" required>
+                </div>
 
-        <!-- Seção Interativa com JavaScript -->
-        <section class="simulador">
-            <h3>Simulador de Passagem Espacial</h3>
-            <p>Selecione o seu destino para calcular o valor estimado da viagem:</p>
-            
-            <label for="destino">Escolha o Destino:</label>
-            <select id="destino">
-                <option value="lua">Órbita Lunar (Estadia de 3 dias) - Econômica</option>
-                <option value="marte">Estação Alpha em Marte (Estadia de 1 mês) - Aventura</option>
-                <option value="saturno">Anéis de Saturno (Cruzeiro Espacial de 6 meses) - Luxo</option>
-            </select>
+                <div class="grupo-campo">
+                    <label for="destino">Destino Espacial:</label>
+                    <select id="destino">
+                        <option value="lua">Lua (Estadia na Base Artemis)</option>
+                        <option value="marte">Marte (Dunas de Olympus Mons)</option>
+                        <option value="europa">Europa (Oceanos Congelados de Júpiter)</option>
+                    </select>
+                </div>
 
-            <button class="btn-calcular" onclick="calcularViagem()">Calcular Preço</button>
+                <button type="submit" class="btn-enviar">Calcular Itinerário</button>
+            </form>
 
-            <!-- Espaço reservado onde o JavaScript vai injetar o resultado -->
-            <div id="resultado-viagem" class="resultado"></div>
+            <!-- Painel onde o resultado será injetado -->
+            <div id="bloco-resultado" class="painel-resultado"></div>
         </section>
     </main>
 
     <footer>
-        <p>&copy; 2026 Galaxy Voyages S.A. Viagens interplanetárias seguras.</p>
+        <p>&copy; 2026 Galaxy Voyages S.A. Licenciada pela Federação Intergaláctica.</p>
     </footer>
 
-    <!-- JavaScript para lógica e interatividade do site -->
+    <!-- ==========================================================================
+       4. JAVASCRIPT MODERNO (ORIENTADO A EVENTOS)
+       ========================================================================== -->
     <script>
-        // Função para alternar entre Modo Claro e Escuro
-        function alternarTema() {
-            // O comando toggle adiciona a classe 'modo-claro' se ela não existir, ou remove se já existir
-            document.body.classList.toggle("modo-claro");
-        }
-
-        // Função para calcular o preço com base na opção selecionada no formulário
-        function calcularViagem() {
-            // Captura o elemento do menu de seleção (select) pelo ID
-            const seletorDestino = document.getElementById("destino");
-            // Pega o valor (value) da opção que o usuário escolheu
-            const destinoEscolhido = seletorDestino.value;
+        // Aguarda todo o HTML carregar antes de executar o script para evitar erros de leitura
+        document.addEventListener("DOMContentLoaded", () => {
             
-            // Captura a div onde vamos exibir o resultado final
-            const divResultado = document.getElementById("resultado-viagem");
-            
-            let preco;
-            let tempoDeVoo;
+            // Mapeamento dos elementos do DOM
+            const botaoTema = document.getElementById("botao-tema");
+            const formulario = document.getElementById("formulario-viagem");
+            const blocoResultado = document.getElementById("bloco-resultado");
 
-            // Estrutura condicional para definir o preço com base na escolha
-            if (destinoEscolhido === "lua") {
-                preco = "₿ 12.50 (Bitcoins Espaciais)";
-                tempoDeVoo = "3 dias";
-            } else if (destinoEscolhido === "marte") {
-                preco = "₿ 85.00 (Bitcoins Espaciais)";
-                tempoDeVoo = "6 meses";
-            } else if (destinoEscolhido === "saturno") {
-                preco = "₿ 340.00 (Bitcoins Espaciais)";
-                tempoDeVoo = "2 anos";
-            }
+            // --- FUNÇÃO 1: Alternar Tema (Modo Escuro / Claro) ---
+            botaoTema.addEventListener("click", () => {
+                document.body.classList.toggle("modo-claro");
+            });
 
-            // Injeta o texto dinamicamente dentro da DIV de resultado utilizando Template Strings (` `)
-            divResultado.innerHTML = `Tempo estimado de voo: ${tempoDeVoo} <br> Preço estimado: ${preco}`;
-            
-            // Altera o CSS via JavaScript para fazer a caixinha do resultado aparecer
-            divResultado.style.display = "block";
-        }
+            // --- FUNÇÃO 2: Processar Simulação de Viagem ---
+            formulario.addEventListener("submit", (evento) => {
+                // Impede que a página recarregue ao enviar o formulário (comportamento padrão)
+                evento.preventDefault(); 
+
+                // Resgata os valores atualizados dos campos
+                const nome = document.getElementById("nome-astronauta").value.trim();
+                const destinoSelecionado = document.getElementById("destino").value;
+
+                // Objeto contendo o banco de dados das viagens (Mais limpo que vários 'if/else')
+                const dadosDestinos = {
+                    lua: { nome: "Lua", preco: "₿ 12.50", tempo: "3 dias" },
+                    marte: { nome: "Marte", preco: "₿ 85.00", tempo: "6 meses" },
+                    europa: { nome: "Europa (Lua de Júpiter)", preco: "₿ 210.00", tempo: "1.2 anos" }
+                };
+
+                // Recupera os dados específicos do destino escolhido
+                const viagem = dadosDestinos[destinoSelecionado];
+
+                // Injeta as informações estruturadas dentro do bloco de resultado
+                blocoResultado.innerHTML = `
+                    <p style="margin-bottom: 8px;"><strong>Passagem Confirmada!</strong></p>
+                    <p>🧑‍🚀 <strong>Astronauta:</strong> ${nome}</p>
+                    <p>📍 <strong>Destino:</strong> ${viagem.nome}</p>
+                    <p>⏱️ <strong>Tempo de Viagem:</strong> ${viagem.tempo}</p>
+                    <p style="color: var(--cor-astro); margin-top: 8px;">💰 <strong>Investimento:</strong> ${viagem.preco} Espaciais</p>
+                `;
+
+                // Torna o painel visível na tela
+                blocoResultado.style.display = "block";
+            });
+        });
     </script>
 </body>
 </html>
