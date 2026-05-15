@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaxy Voyages - Turismo Espacial</title>
+    
+    <!-- CSS integrado para estilização da página -->
+    <style>
+        /* Variáveis de cores para facilitar o Modo Claro/Escuro */
+        :root {
+            --bg-principal: #0b0d17;
+            --bg-card: #151928;
+            --texto-principal: #ffffff;
+            --texto-secundario: #d2d4d9;
+            --cor-destaque: #4ffbdf;
+        }
+
+        /* Classe que o JavaScript vai aplicar para ativar o Modo Claro */
+        .modo-claro {
+            --bg-principal: #f4f5f7;
+            --bg-card: #ffffff;
+            --texto-principal: #0b0d17;
+            --texto-secundario: #4a4a4a;
+            --cor-destaque: #0066cc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-principal);
+            color: var(--texto-principal);
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.4s, color 0.4s; /* Transição suave ao mudar de modo */
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        /* Botão de alternar tema */
+        .btn-tema {
+            background-color: var(--cor-destaque);
+            color: #000;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 20px;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .banner {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #1f1c2c, #928dab);
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        /* Seção de Seleção (Formulário interativo) */
+        .simulador {
+            background-color: var(--bg-card);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-top: 30px;
+        }
+
+        select, button.btn-calcular {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        select {
+            background-color: var(--bg-principal);
+            color: var(--texto-principal);
+            border: 1px solid var(--texto-secundario);
+        }
+
+        button.btn-calcular {
+            background-color: var(--cor-destaque);
+            color: #000;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .resultado {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--cor-destaque);
+            text-align: center;
+            padding: 10px;
+            border: 1px dashed var(--cor-destaque);
+            display: none; /* Inicialmente escondido, o JS vai mostrar */
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--texto-secundario);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2>🚀 Galaxy Voyages</h2>
+        <!-- Botão que vai disparar a função JavaScript -->
+        <button class="btn-tema" onclick="alternarTema()">Mudar Modo</button>
+    </header>
+
+    <main>
+        <section class="banner">
+            <h1>O Universo espera por você</h1>
+            <p>Deixe a órbita terrestre para trás e faça as malas para o destino dos seus sonhos.</p>
+        </section>
+
+        <section>
+            <h2>Nossos Destinos Populares</h2>
+            <p style="color: var(--texto-secundario);">Oferecemos pacotes com tudo incluso: traje espacial de última geração, alimentação criogênica gourmet e gravidade artificial simulada.</p>
+        </section>
+
+        <!-- Seção Interativa com JavaScript -->
+        <section class="simulador">
+            <h3>Simulador de Passagem Espacial</h3>
+            <p>Selecione o seu destino para calcular o valor estimado da viagem:</p>
+            
+            <label for="destino">Escolha o Destino:</label>
+            <select id="destino">
+                <option value="lua">Órbita Lunar (Estadia de 3 dias) - Econômica</option>
+                <option value="marte">Estação Alpha em Marte (Estadia de 1 mês) - Aventura</option>
+                <option value="saturno">Anéis de Saturno (Cruzeiro Espacial de 6 meses) - Luxo</option>
+            </select>
+
+            <button class="btn-calcular" onclick="calcularViagem()">Calcular Preço</button>
+
+            <!-- Espaço reservado onde o JavaScript vai injetar o resultado -->
+            <div id="resultado-viagem" class="resultado"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Galaxy Voyages S.A. Viagens interplanetárias seguras.</p>
+    </footer>
+
+    <!-- JavaScript para lógica e interatividade do site -->
+    <script>
+        // Função para alternar entre Modo Claro e Escuro
+        function alternarTema() {
+            // O comando toggle adiciona a classe 'modo-claro' se ela não existir, ou remove se já existir
+            document.body.classList.toggle("modo-claro");
+        }
+
+        // Função para calcular o preço com base na opção selecionada no formulário
+        function calcularViagem() {
+            // Captura o elemento do menu de seleção (select) pelo ID
+            const seletorDestino = document.getElementById("destino");
+            // Pega o valor (value) da opção que o usuário escolheu
+            const destinoEscolhido = seletorDestino.value;
+            
+            // Captura a div onde vamos exibir o resultado final
+            const divResultado = document.getElementById("resultado-viagem");
+            
+            let preco;
+            let tempoDeVoo;
+
+            // Estrutura condicional para definir o preço com base na escolha
+            if (destinoEscolhido === "lua") {
+                preco = "₿ 12.50 (Bitcoins Espaciais)";
+                tempoDeVoo = "3 dias";
+            } else if (destinoEscolhido === "marte") {
+                preco = "₿ 85.00 (Bitcoins Espaciais)";
+                tempoDeVoo = "6 meses";
+            } else if (destinoEscolhido === "saturno") {
+                preco = "₿ 340.00 (Bitcoins Espaciais)";
+                tempoDeVoo = "2 anos";
+            }
+
+            // Injeta o texto dinamicamente dentro da DIV de resultado utilizando Template Strings (` `)
+            divResultado.innerHTML = `Tempo estimado de voo: ${tempoDeVoo} <br> Preço estimado: ${preco}`;
+            
+            // Altera o CSS via JavaScript para fazer a caixinha do resultado aparecer
+            divResultado.style.display = "block";
+        }
+    </script>
+</body>
+</html>
