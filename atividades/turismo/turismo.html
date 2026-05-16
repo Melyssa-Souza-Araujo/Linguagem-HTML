@@ -6,9 +6,6 @@
     <title>Galaxy Voyages - Sistema de Embarque</title>
     
     <style>
-        /* ==========================================================================
-           1. VARIÁVEIS E CONFIGURAÇÃO BASE
-           ========================================================================== */
         :root {
             --bg-gradiente: linear-gradient(135deg, #050508 0%, #111625 100%);
             --bg-card: rgba(21, 25, 40, 0.75);
@@ -18,7 +15,6 @@
             --cor-astro: #4ffbdf;
             --sombra: rgba(0, 0, 0, 0.5);
         }
-
         .modo-claro {
             --bg-gradiente: linear-gradient(135deg, #f0f2f5 0%, #e4e7eb 100%);
             --bg-card: rgba(255, 255, 255, 0.85);
@@ -28,9 +24,11 @@
             --cor-astro: #0066cc;
             --sombra: rgba(0, 0, 0, 0.15);
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+        }
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background: var(--bg-gradiente);
@@ -40,7 +38,6 @@
             flex-direction: column;
             transition: background 0.5s ease, color 0.3s ease;
         }
-
         header {
             display: flex;
             justify-content: space-between;
@@ -49,7 +46,6 @@
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-card);
         }
-
         .btn-tema {
             background-color: var(--cor-astro);
             color: #000;
@@ -60,8 +56,9 @@
             cursor: pointer;
             transition: transform 0.2s;
         }
-        .btn-tema:hover { transform: scale(1.05); }
-
+        .btn-tema:hover { 
+            transform: scale(1.05); 
+        }
         main {
             flex: 1;
             max-width: 800px;
@@ -69,8 +66,6 @@
             margin: 30px auto;
             padding: 0 20px;
         }
-
-        /* Ticker de Lançamento (Countdown) */
         .countdown-container {
             background: rgba(255, 79, 79, 0.1);
             border: 1px solid rgba(255, 79, 79, 0.3);
@@ -81,7 +76,6 @@
             font-weight: bold;
             color: #ff4f4f;
         }
-
         .card-simulador {
             background: var(--bg-card);
             border: 1px solid var(--border-card);
@@ -90,9 +84,9 @@
             box-shadow: 0 8px 32px var(--sombra);
             backdrop-filter: blur(8px);
         }
-
-        .grupo-campo { margin-bottom: 20px; }
-
+        .grupo-campo { 
+            margin-bottom: 20px; 
+        }
         label {
             display: block;
             margin-bottom: 8px;
@@ -100,7 +94,6 @@
             font-weight: 600;
             color: var(--texto-secundario);
         }
-
         input[type="text"], select {
             width: 100%;
             padding: 12px;
@@ -110,17 +103,12 @@
             color: var(--texto-principal);
             font-size: 1rem;
         }
-
-        /* ==========================================================================
-           2. NOVO COMPONENTE: SELEÇÃO DE ASSENTOS
-           ========================================================================== */
         .mapa-assentos {
             display: flex;
             gap: 10px;
             justify-content: space-between;
             margin-top: 10px;
         }
-
         .assento {
             flex: 1;
             padding: 15px 5px;
@@ -132,19 +120,15 @@
             transition: all 0.2s;
             font-size: 0.85rem;
         }
-
         .assento:hover {
             border-color: var(--cor-astro);
         }
-
-        /* Classe aplicada via JS quando o assento é clicado */
         .assento.selecionado {
             background: var(--cor-astro);
             color: #000;
             border-color: var(--cor-astro);
             font-weight: bold;
         }
-
         .btn-enviar {
             width: 100%;
             padding: 14px;
@@ -157,7 +141,6 @@
             cursor: pointer;
             margin-top: 20px;
         }
-
         .painel-resultado {
             margin-top: 25px;
             padding: 20px;
@@ -167,12 +150,10 @@
             display: none;
             animation: fadeIn 0.4s ease-out;
         }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         footer {
             text-align: center;
             padding: 20px;
@@ -182,25 +163,20 @@
     </style>
 </head>
 <body>
-
     <header>
         <div class="logo">🚀 Galaxy Voyages</div>
         <button id="botao-tema" class="btn-tema">Alternar Visual</button>
     </header>
-
     <main>
-        <!-- NOVO: Contador Regressivo para Próximo Voo -->
         <div class="countdown-container">
             🚨 PRÓXIMO LANÇAMENTO DA JANELA DE MARTE EM: <span id="cronometro">00:00:00</span>
         </div>
-
         <section class="card-simulador">
             <form id="formulario-viagem">
                 <div class="grupo-campo">
                     <label for="nome-astronauta">Nome do Passageiro(a):</label>
                     <input type="text" id="nome-astronauta" placeholder="Ex: Sally Ride" required>
                 </div>
-
                 <div class="grupo-campo">
                     <label for="destino">Destino Espacial:</label>
                     <select id="destino">
@@ -209,8 +185,6 @@
                         <option value="europa">Europa (Oceanos de Júpiter)</option>
                     </select>
                 </div>
-
-                <!-- NOVO: Seletor de Assentos Interativo -->
                 <div class="grupo-campo">
                     <label>Escolha sua Cabine (Localização):</label>
                     <div class="mapa-assentos">
@@ -219,82 +193,51 @@
                         <div class="assento" data-tipo="Centro (Maior Estabilidade)">🛡️ Centro</div>
                     </div>
                 </div>
-
                 <button type="submit" class="btn-enviar">Confirmar Bilhete de Embarque</button>
             </form>
-
             <div id="bloco-resultado" class="painel-resultado"></div>
         </section>
     </main>
-
     <footer>
         <p>&copy; 2026 Galaxy Voyages S.A. Dados salvos localmente.</p>
     </footer>
-
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            
             const botaoTema = document.getElementById("botao-tema");
             const formulario = document.getElementById("formulario-viagem");
             const blocoResultado = document.getElementById("bloco-resultado");
             const assentos = document.querySelectorAll(".assento");
             const campoNome = document.getElementById("nome-astronauta");
-            
             let assentoSelecionado = null;
-
-            // ==========================================================================
-            // RECURSO 1: PERSISTÊNCIA (Recuperar nome salvo ao abrir a página)
-            // ==========================================================================
             if (localStorage.getItem("nomeAstronauta")) {
                 campoNome.value = localStorage.getItem("nomeAstronauta");
             }
-
-            // Alternância de Tema
             botaoTema.addEventListener("click", () => {
                 document.body.classList.toggle("modo-claro");
             });
-
-            // ==========================================================================
-            // RECURSO 2: INTERATIVIDADE DE ASSENTOS (Lógica de seleção exclusiva)
-            // ==========================================================================
             assentos.forEach(assento => {
                 assento.addEventListener("click", () => {
-                    // Remove a seleção dos outros assentos
                     assentos.forEach(a => a.classList.remove("selecionado"));
-                    
-                    // Adiciona a seleção no assento clicado
                     assento.classList.add("selecionado");
                     assentoSelecionado = assento.getAttribute("data-tipo");
                 });
             });
-
-            // Processamento do Formulário
             formulario.addEventListener("submit", (evento) => {
                 evento.preventDefault(); 
-
                 const nome = campoNome.value.trim();
                 const destinoSelecionado = document.getElementById("destino").value;
-
-                // Validação customizada caso o usuário não tenha escolhido um assento
                 if (!assentoSelecionado) {
                     alert("Por favor, selecione uma cabine antes de decolar! 🚀");
                     return;
                 }
-
-                // Salva o nome no navegador para futuras visitas
                 localStorage.setItem("nomeAstronauta", nome);
-
                 const dadosDestinos = {
                     lua: { nome: "Lua", preco: "₿ 12.50", tempo: "3 dias" },
                     marte: { nome: "Marte", preco: "₿ 85.00", tempo: "6 meses" },
                     europa: { nome: "Europa", preco: "₿ 210.00", tempo: "1.2 anos" }
                 };
-
                 const viagem = dadosDestinos[destinoSelecionado];
-
-                // Geração randômica de um número de ticket/portão de embarque simulado
                 const numeroTicket = Math.floor(1000 + Math.random() * 9000);
-
                 blocoResultado.innerHTML = `
                     <p style="color: #ff4f4f; font-weight: bold; margin-bottom: 12px;">🎟️ CHECK-IN EFETUADO COM SUCESSO</p>
                     <p>🧑‍🚀 <strong>Passageiro:</strong> ${nome}</p>
@@ -304,36 +247,24 @@
                     <p>🆔 <strong>Portão de Lançamento:</strong> GATE-${numeroTicket}</p>
                     <p style="color: var(--cor-astro); margin-top: 10px; font-size: 1.1rem;">💰 <strong>Custo Total:</strong> ${viagem.preco} Cripto</p>
                 `;
-
                 blocoResultado.style.display = "block";
             });
-
-            // ==========================================================================
-            // RECURSO 3: RELÓGIO REGRESSIVO SIMULADO (Countdown de 4 horas fictícias)
-            // ==========================================================================
             let tempoRestante = 4 * 60 * 60; // 4 horas em segundos
             const elementoCronometro = document.getElementById("cronometro");
-
             const atualizarCronometro = () => {
                 let horas = Math.floor(tempoRestante / 3600);
                 let minutos = Math.floor((tempoRestante % 3600) / 60);
                 let segundos = tempoRestante % 60;
-
-                // Formata os números para ter dois dígitos (ex: 05 em vez de 5)
                 horas = horas < 10 ? "0" + horas : horas;
                 minutos = minutos < 10 ? "0" + minutos : minutes;
                 segundos = segundos < 10 ? "0" + segundos : segundos;
-
                 elementoCronometro.textContent = `${horas}:${minutos}:${segundos}`;
-
                 if (tempoRestante > 0) {
                     tempoRestante--;
                 } else {
                     tempoRestante = 4 * 60 * 60; // Reseta se chegar a zero
                 }
             };
-            
-            // Roda a função a cada 1 segundo (1000 milissegundos)
             setInterval(atualizarCronometro, 1000);
             atualizarCronometro(); // Chama uma vez de imediato ao carregar
         });
