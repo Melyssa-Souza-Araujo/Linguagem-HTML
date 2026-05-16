@@ -3,35 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxy Voyages - Agência de Turismo Espacial</title>
+    <title>Galaxy Voyages - Sistema de Embarque</title>
+    
     <style>
+        /* ==========================================================================
+           1. VARIÁVEIS E CONFIGURAÇÃO BASE
+           ========================================================================== */
         :root {
             --bg-gradiente: linear-gradient(135deg, #050508 0%, #111625 100%);
-            --bg-card: rgba(21, 25, 40, 0.7);
+            --bg-card: rgba(21, 25, 40, 0.75);
             --border-card: rgba(255, 255, 255, 0.1);
             --texto-principal: #ffffff;
             --texto-secundario: #b0b3b8;
             --cor-astro: #4ffbdf;
-            --sombra: rgba(0, 0, 0, 0.4);
+            --sombra: rgba(0, 0, 0, 0.5);
         }
+
         .modo-claro {
             --bg-gradiente: linear-gradient(135deg, #f0f2f5 0%, #e4e7eb 100%);
-            --bg-card: rgba(255, 255, 255, 0.8);
+            --bg-card: rgba(255, 255, 255, 0.85);
             --border-card: rgba(0, 0, 0, 0.1);
             --texto-principal: #1c1e21;
             --texto-secundario: #606770;
             --cor-astro: #0066cc;
-            --sombra: rgba(0, 0, 0, 0.1);
+            --sombra: rgba(0, 0, 0, 0.15);
         }
 
-        /* ==========================================================================
-           2. ESTILOS GERAIS E ESTRUTURA
-           ========================================================================== */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
@@ -52,13 +50,6 @@
             border-bottom: 1px solid var(--border-card);
         }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        /* Botão de alternar tema com efeito Hover */
         .btn-tema {
             background-color: var(--cor-astro);
             color: #000;
@@ -67,51 +58,40 @@
             font-weight: 600;
             border-radius: 30px;
             cursor: pointer;
-            transition: transform 0.2s, opacity 0.2s;
+            transition: transform 0.2s;
         }
-
-        .btn-tema:hover {
-            transform: scale(1.05);
-            opacity: 0.9;
-        }
+        .btn-tema:hover { transform: scale(1.05); }
 
         main {
             flex: 1;
             max-width: 800px;
             width: 100%;
-            margin: 40px auto;
+            margin: 30px auto;
             padding: 0 20px;
         }
 
-        /* Banner Hero */
-        .hero {
+        /* Ticker de Lançamento (Countdown) */
+        .countdown-container {
+            background: rgba(255, 79, 79, 0.1);
+            border: 1px solid rgba(255, 79, 79, 0.3);
+            border-radius: 8px;
+            padding: 10px;
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 25px;
+            font-weight: bold;
+            color: #ff4f4f;
         }
 
-        .hero h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, var(--texto-principal), var(--cor-astro));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* ==========================================================================
-           3. FORMULÁRIO E CARD INTERATIVO
-           ========================================================================== */
         .card-simulador {
             background: var(--bg-card);
             border: 1px solid var(--border-card);
             border-radius: 16px;
             padding: 30px;
             box-shadow: 0 8px 32px var(--sombra);
-            backdrop-filter: blur(8px); /* Efeito de vidro borrado ao fundo */
+            backdrop-filter: blur(8px);
         }
 
-        .grupo-campo {
-            margin-bottom: 20px;
-        }
+        .grupo-campo { margin-bottom: 20px; }
 
         label {
             display: block;
@@ -129,12 +109,40 @@
             background: rgba(0, 0, 0, 0.05);
             color: var(--texto-principal);
             font-size: 1rem;
-            transition: border-color 0.3s;
         }
 
-        input[type="text"]:focus, select:focus {
-            outline: none;
+        /* ==========================================================================
+           2. NOVO COMPONENTE: SELEÇÃO DE ASSENTOS
+           ========================================================================== */
+        .mapa-assentos {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .assento {
+            flex: 1;
+            padding: 15px 5px;
+            background: rgba(0,0,0,0.2);
+            border: 2px solid var(--border-card);
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .assento:hover {
             border-color: var(--cor-astro);
+        }
+
+        /* Classe aplicada via JS quando o assento é clicado */
+        .assento.selecionado {
+            background: var(--cor-astro);
+            color: #000;
+            border-color: var(--cor-astro);
+            font-weight: bold;
         }
 
         .btn-enviar {
@@ -147,22 +155,17 @@
             font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.3s;
+            margin-top: 20px;
         }
 
-        .btn-enviar:hover {
-            filter: brightness(1.2);
-        }
-
-        /* Painel de Resultado Oculto */
         .painel-resultado {
             margin-top: 25px;
             padding: 20px;
             border-radius: 8px;
-            background: rgba(0, 0, 0, 0.1);
+            background: rgba(0, 0, 0, 0.15);
             border-left: 4px solid var(--cor-astro);
-            display: none; /* Controlado pelo JS */
-            animation: fadeIn 0.4s ease-in-out;
+            display: none;
+            animation: fadeIn 0.4s ease-out;
         }
 
         @keyframes fadeIn {
@@ -173,7 +176,6 @@
         footer {
             text-align: center;
             padding: 20px;
-            border-top: 1px solid var(--border-card);
             color: var(--texto-secundario);
             font-size: 0.85rem;
         }
@@ -183,93 +185,157 @@
 
     <header>
         <div class="logo">🚀 Galaxy Voyages</div>
-        <!-- Removido o 'onclick' do HTML seguindo as boas práticas -->
         <button id="botao-tema" class="btn-tema">Alternar Visual</button>
     </header>
 
     <main>
-        <section class="hero">
-            <h1>Explore as Fronteiras do Universo</h1>
-            <p style="color: var(--texto-secundario);">Reserve o seu assento nos voos comerciais interplanetários mais seguros da galáxia.</p>
-        </section>
+        <!-- NOVO: Contador Regressivo para Próximo Voo -->
+        <div class="countdown-container">
+            🚨 PRÓXIMO LANÇAMENTO DA JANELA DE MARTE EM: <span id="cronometro">00:00:00</span>
+        </div>
 
-        <!-- Formulário de Simulação Avançado -->
         <section class="card-simulador">
             <form id="formulario-viagem">
                 <div class="grupo-campo">
                     <label for="nome-astronauta">Nome do Passageiro(a):</label>
-                    <input type="text" id="nome-astronauta" placeholder="Ex: Neil Armstrong" required>
+                    <input type="text" id="nome-astronauta" placeholder="Ex: Sally Ride" required>
                 </div>
 
                 <div class="grupo-campo">
                     <label for="destino">Destino Espacial:</label>
                     <select id="destino">
-                        <option value="lua">Lua (Estadia na Base Artemis)</option>
-                        <option value="marte">Marte (Dunas de Olympus Mons)</option>
-                        <option value="europa">Europa (Oceanos Congelados de Júpiter)</option>
+                        <option value="lua">Lua (Base Artemis)</option>
+                        <option value="marte">Marte (Olympus Mons)</option>
+                        <option value="europa">Europa (Oceanos de Júpiter)</option>
                     </select>
                 </div>
 
-                <button type="submit" class="btn-enviar">Calcular Itinerário</button>
+                <!-- NOVO: Seletor de Assentos Interativo -->
+                <div class="grupo-campo">
+                    <label>Escolha sua Cabine (Localização):</label>
+                    <div class="mapa-assentos">
+                        <div class="assento" data-tipo="Janela (Vista do Espaço)">🪟 Janela</div>
+                        <div class="assento" data-tipo="Corredor (Acesso Rápido)">🚶 Corredor</div>
+                        <div class="assento" data-tipo="Centro (Maior Estabilidade)">🛡️ Centro</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-enviar">Confirmar Bilhete de Embarque</button>
             </form>
 
-            <!-- Painel onde o resultado será injetado -->
             <div id="bloco-resultado" class="painel-resultado"></div>
         </section>
     </main>
 
     <footer>
-        <p>&copy; 2026 Galaxy Voyages S.A. Licenciada pela Federação Intergaláctica.</p>
+        <p>&copy; 2026 Galaxy Voyages S.A. Dados salvos localmente.</p>
     </footer>
 
-    <!-- ==========================================================================
-       4. JAVASCRIPT MODERNO (ORIENTADO A EVENTOS)
-       ========================================================================== -->
     <script>
-        // Aguarda todo o HTML carregar antes de executar o script para evitar erros de leitura
         document.addEventListener("DOMContentLoaded", () => {
             
-            // Mapeamento dos elementos do DOM
             const botaoTema = document.getElementById("botao-tema");
             const formulario = document.getElementById("formulario-viagem");
             const blocoResultado = document.getElementById("bloco-resultado");
+            const assentos = document.querySelectorAll(".assento");
+            const campoNome = document.getElementById("nome-astronauta");
+            
+            let assentoSelecionado = null;
 
-            // --- FUNÇÃO 1: Alternar Tema (Modo Escuro / Claro) ---
+            // ==========================================================================
+            // RECURSO 1: PERSISTÊNCIA (Recuperar nome salvo ao abrir a página)
+            // ==========================================================================
+            if (localStorage.getItem("nomeAstronauta")) {
+                campoNome.value = localStorage.getItem("nomeAstronauta");
+            }
+
+            // Alternância de Tema
             botaoTema.addEventListener("click", () => {
                 document.body.classList.toggle("modo-claro");
             });
 
-            // --- FUNÇÃO 2: Processar Simulação de Viagem ---
+            // ==========================================================================
+            // RECURSO 2: INTERATIVIDADE DE ASSENTOS (Lógica de seleção exclusiva)
+            // ==========================================================================
+            assentos.forEach(assento => {
+                assento.addEventListener("click", () => {
+                    // Remove a seleção dos outros assentos
+                    assentos.forEach(a => a.classList.remove("selecionado"));
+                    
+                    // Adiciona a seleção no assento clicado
+                    assento.classList.add("selecionado");
+                    assentoSelecionado = assento.getAttribute("data-tipo");
+                });
+            });
+
+            // Processamento do Formulário
             formulario.addEventListener("submit", (evento) => {
-                // Impede que a página recarregue ao enviar o formulário (comportamento padrão)
                 evento.preventDefault(); 
 
-                // Resgata os valores atualizados dos campos
-                const nome = document.getElementById("nome-astronauta").value.trim();
+                const nome = campoNome.value.trim();
                 const destinoSelecionado = document.getElementById("destino").value;
 
-                // Objeto contendo o banco de dados das viagens (Mais limpo que vários 'if/else')
+                // Validação customizada caso o usuário não tenha escolhido um assento
+                if (!assentoSelecionado) {
+                    alert("Por favor, selecione uma cabine antes de decolar! 🚀");
+                    return;
+                }
+
+                // Salva o nome no navegador para futuras visitas
+                localStorage.setItem("nomeAstronauta", nome);
+
                 const dadosDestinos = {
                     lua: { nome: "Lua", preco: "₿ 12.50", tempo: "3 dias" },
                     marte: { nome: "Marte", preco: "₿ 85.00", tempo: "6 meses" },
-                    europa: { nome: "Europa (Lua de Júpiter)", preco: "₿ 210.00", tempo: "1.2 anos" }
+                    europa: { nome: "Europa", preco: "₿ 210.00", tempo: "1.2 anos" }
                 };
 
-                // Recupera os dados específicos do destino escolhido
                 const viagem = dadosDestinos[destinoSelecionado];
 
-                // Injeta as informações estruturadas dentro do bloco de resultado
+                // Geração randômica de um número de ticket/portão de embarque simulado
+                const numeroTicket = Math.floor(1000 + Math.random() * 9000);
+
                 blocoResultado.innerHTML = `
-                    <p style="margin-bottom: 8px;"><strong>Passagem Confirmada!</strong></p>
-                    <p>🧑‍🚀 <strong>Astronauta:</strong> ${nome}</p>
+                    <p style="color: #ff4f4f; font-weight: bold; margin-bottom: 12px;">🎟️ CHECK-IN EFETUADO COM SUCESSO</p>
+                    <p>🧑‍🚀 <strong>Passageiro:</strong> ${nome}</p>
                     <p>📍 <strong>Destino:</strong> ${viagem.nome}</p>
-                    <p>⏱️ <strong>Tempo de Viagem:</strong> ${viagem.tempo}</p>
-                    <p style="color: var(--cor-astro); margin-top: 8px;">💰 <strong>Investimento:</strong> ${viagem.preco} Espaciais</p>
+                    <p>⏱️ <strong>Duração do Voo:</strong> ${viagem.tempo}</p>
+                    <p>💺 <strong>Assento:</strong> ${assentoSelecionado}</p>
+                    <p>🆔 <strong>Portão de Lançamento:</strong> GATE-${numeroTicket}</p>
+                    <p style="color: var(--cor-astro); margin-top: 10px; font-size: 1.1rem;">💰 <strong>Custo Total:</strong> ${viagem.preco} Cripto</p>
                 `;
 
-                // Torna o painel visível na tela
                 blocoResultado.style.display = "block";
             });
+
+            // ==========================================================================
+            // RECURSO 3: RELÓGIO REGRESSIVO SIMULADO (Countdown de 4 horas fictícias)
+            // ==========================================================================
+            let tempoRestante = 4 * 60 * 60; // 4 horas em segundos
+            const elementoCronometro = document.getElementById("cronometro");
+
+            const atualizarCronometro = () => {
+                let horas = Math.floor(tempoRestante / 3600);
+                let minutos = Math.floor((tempoRestante % 3600) / 60);
+                let segundos = tempoRestante % 60;
+
+                // Formata os números para ter dois dígitos (ex: 05 em vez de 5)
+                horas = horas < 10 ? "0" + horas : horas;
+                minutos = minutos < 10 ? "0" + minutos : minutes;
+                segundos = segundos < 10 ? "0" + segundos : segundos;
+
+                elementoCronometro.textContent = `${horas}:${minutos}:${segundos}`;
+
+                if (tempoRestante > 0) {
+                    tempoRestante--;
+                } else {
+                    tempoRestante = 4 * 60 * 60; // Reseta se chegar a zero
+                }
+            };
+            
+            // Roda a função a cada 1 segundo (1000 milissegundos)
+            setInterval(atualizarCronometro, 1000);
+            atualizarCronometro(); // Chama uma vez de imediato ao carregar
         });
     </script>
 </body>
