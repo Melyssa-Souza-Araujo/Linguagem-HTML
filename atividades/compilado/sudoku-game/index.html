@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Sudoku Ultra Responsivo</title>
+    <style>
+        :root {
+            --bg-color: #f5f6fa;
+            --container-bg: #ffffff;
+            --border-color: #2c3e50;
+            --border-light: #dcdde1;
+            --text-color: #2c3e50;
+            --primary-color: #3498db;
+            --primary-hover: #2980b9;
+            --input-user: #e74c3c;
+            
+            /* CÁLCULO RESPONSIVO: O tabuleiro vai ocupar no máximo 85% da menor dimensão da tela 
+               em dispositivos móveis, e no máximo 450px em telas grandes. */
+            --grid-size: min(85vw, 85vh, 450px);
+            --cell-size: calc(var(--grid-size) / 9);
+            
+            --highlight-color: #dff9fb;
+            --highlight-border: #22a6b3;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            margin-bottom: 15px;
+            font-size: clamp(1.5rem, 5vw, 2.3rem); /* Fonte diminui conforme a tela diminui */
+            text-align: center;
+        }
+
+        .controls {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        select, button {
+            padding: 10px 14px;
+            font-size: clamp(0.85rem, 2.5vw, 1rem);
+            border-radius: 6px;
+            border: 1px solid var(--border-light);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        select {
+            background-color: white;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .sudoku-container {
+            background: var(--container-bg);
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            margin-bottom: 15px;
+            max-width: 100%;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(9, var(--cell-size));
+            grid-template-rows: repeat(9, var(--cell-size));
+            border: 3px solid var(--border-color);
+            width: var(--grid-size);
+            height: var(--grid-size);
+        }
+
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            text-align: center;
+            font-size: calc(var(--cell-size) * 0.45); /* Fonte proporcional ao tamanho da célula */
+            font-weight: bold;
+            border: 1px solid var(--border-light);
+            outline: none;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        /* Bordas dos blocos 3x3 */
+        .cell:nth-child(3n) {
+            border-right: 2px solid var(--border-color);
+        }
+        .cell:nth-child(9n) {
+            border-right: none;
+        }
+
+        .grid-row-3, .grid-row-6 {
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .cell:disabled {
+            background-color: #f8f9fa;
+            color: var(--text-color);
+            cursor: not-allowed;
+        }
+
+        .cell:not(:disabled) {
+            color: var(--input-user);
+            background-color: #fff;
+        }
+
+        .cell:focus {
+            background-color: #e8f4fd;
+        }
+
+        .cell.highlighted {
+            background-color: var(--highlight-color) !important;
+            border: 2px solid var(--highlight-border) !important;
+            transform: scale(1.05);
+            z-index: 2;
+        }
+
+        .highlighter-text {
+            margin-bottom: 6px; 
+            font-size: clamp(0.8rem, 2.5vw, 0.9rem); 
+            font-weight: bold; 
+            color: #7f8c8d;
+            text-align: center;
+        }
+
+        .highlighter-panel {
+            display: flex;
+            gap: 6px;
+            background: white;
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: var(--grid-size);
+            justify-content: space-between;
+        }
+
+        .hl-btn {
+            flex: 1;
+            max-width: 40px;
+            height: clamp(32px, 8vw, 40px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f1f2f6;
+            color: #2c3e50;
+            border: 1px solid #dcdde1;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 0;
+        }
+
+        .hl-btn:hover {
+            background-color: #dcdde1;
+        }
+
+        .hl-btn.active {
+            background-color: var(--highlight-border);
+            color: white;
+            box-shadow: 0 0 6px rgba(34, 166, 179, 0.5);
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Sudoku Challenge</h1>
+
+    <div class="controls">
+        <select id="difficulty">
+            <option value="easy">Fácil</option>
+            <option value="medium" selected>Médio</option>
+            <option value="hard">Difícil</option>
+        </select>
+        <button id="generate-btn">Novo Jogo</button>
+        <button id="check-btn" style="background-color: #2ecc71;">Verificar</button>
+    </div>
+
+    <div class="sudoku-container">
+        <div class="grid" id="sudoku-grid"></div>
+    </div>
+
+    <div style="width: 100%; max-width: var(--grid-size);">
+        <p class="highlighter-text">Destaque um número no tabuleiro:</p>
+        <div class="highlighter-panel" id="highlighter-panel">
+            <button class="hl-btn" data-num="1">1</button>
+            <button class="hl-btn" data-num="2">2</button>
+            <button class="hl-btn" data-num="3">3</button>
+            <button class="hl-btn" data-num="4">4</button>
+            <button class="hl-btn" data-num="5">5</button>
+            <button class="hl-btn" data-num="6">6</button>
+            <button class="hl-btn" data-num="7">7</button>
+            <button class="hl-btn" data-num="8">8</button>
+            <button class="hl-btn" data-num="9">9</button>
+        </div>
+    </div>
+
+    <script>
+        const gridElement = document.getElementById('sudoku-grid');
+        const generateBtn = document.getElementById('generate-btn');
+        const checkBtn = document.getElementById('check-btn');
+        const difficultySelect = document.getElementById('difficulty');
+        const hlPanel = document.getElementById('highlighter-panel');
+
+        let solution = []; 
+        let activeHighlightNum = null;
+
+        window.addEventListener('DOMContentLoaded', generateSudoku);
+        generateBtn.addEventListener('click', generateSudoku);
+        checkBtn.addEventListener('click', checkSolution);
+
+        hlPanel.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('hl-btn')) return;
+
+            const clickedNum = parseInt(e.target.dataset.num);
+            const buttons = document.querySelectorAll('.hl-btn');
+
+            if (activeHighlightNum === clickedNum) {
+                activeHighlightNum = null;
+                e.target.classList.remove('active');
+            } else {
+                buttons.forEach(btn => btn.classList.remove('active'));
+                activeHighlightNum = clickedNum;
+                e.target.classList.add('active');
+            }
+
+            applyHighlight();
+        });
+
+        function generateSudoku() {
+            gridElement.innerHTML = ''; 
+            activeHighlightNum = null;
+            document.querySelectorAll('.hl-btn').forEach(btn => btn.classList.remove('active'));
+            
+            let board = Array.from({ length: 9 }, () => Array(9).fill(0));
+            fillSudoku(board);
+            solution = board.map(row => [...row]);
+            
+            const difficulty = difficultySelect.value;
+            let cellsToRemove = 40; 
+            if (difficulty === 'easy') cellsToRemove = 30;
+            if (difficulty === 'hard') cellsToRemove = 55;
+
+            removeNumbers(board, cellsToRemove);
+            renderBoard(board);
+        }
+
+        function renderBoard(board) {
+            for (let row = 0; row < 9; row++) {
+                let rowClass = "";
+                if (row === 2) rowClass = "grid-row-3";
+                if (row === 5) rowClass = "grid-row-6";
+
+                for (let col = 0; col < 9; col++) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.min = 1;
+                    input.max = 9;
+                    input.classList.add('cell');
+                    if (rowClass) input.classList.add(rowClass);
+                    
+                    input.dataset.row = row;
+                    input.dataset.col = col;
+
+                    if (board[row][col] !== 0) {
+                        input.value = board[row][col];
+                        input.disabled = true; 
+                    } else {
+                        input.addEventListener('input', (e) => {
+                            if (e.target.value.length > 1) e.target.value = e.target.value.slice(0, 1);
+                            if (e.target.value < 1 || e.target.value > 9) e.target.value = '';
+                            if (activeHighlightNum) applyHighlight();
+                        });
+                    }
+
+                    gridElement.appendChild(input);
+                }
+            }
+        }
+
+        function applyHighlight() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                const cellValue = parseInt(cell.value);
+                if (activeHighlightNum && cellValue === activeHighlightNum) {
+                    cell.classList.add('highlighted');
+                } else {
+                    cell.classList.remove('highlighted');
+                }
+            });
+        }
+
+        function isValid(board, row, col, num) {
+            for (let x = 0; x < 9; x++) {
+                if (board[row][x] === num || board[x][col] === num) return false;
+            }
+            let startRow = row - row % 3, startCol = col - col % 3;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (board[i + startRow][j + startCol] === num) return false;
+                }
+            }
+            return true;
+        }
+
+        function fillSudoku(board) {
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    if (board[row][col] === 0) {
+                        let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9].sort(() => Math.random() - 0.5);
+                        for (let num of numbers) {
+                            if (isValid(board, row, col, num)) {
+                                board[row][col] = num;
+                                if (fillSudoku(board)) return true;
+                                board[row][col] = 0;
+                            }
+                        }
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function removeNumbers(board, count) {
+            let removed = 0;
+            while (removed < count) {
+                let cellId = Math.floor(Math.random() * 81);
+                let row = Math.floor(cellId / 9);
+                let col = cellId % 9;
+                if (board[row][col] !== 0) {
+                    board[row][col] = 0;
+                    removed++;
+                }
+            }
+        }
+
+        function checkSolution() {
+            const inputs = document.querySelectorAll('.cell');
+            let isCorrect = true;
+            let complete = true;
+            let wrongInputs = [];
+
+            inputs.forEach(input => {
+                if(!input.disabled) input.style.backgroundColor = '#fff';
+            });
+
+            inputs.forEach(input => {
+                const row = input.dataset.row;
+                const col = input.dataset.col;
+                const value = parseInt(input.value);
+
+                if (!value) {
+                    complete = false;
+                    input.style.backgroundColor = '#ffeaa7'; 
+                } else if (value !== solution[row][col]) {
+                    isCorrect = false;
+                    input.style.backgroundColor = '#ff8787'; 
+                    wrongInputs.push(input);
+                } else {
+                    if(!input.disabled) input.style.backgroundColor = '#b2f2bb'; 
+                }
+            });
+
+            if (!complete) {
+                alert('Ainda existem campos vazios!');
+            } else if (isCorrect) {
+                alert('Parabéns! Você resolveu o Sudoku corretamente! 🎉');
+            } else {
+                const clearWrong = confirm('Alguns números estão incorretos (marcados em vermelho).\nDeseja que o sistema remova os números errados para você tentar novamente?');
+                if (clearWrong) {
+                    wrongInputs.forEach(input => {
+                        input.value = '';
+                        input.style.backgroundColor = '#fff';
+                    });
+                    if (activeHighlightNum) applyHighlight();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
