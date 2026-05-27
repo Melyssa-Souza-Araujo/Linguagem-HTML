@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Sudoku Ultra Responsivo</title>
+    <title>Sudoku Challenge Pro</title>
     <style>
         :root {
             --bg-color: #f5f6fa;
@@ -15,8 +15,7 @@
             --primary-hover: #2980b9;
             --input-user: #e74c3c;
             
-            /* CÁLCULO RESPONSIVO: O tabuleiro vai ocupar no máximo 85% da menor dimensão da tela 
-               em dispositivos móveis, e no máximo 450px em telas grandes. */
+            /* Ajuste dinâmico do tabuleiro para qualquer tamanho de tela */
             --grid-size: min(85vw, 85vh, 450px);
             --cell-size: calc(var(--grid-size) / 9);
             
@@ -45,7 +44,7 @@
 
         h1 {
             margin-bottom: 15px;
-            font-size: clamp(1.5rem, 5vw, 2.3rem); /* Fonte diminui conforme a tela diminui */
+            font-size: clamp(1.5rem, 5vw, 2.3rem);
             text-align: center;
         }
 
@@ -106,14 +105,14 @@
             width: var(--cell-size);
             height: var(--cell-size);
             text-align: center;
-            font-size: calc(var(--cell-size) * 0.45); /* Fonte proporcional ao tamanho da célula */
+            font-size: calc(var(--cell-size) * 0.45);
             font-weight: bold;
             border: 1px solid var(--border-light);
             outline: none;
             transition: background-color 0.2s, transform 0.1s;
         }
 
-        /* Bordas dos blocos 3x3 */
+        /* Linhas divisórias dos blocos 3x3 */
         .cell:nth-child(3n) {
             border-right: 2px solid var(--border-color);
         }
@@ -210,6 +209,8 @@
     <h1>Sudoku Challenge</h1>
 
     <div class="controls">
+        <div id="timer-display" style="font-weight: bold; background: #2c3e50; color: white; padding: 10px 14px; border-radius: 6px; font-variant-numeric: tabular-nums;">00:00</div>
+        
         <select id="difficulty">
             <option value="easy">Fácil</option>
             <option value="medium" selected>Médio</option>
@@ -247,11 +248,16 @@
 
         let solution = []; 
         let activeHighlightNum = null;
+        
+        // Referências e contadores para o controle do tempo
+        let timerInterval = null;
+        let totalSeconds = 0;
 
         window.addEventListener('DOMContentLoaded', generateSudoku);
         generateBtn.addEventListener('click', generateSudoku);
         checkBtn.addEventListener('click', checkSolution);
 
+        // Gerencia cliques nos numerais de destaque (1-9)
         hlPanel.addEventListener('click', (e) => {
             if (!e.target.classList.contains('hl-btn')) return;
 
@@ -270,6 +276,7 @@
             applyHighlight();
         });
 
+        // Lógica principal de geração do jogo
         function generateSudoku() {
             gridElement.innerHTML = ''; 
             activeHighlightNum = null;
@@ -286,8 +293,12 @@
 
             removeNumbers(board, cellsToRemove);
             renderBoard(board);
+
+            // Inicia a contagem do tempo para o novo tabuleiro
+            startTimer();
         }
 
+        // Monta o grid de inputs no HTML
         function renderBoard(board) {
             for (let row = 0; row < 9; row++) {
                 let rowClass = "";
@@ -321,6 +332,7 @@
             }
         }
 
+        // Gerencia e aplica a estilização de destaque nas células
         function applyHighlight() {
             const cells = document.querySelectorAll('.cell');
             cells.forEach(cell => {
@@ -333,6 +345,26 @@
             });
         }
 
+        // Executa o motor do cronômetro segundo a segundo
+        function startTimer() {
+            clearInterval(timerInterval); // Para cronômetros fantasmas anteriores
+            totalSeconds = 0;
+            document.getElementById('timer-display').innerText = "00:00";
+            
+            timerInterval = setInterval(() => {
+                totalSeconds++;
+                let minutes = Math.floor(totalSeconds / 60);
+                let seconds = totalSeconds % 60;
+                
+                // Formata os números menores que 10 com um zero à esquerda
+                let minStr = minutes < 10 ? "0" + minutes : minutes;
+                let secStr = seconds < 10 ? "0" + seconds : seconds;
+                
+                document.getElementById('timer-display').innerText = `${minStr}:${secStr}`;
+            }, 1000);
+        }
+
+        // Validação matemática das regras do Sudoku
         function isValid(board, row, col, num) {
             for (let x = 0; x < 9; x++) {
                 if (board[row][x] === num || board[x][col] === num) return false;
@@ -346,6 +378,7 @@
             return true;
         }
 
+        // Algoritmo de Backtracking para solucionar e criar matrizes válidas
         function fillSudoku(board) {
             for (let row = 0; row < 9; row++) {
                 for (let col = 0; col < 9; col++) {
@@ -365,6 +398,7 @@
             return true;
         }
 
+        // Esvazia casas aleatórias de acordo com o nível selecionado
         function removeNumbers(board, count) {
             let removed = 0;
             while (removed < count) {
@@ -378,6 +412,7 @@
             }
         }
 
+        // Avalia as respostas inseridas e gerencia erros/vitória
         function checkSolution() {
             const inputs = document.querySelectorAll('.cell');
             let isCorrect = true;
@@ -408,7 +443,10 @@
             if (!complete) {
                 alert('Ainda existem campos vazios!');
             } else if (isCorrect) {
-                alert('Parabéns! Você resolveu o Sudoku corretamente! 🎉');
+                // Interrompe o cronômetro para consolidar o registro final
+                clearInterval(timerInterval); 
+                const tempoFinal = document.getElementById('timer-display').innerText;
+                alert(`Parabéns! Você resolveu o Sudoku corretamente em ${tempoFinal}! 🎉`);
             } else {
                 const clearWrong = confirm('Alguns números estão incorretos (marcados em vermelho).\nDeseja que o sistema remova os números errados para você tentar novamente?');
                 if (clearWrong) {
