@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Clientes</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { text-align: center; color: #2c3e50; }
+        
+        /* Formulário */
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        
+        /* Botões */
+        button { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        .btn-success { background-color: #2ecc71; color: white; width: 100%; }
+        .btn-success:hover { background-color: #27ae60; }
+        .btn-edit { background-color: #3498db; color: white; margin-right: 5px; }
+        .btn-edit:hover { background-color: #2980b9; }
+        .btn-delete { background-color: #e74c3c; color: white; }
+        .btn-delete:hover { background-color: #c0392b; }
+        .btn-cancel { background-color: #95a5a6; color: white; width: 100%; margin-top: 5px; display: none; }
+
+        /* Tabela */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background-color: #34495e; color: white; }
+        tr:hover { background-color: #f9f9f9; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Gerenciador de Clientes</h1>
+
+    <div class="card">
+        <h3 id="form-title">Adicionar Novo Cliente</h3>
+        <form id="clientForm">
+            <input type="hidden" id="clientId">
+            <div class="form-group">
+                <label for="nome">Nome Completo</label>
+                <input type="text" id="nome" required placeholder="Ex: João Silva">
+            </div>
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" required placeholder="Ex: joao@email.com">
+            </div>
+            <div class="form-group">
+                <label for="telefone">Telefone</label>
+                <input type="tel" id="telefone" required placeholder="Ex: (11) 99999-9999">
+            </div>
+            <button type="submit" class="btn-success" id="btnSave">Salvar Cliente</button>
+            <button type="button" class="btn-cancel" id="btnCancel" onclick="clearForm()">Cancelar Edição</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Clientes Cadastrados</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>E-mail</th>
+                    <th>Telefone</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'api.php';
+
+    // Carregar os clientes assim que a página abrir
+    document.addEventListener("DOMContentLoaded", fetchClientes);
+
+    // Buscar clientes do PHP
+    async function fetchClientes() {
+        const response = await fetch(API_URL);
+        const clientes = await response.json();
+        
+        const tbody = document.getElementById("tableBody");
+        tbody.innerHTML = "";
+
+        if(clientes.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Nenhum cliente cadastrado.</td></tr>`;
+            return;
+        }
+
+        clientes.forEach(cliente => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${cliente.nome}</td>
+                    <td>${cliente.email}</td>
+                    <td>${cliente.telefone}</td>
+                    <td>
+                        <button class="btn-edit" onclick="editCliente(${JSON.stringify(cliente).replace(/"/g, '&quot;')})">Alterar</button>
+                        <button class="btn-delete" onclick="deleteCliente(${cliente.id})">Excluir</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    // Adicionar ou Atualizar Cliente
+    document.getElementById("clientForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const id = document.getElementById("clientId").value;
+        const nome = document.getElementById("nome").value;
+        const email = document.getElementById("email").value;
+        const telefone = document.getElementById("telefone").value;
+
+        const dados = { nome, email, telefone };
+        if (id) dados.id = id; // Se tiver ID, inclui no envio para atualizar
+
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dados)
+        });
+
+        const resultado = await response.json();
+        alert(resultado.message);
+        
+        if (resultado.status === "success") {
+            clearForm();
+            fetchClientes();
+        }
+    });
+
+    // Preparar formulário para Alteração
+    function editCliente(cliente) {
+        document.getElementById("clientId").value = cliente.id;
+        document.getElementById("nome").value = cliente.nome;
+        document.getElementById("email").value = cliente.email;
+        document.getElementById("telefone").value = cliente.telefone;
+
+        document.getElementById("form-title").innerText = "Alterar Informações do Cliente";
+        document.getElementById("btnSave").innerText = "Atualizar Informações";
+        document.getElementById("btnCancel").style.display = "block";
+    }
+
+    // Excluir Cliente
+    async function deleteCliente(id) {
+        if (confirm("Tem certeza que deseja excluir este cliente?")) {
+            const response = await fetch(API_URL, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+
+            const resultado = await response.json();
+            alert(resultado.message);
+            fetchClientes();
+        }
+    }
+
+    // Limpar o formulário e resetar estado
+    function clearForm() {
+        document.getElementById("clientId").value = "";
+        document.getElementById("clientForm").reset();
+        document.getElementById("form-title").innerText = "Adicionar Novo Cliente";
+        document.getElementById("btnSave").innerText = "Salvar Cliente";
+        document.getElementById("btnCancel").style.display = "none";
+    }
+</script>
+</body>
+</html>
