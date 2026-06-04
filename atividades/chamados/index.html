@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HelpDesk - Painel do Cliente</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --bg-body: #f4f6f9;
+            --bg-card: #ffffff;
+            --text-color: #333333;
+            --border-color: #eeeeee;
+            --sidebar-bg: #2c3e50;
+            --sidebar-text: #ffffff;
+            --primary: #3498db;
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #121212;
+            --bg-card: #1e1e1e;
+            --text-color: #e0e0e0;
+            --border-color: #333333;
+            --sidebar-bg: #1a1a1a;
+            --sidebar-text: #e0e0e0;
+            --primary: #2980b9;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; transition: background-color 0.3s, color 0.3s; }
+        body { background-color: var(--bg-body); color: var(--text-color); display: flex; min-height: 100vh; }
+
+        /* MENU LATERAL */
+        .sidebar { width: 250px; background-color: var(--sidebar-bg); color: var(--sidebar-text); padding: 20px; display: flex; flex-direction: column; justify-content: space-between; }
+        .sidebar h2 { font-size: 20px; margin-bottom: 30px; text-align: center; color: var(--primary); }
+        .sidebar-menu button { width: 100%; padding: 12px; background: none; border: none; color: inherit; text-align: left; font-size: 16px; cursor: pointer; border-radius: 4px; margin-bottom: 10px; font-weight: bold; }
+        .sidebar-menu button:hover, .sidebar-menu button.active { background-color: rgba(255,255,255,0.1); color: var(--primary); }
+        .btn-logout { background-color: #e74c3c !important; color: white !important; text-align: center !important; }
+
+        /* ÁREA PRINCIPAL */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        
+        /* DASHBOARD CARDS */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+        .dash-card { background: var(--bg-card); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; border-left: 5px solid #ccc; }
+        .dash-card.abertos { border-left-color: #e74c3c; }
+        .dash-card.atendimento { border-left-color: #f1c40f; }
+        .dash-card.resolvidos { border-left-color: #2ecc71; }
+        .dash-card h3 { font-size: 14px; text-transform: uppercase; color: #7f8c8d; margin-bottom: 5px; }
+        .dash-card p { font-size: 32px; font-weight: bold; }
+
+        /* CARDS / FORMULÁRIOS */
+        .card { background: var(--bg-card); padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        input, textarea, select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-card); color: var(--text-color); font-size: 14px; }
+        textarea { height: 100px; resize: none; }
+        
+        button.btn-submit { padding: 12px 20px; background-color: var(--primary); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        
+        /* BADGES DE STATUS E PRIORIDADE */
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; color: white; display: inline-block; }
+        .badge.aberto { background-color: #e74c3c; }
+        .badge.em_atendimento { background-color: #f1c40f; color: black; }
+        .badge.resolvido { background-color: #2ecc71; }
+        
+        .badge.baixa { background-color: #95a5a6; }
+        .badge.media { background-color: #e67e22; }
+        .badge.alta { background-color: #c0392b; }
+
+        /* TABELA */
+        table { width: 100%; border-collapse: collapse; background: var(--bg-card); margin-top: 15px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--sidebar-bg); color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-menu">
+            <h2 id="welcomeName">Cliente</h2>
+            <button class="active" onclick="showSection('home')">📊 Dashboard</button>
+            <button onclick="showSection('novo')">➕ Abrir Chamado</button>
+        </div>
+        <button class="btn-logout" onclick="logout()">Sair</button>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1 id="sectionTitle">Dashboard de Chamados</h1>
+            <button onclick="toggleTheme()" style="background:none; border:none; cursor:pointer; font-size:20px;">🌙</button>
+        </div>
+
+        <div id="section-home">
+            <div class="dashboard-grid">
+                <div class="dash-card abertos">
+                    <h3>Abertos</h3>
+                    <p id="countAbertos">0</p>
+                </div>
+                <div class="dash-card atendimento">
+                    <h3>Em Atendimento</h3>
+                    <p id="countAtendimento">0</p>
+                </div>
+                <div class="dash-card resolvidos">
+                    <h3>Resolvidos</h3>
+                    <p id="countResolvidos">0</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Meus Chamados Recentes</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Prioridade</th>
+                            <th>Status</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody id="chamadosTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="section-novo" style="display: none;">
+            <div class="card">
+                <h3>Descreva o problema técnico</h3>
+                <form id="chamadoForm" style="margin-top: 15px;">
+                    <div class="form-group">
+                        <label for="titulo">Título do Problema</label>
+                        <input type="text" id="titulo" required placeholder="Ex: Erro ao acessar o sistema financeiro">
+                    </div>
+                    <div class="form-group">
+                        <label for="prioridade">Nível de Urgência</label>
+                        <select id="prioridade" required>
+                            <option value="baixa">Baixa (Dúvidas ou ajustes simples)</option>
+                            <option value="media">Média (Atrapalha o trabalho, mas funciona)</option>
+                            <option value="alta">Alta (Bloqueia totalmente o trabalho)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="descricao">Descrição Detalhada</label>
+                        <textarea id="descricao" required placeholder="Descreva aqui o passo a passo do erro ou o problema..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit">Enviar Chamado para o Suporte</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'api_chamados.php';
+
+        // Inicialização
+        document.addEventListener("DOMContentLoaded", () => {
+            verificarSessao();
+            carregarChamados();
+        });
+
+        // Alternar entre abas do menu lateral
+        function showSection(section) {
+            document.getElementById('section-home').style.display = section === 'home' ? 'block' : 'none';
+            document.getElementById('section-novo').style.display = section === 'novo' ? 'block' : 'none';
+            
+            document.getElementById('sectionTitle').innerText = section === 'home' ? 'Dashboard de Chamados' : 'Abrir Novo Chamado';
+            
+            // Ajusta classe ativa nos botões
+            const buttons = document.querySelectorAll('.sidebar-menu button');
+            buttons[0].classList.toggle('active', section === 'home');
+            buttons[1].classList.toggle('active', section === 'novo');
+        }
+
+        // Verificar se usuário está mesmo logado
+        async function verificarSessao() {
+            const response = await fetch(API_URL + '?acao=verificar_sessao');
+            const data = await response.json();
+            if (data.status === 'error' || data.perfil !== 'cliente') {
+                window.location.href = 'index.html'; // Chuta de volta pro login se não for cliente
+            } else {
+                document.getElementById('welcomeName').innerText = `👋 ${data.nome}`;
+            }
+        }
+
+        // Carregar e calcular os dados do painel
+        async function carregarChamados() {
+            const response = await fetch(API_URL + '?acao=listar_cliente');
+            const chamados = await response.json();
+            
+            const tbody = document.getElementById('chamadosTableBody');
+            tbody.innerHTML = '';
+
+            let abertos = 0, atendimento = 0, resolvidos = 0;
+
+            if(chamados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Você ainda não abriu nenhum chamado.</td></tr>`;
+                return;
+            }
+
+            chamados.forEach(c => {
+                // Contadores
+                if (c.status === 'aberto') abertos++;
+                if (c.status === 'em_atendimento') atendimento++;
+                if (c.status === 'resolvido') resolvidos++;
+
+                // Formatação da data
+                const dataFormatada = new Date(c.data_criacao).toLocaleDateString('pt-BR');
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${c.titulo}</strong></td>
+                        <td><span class="badge ${c.prioridade}">${c.prioridade.toUpperCase()}</span></td>
+                        <td><span class="badge ${c.status}">${c.status.replace('_', ' ').toUpperCase()}</span></td>
+                        <td>${dataFormatada}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('countAbertos').innerText = abertos;
+            document.getElementById('countAtendimento').innerText = atendimento;
+            document.getElementById('countResolvidos').innerText = resolvidos;
+        }
+
+        // Salvar Novo Chamado
+        document.getElementById('chamadoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const titulo = document.getElementById('titulo').value;
+            const prioridade = document.getElementById('prioridade').value;
+            const descricao = document.getElementById('descricao').value;
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ acao: 'criar_chamado', titulo, prioridade, descricao })
+            });
+
+            const resultado = await response.json();
+            if (resultado.status === 'success') {
+                Swal.fire('Sucesso!', resultado.message, 'success');
+                document.getElementById('chamadoForm').reset();
+                carregarChamados();
+                showSection('home');
+            } else {
+                Swal.fire('Erro!', resultado.message, 'error');
+            }
+        });
+
+        // Logout
+        async function logout() {
+            await fetch(API_URL + '?acao=logout');
+            window.location.href = 'index.html';
+        }
+
+        // Modo Escuro
+        if (localStorage.getItem('theme') === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        function toggleTheme() {
+            if (document.documentElement.getAttribute('data-theme') === 'dark') {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+    </script>
+</body>
+</html>
