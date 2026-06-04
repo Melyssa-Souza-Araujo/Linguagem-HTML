@@ -1,19 +1,9 @@
 <?php
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, DELETE, PUT");
+header("Access-Control-Allow-Methods: GET, POST, DELETE");
 
-$host = "localhost";
-$user = "root";
-$pass = ""; // Se tiver senha no seu MySQL (como no MAMP), coloque aqui
-$db   = "sistema_clientes";
-
-$conn = new mysqli($host, $user, $pass, $db);
-
-if ($conn->connect_error) {
-    echo json_encode(["status" => "error", "message" => "Falha na conexão: " . $conn->connect_error]);
-    exit;
-}
+require_once "conexao.php";
 
 $metodo = $_SERVER['REQUEST_METHOD'];
 
@@ -32,9 +22,9 @@ if ($metodo === 'POST') {
     $data = json_decode(file_get_contents("php://input"), true);
     
     $id = isset($data['id']) ? intval($data['id']) : null;
-    $nome = $conn->real_escape_string($data['nome']);
-    $email = $conn->real_escape_string($data['email']);
-    $telefone = $conn->real_escape_string($data['telefone']);
+    $nome = trim($data['nome']);
+    $email = trim($data['email']);
+    $telefone = trim($data['telefone']);
 
     if (empty($nome) || empty($email) || empty($telefone)) {
         echo json_encode(["status" => "error", "message" => "Preencha todos os campos!"]);
@@ -42,20 +32,41 @@ if ($metodo === 'POST') {
     }
 
     if ($id) {
-        // Se já tem ID, é uma ALTERAÇÃO (Update)
-        $sql = "UPDATE clientes SET nome='$nome', email='$email', telefone='$telefone' WHERE id=$id";
+        // --- ALTERAÇÃO COM PREPARED STATEMENT ---
+        // Verifica se o e-mail já está sendo usado por OUTRO usuário
+        $stmtCheck = $conn->prepare("SELECT id FROM clientes WHERE email = ? AND id != ?");
+        $stmtCheck->bind_param("si", $email, $id);
+        $stmtCheck->execute();
+        if ($stmtCheck->get_result()->num_rows > 0) {
+            echo json_encode(["status" => "error", "message" => "Este e-mail já está sendo utilizado por outro cliente!"]);
+            exit;
+        }
+
+        $stmt = $conn->prepare("UPDATE clientes SET nome = ?, email = ?, telefone = ? WHERE id = ?");
+        $stmt->bind_param("sssi", $nome, $email, $telefone, $id);
         $msg = "Cliente atualizado com sucesso!";
     } else {
-        // Se não tem ID, é um NOVO CADASTRO (Insert)
-        $sql = "INSERT INTO clientes (nome, email, telefone) VALUES ('$nome', '$email', '$telefone')";
+        // --- INSERÇÃO COM PREPARED STATEMENT ---
+        // Verifica se o e-mail já existe
+        $stmtCheck = $conn->prepare("SELECT id FROM clientes WHERE email = ?");
+        $stmtCheck->bind_param("s", $email);
+        $stmtCheck->execute();
+        if ($stmtCheck->get_result()->num_rows > 0) {
+            echo json_encode(["status" => "error", "message" => "Este e-mail já está cadastrado!"]);
+            exit;
+        }
+
+        $stmt = $conn->prepare("INSERT INTO clientes (nome, email, telefone) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $nome, $email, $telefone);
         $msg = "Cliente cadastrado com sucesso!";
     }
 
-    if ($conn->query($sql)) {
+    if ($stmt->execute()) {
         echo json_encode(["status" => "success", "message" => $msg]);
     } else {
-        echo json_encode(["status" => "error", "message" => "Erro ao salvar: " . $conn->error]);
+        echo json_encode(["status" => "error", "message" => "Erro ao salvar os dados."]);
     }
+    $stmt->close();
 }
 
 // 3. EXCLUIR CLIENTE (DELETE)
@@ -63,12 +74,15 @@ if ($metodo === 'DELETE') {
     $data = json_decode(file_get_contents("php://input"), true);
     $id = intval($data['id']);
 
-    $sql = "DELETE FROM clientes WHERE id = $id";
-    if ($conn->query($sql)) {
+    $stmt = $conn->prepare("DELETE FROM clientes WHERE id = ?");
+    $stmt->bind_param("i", $id);
+
+    if ($stmt->execute()) {
         echo json_encode(["status" => "success", "message" => "Cliente excluído com sucesso!"]);
     } else {
-        echo json_encode(["status" => "error", "message" => "Erro ao excluir."]);
+        echo json_encode(["status" => "error", "message" => "Erro ao excluir o cliente."]);
     }
+    $stmt->close();
 }
 
 $conn->close();
