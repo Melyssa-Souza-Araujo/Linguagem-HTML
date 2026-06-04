@@ -5,18 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Clientes</title>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        /* Variáveis de cores para facilitar a troca de tema */
+        :root {
+            --bg-body: #f4f6f9;
+            --bg-card: #ffffff;
+            --text-color: #333333;
+            --text-title: #2c3e50;
+            --border-color: #cccccc;
+            --table-th: #34495e;
+            --table-tr-hover: #f9f9f9;
+            --table-border: #eeeeee;
+        }
+
+        /* Cores do Tema Escuro */
+        [data-theme="dark"] {
+            --bg-body: #121212;
+            --bg-card: #1e1e1e;
+            --text-color: #e0e0e0;
+            --text-title: #ffffff;
+            --border-color: #444444;
+            --table-th: #1f1f1f;
+            --table-tr-hover: #2a2a2a;
+            --table-border: #333333;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background-color 0.3s, color 0.3s; }
+        body { background-color: var(--bg-body); margin: 0; padding: 20px; color: var(--text-color); }
         .container { max-width: 900px; margin: 0 auto; }
-        h1 { text-align: center; color: #2c3e50; }
         
+        /* Cabeçalho com o botão de tema */
+        .header-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        h1 { margin: 0; color: var(--text-title); }
+        
+        /* Botão Tema Escuro */
+        .btn-theme { background-color: var(--table-th); color: white; padding: 10px 15px; border-radius: 20px; font-size: 14px; border: 1px solid var(--border-color); }
+
         /* Formulário */
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .card { background: var(--bg-card); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; background-color: var(--bg-card); color: var(--text-color); }
         
-        /* Botões */
+        /* Botões de Ação */
         button { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
         .btn-success { background-color: #2ecc71; color: white; width: 100%; }
         .btn-success:hover { background-color: #27ae60; }
@@ -27,16 +57,19 @@
         .btn-cancel { background-color: #95a5a6; color: white; width: 100%; margin-top: 5px; display: none; }
 
         /* Tabela */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background-color: #34495e; color: white; }
-        tr:hover { background-color: #f9f9f9; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: var(--bg-card); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--table-border); }
+        th { background-color: var(--table-th); color: white; }
+        tr:hover { background-color: var(--table-tr-hover); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Gerenciador de Clientes</h1>
+    <div class="header-area">
+        <h1>Gerenciador de Clientes</h1>
+        <button class="btn-theme" id="themeToggle">🌙 Modo Escuro</button>
+    </div>
 
     <div class="card">
         <h3 id="form-title">Adicionar Novo Cliente</h3>
@@ -79,6 +112,32 @@
 <script>
     const API_URL = 'api.php';
 
+    // ---- LÓGICA DO MODO ESCURO ----
+    const themeToggle = document.getElementById('themeToggle');
+    
+    // Verifica se o usuário já tinha escolhido o modo escuro antes
+    const currentTheme = localStorage.getItem('theme');
+    if (currentTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeToggle.innerText = "☀️ Modo Claro";
+    }
+
+    // Função que muda o tema ao clicar no botão
+    themeToggle.addEventListener('click', () => {
+        let theme = document.documentElement.getAttribute('data-theme');
+        
+        if (theme === 'dark') {
+            document.documentElement.removeAttribute('data-theme');
+            themeToggle.innerText = "🌙 Modo Escuro";
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeToggle.innerText = "☀️ Modo Claro";
+            localStorage.setItem('theme', 'dark');
+        }
+    });
+    // --------------------------------
+
     // Carregar os clientes assim que a página abrir
     document.addEventListener("DOMContentLoaded", fetchClientes);
 
@@ -120,7 +179,7 @@
         const telefone = document.getElementById("telefone").value;
 
         const dados = { nome, email, telefone };
-        if (id) dados.id = id; // Se tiver ID, inclui no envio para atualizar
+        if (id) dados.id = id;
 
         const response = await fetch(API_URL, {
             method: 'POST',
