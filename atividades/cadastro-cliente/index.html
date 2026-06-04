@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Clientes</title>
+    <title>Gerenciador de Clientes Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        /* Variáveis de cores para facilitar a troca de tema */
         :root {
             --bg-body: #f4f6f9;
             --bg-card: #ffffff;
@@ -15,9 +15,9 @@
             --table-th: #34495e;
             --table-tr-hover: #f9f9f9;
             --table-border: #eeeeee;
+            --input-bg: #ffffff;
         }
 
-        /* Cores do Tema Escuro */
         [data-theme="dark"] {
             --bg-body: #121212;
             --bg-card: #1e1e1e;
@@ -27,40 +27,42 @@
             --table-th: #1f1f1f;
             --table-tr-hover: #2a2a2a;
             --table-border: #333333;
+            --input-bg: #2d2d2d;
         }
 
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; transition: background-color 0.3s, color 0.3s; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: background-color 0.3s, color 0.3s; }
         body { background-color: var(--bg-body); margin: 0; padding: 20px; color: var(--text-color); }
         .container { max-width: 900px; margin: 0 auto; }
         
-        /* Cabeçalho com o botão de tema */
         .header-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         h1 { margin: 0; color: var(--text-title); }
         
-        /* Botão Tema Escuro */
-        .btn-theme { background-color: var(--table-th); color: white; padding: 10px 15px; border-radius: 20px; font-size: 14px; border: 1px solid var(--border-color); }
+        .btn-theme { background-color: var(--table-th); color: white; padding: 10px 15px; border-radius: 20px; font-size: 14px; border: 1px solid var(--border-color); cursor: pointer; }
 
-        /* Formulário */
         .card { background: var(--bg-card); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; background-color: var(--bg-card); color: var(--text-color); }
+        input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; background-color: var(--input-bg); color: var(--text-color); }
         
-        /* Botões de Ação */
-        button { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        /* Barra de Busca */
+        .search-box { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 15px; background-color: var(--input-bg); color: var(--text-color); }
+
+        button { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; }
         .btn-success { background-color: #2ecc71; color: white; width: 100%; }
         .btn-success:hover { background-color: #27ae60; }
         .btn-edit { background-color: #3498db; color: white; margin-right: 5px; }
-        .btn-edit:hover { background-color: #2980b9; }
         .btn-delete { background-color: #e74c3c; color: white; }
-        .btn-delete:hover { background-color: #c0392b; }
         .btn-cancel { background-color: #95a5a6; color: white; width: 100%; margin-top: 5px; display: none; }
 
-        /* Tabela */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: var(--bg-card); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; background: var(--bg-card); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--table-border); }
         th { background-color: var(--table-th); color: white; }
         tr:hover { background-color: var(--table-tr-hover); }
+
+        /* Paginação */
+        .pagination { display: flex; justify-content: center; align-items: center; margin-top: 15px; gap: 10px; }
+        .btn-page { background-color: var(--table-th); color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; }
+        .btn-page:disabled { background-color: #ccc; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -85,7 +87,7 @@
             </div>
             <div class="form-group">
                 <label for="telefone">Telefone</label>
-                <input type="tel" id="telefone" required placeholder="Ex: (11) 99999-9999">
+                <input type="text" id="telefone" required placeholder="Ex: (11) 99999-9999" maxlength="15">
             </div>
             <button type="submit" class="btn-success" id="btnSave">Salvar Cliente</button>
             <button type="button" class="btn-cancel" id="btnCancel" onclick="clearForm()">Cancelar Edição</button>
@@ -94,6 +96,8 @@
 
     <div class="card">
         <h3>Clientes Cadastrados</h3>
+        <input type="text" id="search" class="search-box" placeholder="🔍 Digite para pesquisar por nome ou e-mail...">
+        
         <table>
             <thead>
                 <tr>
@@ -103,30 +107,32 @@
                     <th>Ações</th>
                 </tr>
             </thead>
-            <tbody id="tableBody">
-                </tbody>
+            <tbody id="tableBody"></tbody>
         </table>
+
+        <div class="pagination">
+            <button class="btn-page" id="btnPrev" onclick="changePage(-1)">Anterior</button>
+            <span id="pageInfo">Página 1 de 1</span>
+            <button class="btn-page" id="btnNext" onclick="changePage(1)">Próximo</button>
+        </div>
     </div>
 </div>
 
 <script>
     const API_URL = 'api.php';
+    let todosClientes = [];
+    let clientesFiltrados = [];
+    let paginaAtual = 1;
+    const itensPorPagina = 5; // Defina quantos clientes quer ver por página
 
-    // ---- LÓGICA DO MODO ESCURO ----
+    // ---- MODO ESCURO ----
     const themeToggle = document.getElementById('themeToggle');
-    
-    // Verifica se o usuário já tinha escolhido o modo escuro antes
-    const currentTheme = localStorage.getItem('theme');
-    if (currentTheme === 'dark') {
+    if (localStorage.getItem('theme') === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
         themeToggle.innerText = "☀️ Modo Claro";
     }
-
-    // Função que muda o tema ao clicar no botão
     themeToggle.addEventListener('click', () => {
-        let theme = document.documentElement.getAttribute('data-theme');
-        
-        if (theme === 'dark') {
+        if (document.documentElement.getAttribute('data-theme') === 'dark') {
             document.documentElement.removeAttribute('data-theme');
             themeToggle.innerText = "🌙 Modo Escuro";
             localStorage.setItem('theme', 'light');
@@ -136,40 +142,80 @@
             localStorage.setItem('theme', 'dark');
         }
     });
-    // --------------------------------
 
-    // Carregar os clientes assim que a página abrir
+    // ---- MÁSCARA DE TELEFONE ----
+    document.getElementById('telefone').addEventListener('input', (e) => {
+        let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+        e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+    });
+
+    // ---- FILTRO / BUSCA EM TEMPO REAL ----
+    document.getElementById('search').addEventListener('input', (e) => {
+        const termo = e.target.value.toLowerCase();
+        clientesFiltrados = todosClientes.filter(c => 
+            c.nome.toLowerCase().includes(termo) || c.email.toLowerCase().includes(termo)
+        );
+        paginaAtual = 1;
+        renderTabela();
+    });
+
+    // ---- CARREGAR DADOS ----
     document.addEventListener("DOMContentLoaded", fetchClientes);
 
-    // Buscar clientes do PHP
     async function fetchClientes() {
         const response = await fetch(API_URL);
-        const clientes = await response.json();
-        
+        todosClientes = await response.json();
+        clientesFiltrados = [...todosClientes];
+        renderTabela();
+    }
+
+    // ---- RENDERIZAR TABELA COM PAGINAÇÃO ----
+    function renderTabela() {
         const tbody = document.getElementById("tableBody");
         tbody.innerHTML = "";
 
-        if(clientes.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Nenhum cliente cadastrado.</td></tr>`;
+        const totalPaginas = Math.ceil(clientesFiltrados.length / itensPorPagina) || 1;
+        
+        // Ajuste de segurança para páginas
+        if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+
+        const inicio = (paginaAtual - 1) * itensPorPagina;
+        const fim = inicio + itensPorPagina;
+        const listaExibida = clientesFiltrados.slice(inicio, fim);
+
+        if (listaExibida.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Nenhum cliente encontrado.</td></tr>`;
+            document.getElementById("pageInfo").innerText = `Página 1 de 1`;
+            document.getElementById("btnPrev").disabled = true;
+            document.getElementById("btnNext").disabled = true;
             return;
         }
 
-        clientes.forEach(cliente => {
+        listaExibida.forEach(cliente => {
             tbody.innerHTML += `
                 <tr>
                     <td>${cliente.nome}</td>
                     <td>${cliente.email}</td>
                     <td>${cliente.telefone}</td>
                     <td>
-                        <button class="btn-edit" onclick="editCliente(${JSON.stringify(cliente).replace(/"/g, '&quot;')})">Alterar</button>
+                        <button class="btn-edit" onclick='prepEdit(${JSON.stringify(cliente)})'>Alterar</button>
                         <button class="btn-delete" onclick="deleteCliente(${cliente.id})">Excluir</button>
                     </td>
                 </tr>
             `;
         });
+
+        document.getElementById("pageInfo").innerText = `Página ${paginaAtual} de ${totalPaginas}`;
+        document.getElementById("btnPrev").disabled = paginaAtual === 1;
+        document.getElementById("btnNext").disabled = paginaAtual === totalPaginas;
     }
 
-    // Adicionar ou Atualizar Cliente
+    function changePage(direcao) {
+        paginaAtual += direcao;
+        renderTabela();
+    }
+
+    // ---- ADICIONAR / ATUALIZAR ----
     document.getElementById("clientForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -188,16 +234,18 @@
         });
 
         const resultado = await response.json();
-        alert(resultado.message);
         
         if (resultado.status === "success") {
+            Swal.fire('Sucesso!', resultado.message, 'success');
             clearForm();
             fetchClientes();
+        } else {
+            Swal.fire('Erro!', resultado.message, 'error');
         }
     });
 
-    // Preparar formulário para Alteração
-    function editCliente(cliente) {
+    // ---- PREPARAR EDIÇÃO ----
+    function prepEdit(cliente) {
         document.getElementById("clientId").value = cliente.id;
         document.getElementById("nome").value = cliente.nome;
         document.getElementById("email").value = cliente.email;
@@ -208,22 +256,36 @@
         document.getElementById("btnCancel").style.display = "block";
     }
 
-    // Excluir Cliente
+    // ---- EXCLUIR COM CONFIRMAÇÃO DO SWEETALERT2 ----
     async function deleteCliente(id) {
-        if (confirm("Tem certeza que deseja excluir este cliente?")) {
-            const response = await fetch(API_URL, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
-            });
+        Swal.fire({
+            title: 'Tem certeza?',
+            text: "Você não poderá reverter esta ação!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e74c3c',
+            cancelButtonColor: '#95a5a6',
+            confirmButtonText: 'Sim, excluir!',
+            cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const response = await fetch(API_URL, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
 
-            const resultado = await response.json();
-            alert(resultado.message);
-            fetchClientes();
-        }
+                const resultado = await response.json();
+                if (resultado.status === "success") {
+                    Swal.fire('Deletado!', resultado.message, 'success');
+                    fetchClientes();
+                } else {
+                    Swal.fire('Erro!', resultado.message, 'error');
+                }
+            }
+        });
     }
 
-    // Limpar o formulário e resetar estado
     function clearForm() {
         document.getElementById("clientId").value = "";
         document.getElementById("clientForm").reset();
