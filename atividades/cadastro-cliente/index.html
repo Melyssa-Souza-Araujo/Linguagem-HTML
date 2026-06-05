@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Gerenciador de Clientes</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -267,6 +268,19 @@
             <span id="pageInfo">Página 1 de 1</span>
             <button class="btn-page" id="btnNext" onclick="changePage(1)">Próximo</button>
         </div>
+
+        <!-- PAINEL DE GRÁFICOS (DASHBOARD) -->
+<div class="card" style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
+    <div>
+        <h4 style="margin: 0 0 10px 0; text-align: center;">Perfil dos Clientes</h4>
+        <canvas id="graficoPerfil"></canvas>
+    </div>
+    <div>
+        <h4 style="margin: 0 0 10px 0; text-align: center;">Clientes por Estado</h4>
+        <canvas id="graficoEstados"></canvas>
+    </div>
+</div>
+        
     </div>
 </div>
 
@@ -335,6 +349,69 @@
         clientesFiltrados = [...todosClientes];
         renderTabela();
     }
+
+    let chartPerfil = null;
+let chartEstados = null;
+
+function renderizarGraficos() {
+    // 1. PROCESSAR DADOS PARA O PERFIL (PF vs PJ)
+    let pf = 0;
+    let pj = 0;
+    
+    todosClientes.forEach(c => {
+        if (c.cnpj && c.cnpj.trim() !== "") { pj++; } 
+        else { pf++; }
+    });
+
+    // 2. PROCESSAR DADOS PARA OS ESTADOS (Agrupamento)
+    let estadosContagem = {};
+    todosClientes.forEach(c => {
+        let uf = c.estado ? c.estado.toUpperCase() : "N/I";
+        estadosContagem[uf] = (estadosContagem[uf] || 0) + 1;
+    });
+
+    // Destrincha o objeto de estados em listas de Labels e Valores
+    let labelsEstados = Object.keys(estadosContagem);
+    let valoresEstados = Object.values(estadosContagem);
+
+    // Destrói os gráficos antigos se existirem (evita bugs visuais ao atualizar a tela)
+    if (chartPerfil) chartPerfil.destroy();
+    if (chartEstados) chartEstados.destroy();
+
+    // 3. RENDERIZAR GRÁFICO DE PERFIL (Doughnut/Rosca)
+    const ctxPerfil = document.getElementById('graficoPerfil').getContext('2d');
+    chartPerfil = new Chart(ctxPerfil, {
+        type: 'doughnut',
+        data: {
+            labels: ['Pessoa Física', 'Pessoa Jurídica'],
+            datasets: [{
+                data: [pf, pj],
+                backgroundColor: ['#2ecc71', '#3498db']
+            }]
+        },
+        options: { responsive: true }
+    });
+
+    // 4. RENDERIZAR GRÁFICO DE ESTADOS (Barras)
+    const ctxEstados = document.getElementById('graficoEstados').getContext('2d');
+    chartEstados = new Chart(ctxEstados, {
+        type: 'bar',
+        data: {
+            labels: labelsEstados,
+            datasets: [{
+                label: 'Total de Clientes',
+                data: valoresEstados,
+                backgroundColor: '#34495e',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+}
+    
 
     function renderTabela() {
         const tbody = document.getElementById("tableBody");
