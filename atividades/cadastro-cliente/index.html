@@ -3,55 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciador de Clientes Pro + CNPJ</title>
+    <title>Gerenciador de Clientes</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
-            --bg-body: #f4f6f9; --bg-card: #ffffff; --text-color: #333333;
-            --text-title: #2c3e50; --border-color: #cccccc; --table-th: #34495e;
-            --table-tr-hover: #f9f9f9; --table-border: #eeeeee; --input-bg: #ffffff;
+            --bg-body: #f4f6f9; 
+            --bg-card: #ffffff; 
+            --text-color: #333333;
+            --text-title: #2c3e50; 
+            --border-color: #cccccc; 
+            --table-th: #34495e;
+            --table-tr-hover: #f9f9f9; 
+            --table-border: #eeeeee; 
+            --input-bg: #ffffff;
         }
         [data-theme="dark"] {
-            --bg-body: #121212; --bg-card: #1e1e1e; --text-color: #e0e0e0;
-            --text-title: #ffffff; --border-color: #444444; --table-th: #1f1f1f;
-            --table-tr-hover: #2a2a2a; --table-border: #333333; --input-bg: #2d2d2d;
+            --bg-body: #121212; 
+            --bg-card: #1e1e1e; 
+            --text-color: #e0e0e0;
+            --text-title: #ffffff; 
+            --border-color: #444444; 
+            --table-th: #1f1f1f;
+            --table-tr-hover: #2a2a2a; 
+            --table-border: #333333; 
+            --input-bg: #2d2d2d;
         }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: background-color 0.3s, color 0.3s; }
-        body { background-color: var(--bg-body); margin: 0; padding: 20px; color: var(--text-color); }
-        .container { max-width: 1100px; margin: 0 auto; }
-        .header-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        h1 { margin: 0; color: var(--text-title); }
-        .btn-theme { background-color: var(--table-th); color: white; padding: 10px 15px; border-radius: 20px; font-size: 14px; border: 1px solid var(--border-color); cursor: pointer; }
-        .card { background: var(--bg-card); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        * { 
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif; 
+            transition: background-color 0.3s, color 0.3s; 
+        }
+        body { 
+            background-color: var(--bg-body); 
+            margin: 0; 
+            padding: 20px; 
+            color: var(--text-color); 
+        }
+        .container { 
+            max-width: 1100px; 
+            margin: 0 auto; 
+        }
+        .header-area { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+        }
+        h1 { 
+            margin: 0; 
+            color: var(--text-title);
+         }
+        .btn-theme { 
+            background-color: var(--table-th); 
+            color: white; 
+            padding: 10px 15px; 
+            border-radius: 20px; 
+            font-size: 14px; 
+            border: 1px solid var(--border-color); 
+            cursor: pointer; 
+        }
+        .card { 
+            background: var(--bg-card); 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            margin-bottom: 20px; 
+        }
         
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-        .form-group { margin-bottom: 5px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
-        input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; background-color: var(--input-bg); color: var(--text-color); }
-        input[readonly] { background-color: rgba(0,0,0,0.05); cursor: not-allowed; }
+        .form-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; 
+            margin-top: 15px; 
+        }
+        .form-group { 
+            margin-bottom: 5px; 
+        }
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+            font-size: 14px; 
+        }
+        input { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 4px; 
+            font-size: 14px; 
+            background-color: var(--input-bg); 
+            color: var(--text-color); 
+        }
+        input[readonly] { 
+            background-color: rgba(0,0,0,0.05); 
+            cursor: not-allowed; 
+        }
 
-        .search-box { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 4px; background-color: var(--input-bg); color: var(--text-color); }
-        button { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-success { background-color: #2ecc71; color: white; width: 100%; margin-top: 15px; padding: 12px; font-size: 16px; }
-        .btn-edit { background-color: #3498db; color: white; margin-right: 5px; }
-        .btn-delete { background-color: #e74c3c; color: white; }
-        .btn-cancel { background-color: #95a5a6; color: white; width: 100%; margin-top: 5px; display: none; }
+        .search-box { 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 15px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 4px; 
+            background-color: var(--input-bg); 
+            color: var(--text-color); 
+        }
+        button { 
+            padding: 10px 15px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: bold; 
+        }
+        .btn-success { 
+            background-color: #2ecc71; 
+            color: white; 
+            width: 100%; 
+            margin-top: 15px; 
+            padding: 12px; 
+            font-size: 16px; 
+        }
+        .btn-edit { 
+            background-color: #3498db; 
+            color: white; 
+            margin-right: 5px; 
+        }
+        .btn-delete {
+             background-color: #e74c3c; 
+            color: white; 
+        }
+        .btn-cancel { 
+            background-color: #95a5a6; 
+            color: white; 
+            width: 100%;
+            margin-top: 5px; 
+            display: none; 
+        }
         
-        table { width: 100%; border-collapse: collapse; background: var(--bg-card); border-radius: 8px; overflow: hidden; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--table-border); }
-        th { background-color: var(--table-th); color: white; }
-        tr:hover { background-color: var(--table-tr-hover); }
-        .no-cnpj { color: #95a5a6; font-style: italic; font-size: 13px; }
-        .pagination { display: flex; justify-content: center; align-items: center; margin-top: 15px; gap: 10px; }
-        .btn-page { background-color: var(--table-th); color: white; border: none; padding: 5px 12px; border-radius: 4px; }
-        .btn-page:disabled { background-color: #ccc; cursor: not-allowed; }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            background: var(--bg-card); 
+            border-radius: 8px; 
+            overflow: hidden; 
+        }
+        th, td { 
+            padding: 12px 15px; text-align: left; 
+            border-bottom: 1px solid var(--table-border); 
+        }
+        th { 
+            background-color: var(--table-th); 
+            color: white; 
+        }
+        tr:hover {
+            background-color: var(--table-tr-hover); 
+        }
+        .no-cnpj { 
+            color: #95a5a6; 
+            font-style: italic; 
+            font-size: 13px; 
+        }
+        .pagination { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            margin-top: 15px; 
+            gap: 10px;
+         }
+        .btn-page { 
+            background-color: var(--table-th); 
+            color: white; border: none; 
+            padding: 5px 12px; 
+            border-radius: 4px; 
+        }
+        .btn-page:disabled { 
+            background-color: #ccc; 
+            cursor: not-allowed; 
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header-area">
-        <h1>Gerenciador de Clientes Pro</h1>
+        <h1>Gerenciador de Clientes</h1>
         <button class="btn-theme" id="themeToggle">🌙 Modo Escuro</button>
     </div>
 
