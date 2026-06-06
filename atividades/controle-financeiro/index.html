@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Financeiro Pro - Controle de Gastos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 10px -1px rgba(0, 0, 0, 0.03); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Finanças Inteligentes</h1>
+                <p class="text-slate-500">Gestão e análise em tempo real do seu fluxo de caixa.</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 card-shadow flex items-center gap-3 w-full md:w-auto">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Definir Orçamento (R$)</label>
+                    <input type="number" id="inputOrcamento" step="0.01" min="0" class="w-40 font-bold text-lg text-slate-700 focus:outline-none border-b-2 border-slate-200 focus:border-indigo-500 transition-colors">
+                </div>
+                <button onclick="atualizarOrcamento()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-all shadow-sm">
+                    Definir
+                </button>
+            </div>
+        </header>
+
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 card-shadow flex flex-col justify-between">
+                <span class="text-sm font-medium text-slate-400 uppercase tracking-wider">Orçamento Inicial</span>
+                <div class="mt-2 flex items-baseline gap-1">
+                    <span class="text-2xl font-bold text-slate-800" id="numOrcamento">R$ 0,00</span>
+                </div>
+                <div class="mt-4 w-full bg-slate-100 rounded-full h-2">
+                    <div class="bg-indigo-500 h-2 rounded-full transition-all duration-500" style="width: 100%"></div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 card-shadow flex flex-col justify-between">
+                <span class="text-sm font-medium text-slate-400 uppercase tracking-wider">Total Gasto</span>
+                <div class="mt-2">
+                    <span class="text-2xl font-bold text-rose-600" id="numTotalGasto">R$ 0,00</span>
+                </div>
+                <div class="mt-4 w-full bg-slate-100 rounded-full h-2">
+                    <div id="progressoGastoBarra" class="bg-rose-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div id="cardSaldo" class="bg-white p-6 rounded-2xl border border-slate-200 card-shadow flex flex-col justify-between transition-colors duration-300">
+                <span class="text-sm font-medium text-slate-400 uppercase tracking-wider">Saldo Restante</span>
+                <div class="mt-2">
+                    <span class="text-2xl font-bold" id="numSaldoRestante">R$ 0,00</span>
+                </div>
+                <p class="text-xs mt-4 font-medium" id="txtStatusSaldo">Carregando dados...</p>
+            </div>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 card-shadow lg:col-span-5 flex flex-col justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900 mb-4">Lançar Nova Despesa</h2>
+                    <form id="formDespesa" onsubmit="salvarDespesa(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Descrição</label>
+                            <input type="text" id="desc" placeholder="Ex: Supermercado, Aluguel" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Valor (R$)</label>
+                                <input type="number" id="valor" step="0.01" min="0.01" placeholder="0,00" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1">Data</label>
+                                <input type="date" id="data_gasto" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Categoria</label>
+                            <select id="categoria" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all bg-white">
+                                <option value="" disabled selected>Escolha uma categoria...</option>
+                                <option value="Alimentação">Alimentação</option>
+                                <option value="Moradia">Moradia</option>
+                                <option value="Transporte">Transporte</option>
+                                <option value="Saúde">Saúde</option>
+                                <option value="Lazer">Lazer</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl transition-all shadow-md transform hover:-translate-y-0.5 mt-2">
+                            Registrar Despesa
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 card-shadow lg:col-span-7 flex flex-col justify-center items-center">
+                <h2 class="text-xl font-bold text-slate-900 mb-4 self-start">Distribuição dos Gastos</h2>
+                <div class="w-full max-h-[280px] flex justify-center">
+                    <canvas id="graficoDonut"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <section class="bg-white rounded-2xl border border-slate-200 card-shadow overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Extrato Detalhado</h2>
+                    <p class="text-sm text-slate-500">Listagem histórica das saídas registradas.</p>
+                </div>
+                <div class="text-sm font-medium text-slate-500 bg-white border px-3 py-1.5 rounded-lg" id="contadorItens">
+                    0 lançamentos
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-200 bg-slate-100/50 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                            <th class="py-4 px-6">Descrição</th>
+                            <th class="py-4 px-6">Categoria</th>
+                            <th class="py-4 px-6">Data</th>
+                            <th class="py-4 px-6 text-right">Valor</th>
+                            <th class="py-4 px-6 text-center">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoTabela" class="divide-y divide-slate-100 text-sm text-slate-700">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const API_URL = 'api.php';
+        let chartInstance = null;
+
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function formatarData(dataIso) {
+            const partes = dataIso.split('-');
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+
+        document.getElementById('data_gasto').valueAsDate = new Date();
+
+        // Puxar os dados atualizados e processados do backend PHP
+        async function carregarDashboard() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+
+                // Atualizar Cards principais
+                document.getElementById('numOrcamento').innerText = formatarMoeda(data.orcamento_total);
+                document.getElementById('numTotalGasto').innerText = formatarMoeda(data.total_gasto);
+                document.getElementById('numSaldoRestante').innerText = formatarMoeda(data.saldo_restante);
+                document.getElementById('inputOrcamento').value = data.orcamento_total.toFixed(2);
+                document.getElementById('contadorItens').innerText = `${data.despesas.length} lançamento(s)`;
+
+                // Atualizar barra de progresso do gasto
+                let porcUnclamped = data.orcamento_total > 0 ? (data.total_gasto / data.orcamento_total) * 100 : 0;
+                document.getElementById('progressoGastoBarra').style.width = `${Math.min(porcUnclamped, 100)}%`;
+
+                // Tratamento estético do status do saldo (Verde estável / Vermelho estourado)
+                const cardSaldo = document.getElementById('cardSaldo');
+                const txtStatusSaldo = document.getElementById('txtStatusSaldo');
+                const numSaldo = document.getElementById('numSaldoRestante');
+
+                if (data.saldo_restante < 0) {
+                    cardSaldo.className = "bg-rose-50 p-6 rounded-2xl border border-rose-200 card-shadow flex flex-col justify-between transition-colors duration-300";
+                    numSaldo.className = "text-2xl font-bold text-rose-700";
+                    txtStatusSaldo.className = "text-xs mt-4 font-bold text-rose-600";
+                    txtStatusSaldo.innerText = "⚠ Orçamento estourado! Reveja seus custos.";
+                } else {
+                    cardSaldo.className = "bg-emerald-50 p-6 rounded-2xl border border-emerald-200 card-shadow flex flex-col justify-between transition-colors duration-300";
+                    numSaldo.className = "text-2xl font-bold text-emerald-700";
+                    txtStatusSaldo.className = "text-xs mt-4 font-bold text-emerald-600";
+                    txtStatusSaldo.innerText = "✓ Suas contas estão sob controle.";
+                }
+
+                // Renderizar a tabela de despesas
+                const tbody = document.getElementById('corpoTabela');
+                tbody.innerHTML = '';
+
+                if (data.despesas.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-slate-400 font-medium">Nenhum gasto lançado.</td></tr>`;
+                } else {
+                    data.despesas.forEach(item => {
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="py-4 px-6 font-semibold text-slate-800">${item.descricao}</td>
+                                <td class="py-4 px-6">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200">
+                                        ${item.categoria}
+                                    </span>
+                                </td>
+                                <td class="py-4 px-6 text-slate-500">${formatarData(item.data_gasto)}</td>
+                                <td class="py-4 px-6 text-right font-bold text-slate-900">${formatarMoeda(item.valor)}</td>
+                                <td class="py-4 px-6 text-center">
+                                    <button onclick="deletarDespesa(${item.id})" class="text-rose-500 hover:text-rose-700 font-semibold p-1 hover:bg-rose-50 rounded-lg transition-all text-xs">
+                                        Remover
+                                    </button>
+                                </td>
+                            </tr>`;
+                    });
+                }
+
+                // Desenhar gráfico de distribuição
+                renderizarGrafico(data.grafico_categorias);
+
+            } catch (err) {
+                console.error(err);
+                Swal.fire("Erro!", "Falha ao processar dados da API local.", "error");
+            }
+        }
+
+        function renderizarGrafico(dadosCategorias) {
+            const ctx = document.getElementById('graficoDonut').getContext('2d');
+            const labels = Object.keys(dadosCategorias);
+            const valores = Object.values(dadosCategorias);
+
+            if (labels.length === 0) {
+                labels.push("Sem despesas");
+                valores.push(1);
+            }
+
+            const coresMap = {
+                'Alimentação': '#f59e0b', 'Moradia': '#3b82f6', 'Transporte': '#10b981',
+                'Saúde': '#ef4444', 'Lazer': '#ec4899', 'Outros': '#64748b', 'Sem despesas': '#e2e8f0'
+            };
+            const coresExibicao = labels.map(label => coresMap[label] || '#818cf8');
+
+            if (chartInstance) { chartInstance.destroy(); }
+
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{ data: valores, backgroundColor: coresExibicao, borderWidth: 2, borderColor: '#ffffff' }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 12, weight: '500' }, color: '#475569' } } },
+                    cutout: '70%'
+                }
+            });
+        }
+
+        // Eventos do Sistema (Inserir, Eliminar e Atualizar Orçamento)
+        async function salvarDespesa(e) {
+            e.preventDefault();
+            const payload = {
+                descricao: document.getElementById('desc').value,
+                valor: parseFloat(document.getElementById('valor').value),
+                categoria: document.getElementById('categoria').value,
+                data_gasto: document.getElementById('data_gasto').value
+            };
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const res = await response.json();
+            if (res.status === 'success') {
+                document.getElementById('formDespesa').reset();
+                document.getElementById('data_gasto').valueAsDate = new Date();
+                carregarDashboard();
+                Swal.fire({ title: 'Sucesso!', text: res.message, icon: 'success', timer: 1200, showConfirmButton: false });
+            } else {
+                Swal.fire('Erro', res.message, 'error');
+            }
+        }
+
+        async function atualizarOrcamento() {
+            const valor = parseFloat(document.getElementById('inputOrcamento').value);
+            if (isNaN(valor) || valor < 0) {
+                Swal.fire('Inválido', 'Defina um valor monetário positivo.', 'warning');
+                return;
+            }
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ acao: 'atualizar_orcamento', valor_total: valor })
+            });
+
+            const res = await response.json();
+            if (res.status === 'success') {
+                carregarDashboard();
+                Swal.fire({ title: 'Orçamento Definido!', text: res.message, icon: 'success', timer: 1200, showConfirmButton: false });
+            }
+        }
+
+        function deletarDespesa(id) {
+            Swal.fire({
+                title: 'Eliminar despesa?',
+                text: "Esta transação sairá definitivamente do extrato de contas.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sim, remover',
+                cancelButtonText: 'Cancelar'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    const response = await fetch(API_URL, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: id })
+                    });
+                    const res = await response.json();
+                    if (res.status === 'success') {
+                        carregarDashboard();
+                        Swal.fire('Removido!', res.message, 'success');
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', carregarDashboard);
+    </script>
+</body>
+</html>
