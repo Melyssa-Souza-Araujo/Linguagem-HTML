@@ -1,110 +1,253 @@
 <?php
-include 'db.php';
 session_start();
+include 'db.php';
 
-// Segurança dupla: Só entra se for admin
-if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'admin') {
-    header("Location: index.php");
-    exit;
+// =========================================================================
+// CAMADA 1: MODEL (Orientação a Objetos & Encapsulamento de Dados)
+// =========================================================================
+class AulaModel {
+    private PDO $pdo;
+
+    public function __construct(PDO $pdo) {
+        $this->pdo = $pdo;
+    }
+
+    /**
+     * Recupera todas as aulas ordenadas por ID decrescente.
+     */
+    public function listarTodas(): array {
+        return $this->pdo->query("SELECT * FROM aulas ORDER BY id DESC")->fetchAll();
+    }
+
+    /**
+     * Insere uma nova aula no banco de dados.
+     */
+    public function inserir(string $titulo, string $url): int|false {
+        $stmt = $this->pdo->prepare("INSERT INTO aulas (titulo, url_video) VALUES (?, ?)");
+        if ($stmt->execute([$titulo, $url])) {
+            return (int)$this->pdo->lastInsertId();
+        }
+        return false;
+    }
+
+    /**
+     * Remove uma aula do banco de dados pelo ID.
+     */
+    public function excluir(int $id): bool {
+        $stmt = $this->pdo->prepare("DELETE FROM aulas WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
 }
 
-// Cadastrar Nova Aula
-if (isset($_POST['cadastrar_aula'])) {
-    $titulo = trim($_POST['titulo']);
-    $desc = trim($_POST['descricao']);
-    $url = trim($_POST['url_video']);
-    $ordem = (int)$_POST['ordem'];
+// =========================================================================
+// CAMADA 2: CONTROLLER (Regras de Negócio, Autenticação e Roteamento)
+// =========================================================================
+class AdminController {
+    private AulaModel $model;
 
-    $stmt = $pdo->prepare("INSERT INTO aulas (titulo, descricao, url_video, ordem) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$titulo, $desc, $url, $ordem]);
+    public function __construct(AulaModel $model) {
+        $this->model = $model;
+    }
+
+    /**
+     * Aplica a guarda de segurança do painel administrativo.
+     */
+    public function verificarAutenticacao(): void {
+        if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'admin') {
+            header("Location: index.php");
+            exit;
+        }
+    }
+
+    /**
+     * Roteador interno: detecta o tipo de requisição e decide a ação.
+     */
+    public function rotear(): array|null {
+        // Manipula Deleção Assíncrona (GET)
+        if (isset($_GET['excluir_async'])) {
+            $this->enviarJsonHeaders();
+            $id = intval($_GET['excluir_async']);
+            
+            if ($this->model->excluir($id)) {
+                echo json_encode(['success' => true, 'message' => 'Aula removida com sucesso via OOP!']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Falha interna da Model ao excluir.']);
+            }
+            exit;
+        }
+
+        // Manipula Inserção Assíncrona (POST)
+        if (isset($_POST['adicionar_async'])) {
+            $this->enviarJsonHeaders();
+            $titulo = trim($_POST['titulo'] ?? '');
+            $url = trim($_POST['url_video'] ?? '');
+
+            if (empty($titulo) || empty($url)) {
+                echo json_encode(['success' => false, 'message' => 'Dados inválidos interceptados pela Controller.']);
+                exit;
+            }
+
+            $novoId = $this->model->inserir($titulo, $url);
+            if ($novoId) {
+                echo json_encode([
+                    'success' => true, 
+                    'message' => 'Aula cadastrada com sucesso via MVC!',
+                    'aula' => ['id' => $novoId, 'titulo' => $titulo, 'url_video' => $url]
+                ]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Erro de persistência na Model.']);
+            }
+            exit;
+        }
+
+        // Se nenhuma rota assíncrona foi disparada, carrega os dados para a View padrão
+        return $this->model->listarTodas();
+    }
+
+    private function enviarJsonHeaders(): void {
+        header('Content-Type: application/json; charset=utf-8');
+    }
 }
 
-// Excluir Aula
-if (isset($_GET['excluir'])) {
-    $id = (int)$_GET['excluir'];
-    $stmt = $pdo->prepare("DELETE FROM aulas WHERE Id = ?");
-    $stmt->execute([$id]);
-    header("Location: admin.php");
-    exit;
-}
+// =========================================================================
+// EXECUÇÃO / INICIALIZAÇÃO DO ECOSSISTEMA MVC
+// =========================================================================
+// Injeção de Dependência: Passamos o PDO do db.php para dentro da nossa Model
+$aulaModel = new AulaModel($pdo);
+$controller = new AdminController($aulaModel);
 
-// Listar todas
-$stmt = $pdo->query("SELECT * FROM aulas ORDER BY ordem ASC");
-$aulas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// 1. Executa a validação de segurança
+$controller->verificarAutenticacao();
+
+// 2. Processa as rotas e captura a listagem de aulas para a View
+$aulas = $controller->rotear();
 ?>
+<!-- =========================================================================
+     CAMADA 3: VIEW (Apenas Renderização de Interface, CSS e JavaScript)
+     ========================================================================= -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Admin - DevAcademy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo (MVC/POO) - DevAcademy</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: #f3f4f6; color: #111827; }
-        header { background: #4c1d95; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-        @media(max-width: 768px) { .container { grid-template-columns: 1fr; } }
-        .box { background: white; padding: 30px; border-radius: 12px; border: 1px solid #ddd6fe; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
-        h2 { color: #5b21b6; margin-bottom: 20px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; color: #1f2937; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 5px solid #6d28d9; }
+        h2 { color: #5b21b6; margin-top: 0; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #4c1d95; }
-        input, textarea { wIdth: 100%; padding: 10px; border: 1px solid #ddd6fe; border-radius: 6px; }
-        button { background: #7c3aed; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        button:hover { background: #6d28d9; }
-        .lista-itens { list-style: none; }
-        .item-aula { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f3f4f6; }
-        .btn-excluir { color: #ef4444; text-decoration: none; font-size: 14px; font-weight: bold; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #4b5563; }
+        input[type="text"] { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; }
+        input[type="text"]:focus { border-color: #a78bfa; outline: none; box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.3); }
+        .btn { background-color: #6d28d9; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: background 0.2s; }
+        .btn:hover { background-color: #5b21b6; }
+        
+        .lista-aulas { list-style: none; padding: 0; margin: 0; }
+        .aula-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #e5e7eb; transition: background 0.2s; }
+        .aula-item:hover { background-color: #f9fafb; }
+        .btn-excluir { background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+        .btn-excluir:hover { background-color: #dc2626; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background-color: #6d28d9; color: white; padding: 14px 24px; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); font-weight: 500; min-width: 250px; opacity: 0; transform: translateY(20px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.error { background-color: #b91c1c; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Painel do Administrador</h1>
-        <div>
-            <a href="cursos.php" style="color: white; margin-right: 20px; text-decoration: none;">Ver Site</a>
-            <a href="logout.php" style="background: #7c3aed; padding: 8px 16px; border-radius: 6px; color: white; text-decoration: none;">Sair</a>
-        </div>
-    </header>
-
-    <div class="container">
-        <!-- Formulário de inserção -->
-        <div class="box">
-            <h2>Publicar Nova Aula</h2>
-            <form method="POST">
-                <div class="form-group">
-                    <label>Título da Aula</label>
-                    <input type="text" name="titulo" required placeholder="Ex: Introdução ao PHP">
-                </div>
-                <div class="form-group">
-                    <label>Link do Vídeo (YouTube)</label>
-                    <input type="url" name="url_video" required placeholder="Ex: https://www.youtube.com/watch?v=XYZ123">
-                </div>
-                <div class="form-group">
-                    <label>Ordem de Exibição</label>
-                    <input type="number" name="ordem" value="1" required>
-                </div>
-                <div class="form-group">
-                    <label>Descrição / Resumo</label>
-                    <textarea name="descricao" rows="4" required placeholder="O que o aluno aprenderá nessa aula..."></textarea>
-                </div>
-                <button type="submit" name="cadastrar_aula">Salvar no Banco</button>
-            </form>
-        </div>
-
-        <!-- Listagem e controle de exclusão -->
-        <div class="box">
-            <h2>Aulas Ativas (<?= count($aulas) ?>)</h2>
-            <ul class="lista-itens">
-                <?php foreach ($aulas as $aula): ?>
-                    <li class="item-aula">
-                        <div>
-                            <strong>[#<?= $aula['ordem'] ?>] <?= htmlspecialchars($aula['titulo']) ?></strong>
-                        </div>
-                        <a href="admin.php?excluir=<?= $aula['id'] ?>" class="btn-excluir" onclick="return confirm('Tem certeza que deseja apagar essa aula?')">Excluir</a>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
+<div class="container">
+    <!-- CADASTRO -->
+    <div class="card">
+        <h2>Cadastrar Nova Aula <small style="font-size:12px; color:#7c3aed;">(Modo MVC)</small></h2>
+        <form id="form-adicionar-aula">
+            <div class="form-group">
+                <label for="titulo">Título da Aula</label>
+                <input type="text" id="titulo" name="titulo" placeholder="Ex: Arquitetura de Software" required>
+            </div>
+            <div class="form-group">
+                <label for="url_video">URL do Vídeo (YouTube)</label>
+                <input type="text" id="url_video" name="url_video" placeholder="Ex: https://www.youtube.com/watch?v=..." required>
+            </div>
+            <button type="submit" class="btn">Salvar Aula</button>
+        </form>
     </div>
 
+    <!-- LISTAGEM -->
+    <div class="card">
+        <h2>Aulas Cadastradas</h2>
+        <ul id="lista-aulas-container" class="lista-aulas">
+            <?php if (!empty($aulas)): ?>
+                <?php foreach ($aulas as $aula): ?>
+                    <li class="aula-item" id="aula-<?= $aula['id'] ?>">
+                        <span><?= htmlspecialchars($aula['titulo']) ?></span>
+                        <button class="btn-excluir" data-id="<?= $aula['id'] ?>">Excluir</button>
+                    </li>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </ul>
+    </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+function dispararToast(mensagem, tipo = 'sucesso') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${tipo === 'erro' ? 'error' : ''}`;
+    toast.innerText = message = mensagem;
+    container.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+document.getElementById('form-adicionar-aula').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    formData.append('adicionar_async', 'true');
+
+    fetch('admin.php', { method: 'POST', body: formData })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            dispararToast(data.message, 'sucesso');
+            this.reset();
+            const containerLista = document.getElementById('lista-aulas-container');
+            const novoItem = document.createElement('li');
+            novoItem.className = 'aula-item';
+            novoItem.id = `aula-${data.aula.id}`;
+            novoItem.innerHTML = `<span>${escapeHTML(data.aula.titulo)}</span><button class="btn-excluir" data-id="${data.aula.id}">Excluir</button>`;
+            containerLista.insertBefore(novoItem, containerLista.firstChild);
+        } else { dispararToast(data.message, 'erro'); }
+    }).catch(() => dispararToast('Erro na comunicação com o controlador.', 'erro'));
+});
+
+document.getElementById('lista-aulas-container').addEventListener('click', function(e) {
+    if (e.target.classList.contains('btn-excluir')) {
+        const idAula = e.target.getAttribute('data-id');
+        if (confirm('Tem certeza que deseja remover esta aula?')) {
+            fetch(`admin.php?excluir_async=${idAula}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    dispararToast(data.message, 'sucesso');
+                    const elementoAula = document.getElementById(`aula-${idAula}`);
+                    elementoAula.style.opacity = '0';
+                    setTimeout(() => elementoAula.remove(), 200);
+                } else { dispararToast(data.message, 'erro'); }
+            }).catch(() => dispararToast('Erro ao processar requisição.', 'erro'));
+        }
+    }
+});
+
+function escapeHTML(string) {
+    return string.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+</script>
 </body>
 </html>
