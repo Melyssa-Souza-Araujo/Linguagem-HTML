@@ -28,5 +28,5 @@ ON DUPLICATE KEY UPDATE id=id;
 
 
 UPDATE usuarios 
-SET senha = '$2y$10$89JbSsn1eCHg/0Pz98kXyeV6k8R.ZgC3.Qk0F1Z/nSshYy38v71pG' 
+SET senha = 'admin123' 
 WHERE email = 'admin@dev.com';
