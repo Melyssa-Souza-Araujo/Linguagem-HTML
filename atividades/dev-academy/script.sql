@@ -25,3 +25,8 @@ CREATE TABLE IF NOT EXISTS aulas (
 INSERT INTO usuarios (nome, email, senha, tipo) 
 VALUES ('Administrador', 'admin@dev.com', '$2y$10$89JbSsn1eCHg/0Pz98kXyeV6k8R.ZgC3.Qk0F1Z/nSshYy38v71pG', 'admin')
 ON DUPLICATE KEY UPDATE id=id;
+
+
+UPDATE usuarios 
+SET senha = '$2y$10$89JbSsn1eCHg/0Pz98kXyeV6k8R.ZgC3.Qk0F1Z/nSshYy38v71pG' 
+WHERE email = 'admin@dev.com';
