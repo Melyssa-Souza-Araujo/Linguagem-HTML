@@ -2,9 +2,6 @@
 session_start();
 include 'db.php';
 
-// =========================================================================
-// CAMADA 1: MODEL (Orientação a Objetos & Encapsulamento de Dados)
-// =========================================================================
 class AulaModel {
     private PDO $pdo;
 
@@ -12,16 +9,10 @@ class AulaModel {
         $this->pdo = $pdo;
     }
 
-    /**
-     * Recupera todas as aulas ordenadas por ID decrescente.
-     */
     public function listarTodas(): array {
         return $this->pdo->query("SELECT * FROM aulas ORDER BY id DESC")->fetchAll();
     }
 
-    /**
-     * Insere uma nova aula no banco de dados.
-     */
     public function inserir(string $titulo, string $url): int|false {
         $stmt = $this->pdo->prepare("INSERT INTO aulas (titulo, url_video) VALUES (?, ?)");
         if ($stmt->execute([$titulo, $url])) {
@@ -30,18 +21,12 @@ class AulaModel {
         return false;
     }
 
-    /**
-     * Remove uma aula do banco de dados pelo ID.
-     */
     public function excluir(int $id): bool {
         $stmt = $this->pdo->prepare("DELETE FROM aulas WHERE id = ?");
         return $stmt->execute([$id]);
     }
 }
 
-// =========================================================================
-// CAMADA 2: CONTROLLER (Regras de Negócio, Autenticação e Roteamento)
-// =========================================================================
 class AdminController {
     private AulaModel $model;
 
@@ -49,9 +34,6 @@ class AdminController {
         $this->model = $model;
     }
 
-    /**
-     * Aplica a guarda de segurança do painel administrativo.
-     */
     public function verificarAutenticacao(): void {
         if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_tipo'] !== 'admin') {
             header("Location: index.php");
@@ -59,12 +41,9 @@ class AdminController {
         }
     }
 
-    /**
-     * Roteador interno: detecta o tipo de requisição e decide a ação.
-     */
+ 
     public function rotear(): array|null {
-        // Manipula Deleção Assíncrona (GET)
-        if (isset($_GET['excluir_async'])) {
+          if (isset($_GET['excluir_async'])) {
             $this->enviarJsonHeaders();
             $id = intval($_GET['excluir_async']);
             
@@ -76,7 +55,6 @@ class AdminController {
             exit;
         }
 
-        // Manipula Inserção Assíncrona (POST)
         if (isset($_POST['adicionar_async'])) {
             $this->enviarJsonHeaders();
             $titulo = trim($_POST['titulo'] ?? '');
@@ -100,7 +78,6 @@ class AdminController {
             exit;
         }
 
-        // Se nenhuma rota assíncrona foi disparada, carrega os dados para a View padrão
         return $this->model->listarTodas();
     }
 
@@ -109,22 +86,12 @@ class AdminController {
     }
 }
 
-// =========================================================================
-// EXECUÇÃO / INICIALIZAÇÃO DO ECOSSISTEMA MVC
-// =========================================================================
-// Injeção de Dependência: Passamos o PDO do db.php para dentro da nossa Model
 $aulaModel = new AulaModel($pdo);
 $controller = new AdminController($aulaModel);
-
-// 1. Executa a validação de segurança
 $controller->verificarAutenticacao();
-
-// 2. Processa as rotas e captura a listagem de aulas para a View
 $aulas = $controller->rotear();
 ?>
-<!-- =========================================================================
-     CAMADA 3: VIEW (Apenas Renderização de Interface, CSS e JavaScript)
-     ========================================================================= -->
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -158,7 +125,6 @@ $aulas = $controller->rotear();
 <body>
 
 <div class="container">
-    <!-- CADASTRO -->
     <div class="card">
         <h2>Cadastrar Nova Aula <small style="font-size:12px; color:#7c3aed;">(Modo MVC)</small></h2>
         <form id="form-adicionar-aula">
@@ -174,7 +140,6 @@ $aulas = $controller->rotear();
         </form>
     </div>
 
-    <!-- LISTAGEM -->
     <div class="card">
         <h2>Aulas Cadastradas</h2>
         <ul id="lista-aulas-container" class="lista-aulas">
