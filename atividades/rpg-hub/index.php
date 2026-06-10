@@ -30,21 +30,25 @@ if (isset($_POST['action']) && $_POST['action'] == 'login') {
     $senha = $_POST['senha'];
 
     if ($email) {
-        $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE email = ?");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
+        try {
+            $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE email = ?");
+            $stmt->execute([$email]);
+            $user = $stmt->fetch();
 
-        if ($user && password_verify($senha, $user['senha'])) {
-            // Guarda as informações do usuário na Sessão do servidor
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_nome'] = $user['nome'];
-            $_SESSION['user_tipo'] = $user['tipo'];
+            if ($user && password_verify($senha, $user['senha'])) {
+                // Guarda as informações do usuário na Sessão do servidor
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['user_nome'] = $user['nome'];
+                $_SESSION['user_tipo'] = $user['tipo'];
 
-            // CONECTADO: Envia o usuário direto para a ficha dele
-            header("Location: ficha.php");
-            exit;
-        } else {
-            $erro = "E-mail ou senha incorretos.";
+                // CONECTADO: Envia o usuário direto para a ficha dele
+                header("Location: ficha.php");
+                exit;
+            } else {
+                $erro = "E-mail ou senha incorretos.";
+            }
+        } catch (PDOException $e) {
+            $erro = "Erro no banco de dados. Tente novamente mais tarde.";
         }
     }
 }
