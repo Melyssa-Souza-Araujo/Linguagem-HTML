@@ -2,6 +2,8 @@
 session_start();
 include 'db.php';
 
+// Ensure $pdo is recognized in the global scope
+global $pdo;
 class AulaModel {
     private PDO $pdo;
 
