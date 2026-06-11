@@ -8,15 +8,23 @@ include 'conexao.php';
 $mensagem_sucesso = "";
 $mensagem_erro = "";
 
-// PROCESSAR CADASTRO DE PAÍS
+// PROCESSAR CADASTRO DE PAÍS (COM VERIFICAÇÃO DE DUPLICIDADE)
 if (isset($_POST['cadastrar_pais'])) {
     $nome = trim($_POST['nome_pais']);
     if (!empty($nome)) {
         try {
-            $stmt = $pdo->prepare("INSERT INTO paises (nome) VALUES (?)");
-            $stmt->execute([$nome]);
-            header("Location: cadastro.php?sucesso=pais");
-            exit;
+            // Verifica se o país já existe na base de dados
+            $verificar = $pdo->prepare("SELECT COUNT(*) FROM paises WHERE LOWER(nome) = LOWER(?)");
+            $verificar->execute([$nome]);
+            
+            if ($verificar->fetchColumn() > 0) {
+                $mensagem_erro = "Erro: O país '$nome' já está cadastrado!";
+            } else {
+                $stmt = $pdo->prepare("INSERT INTO paises (nome) VALUES (?)");
+                $stmt->execute([$nome]);
+                header("Location: cadastro.php?sucesso=pais");
+                exit;
+            }
         } catch (PDOException $e) { $mensagem_erro = "Erro: " . $e->getMessage(); }
     }
 }
@@ -64,8 +72,9 @@ if (isset($_GET['sucesso'])) {
     if ($_GET['sucesso'] == 'editado') $mensagem_sucesso = "Dados atualizados com sucesso!";
 }
 
-// BUSCAS
-$paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::FETCH_ASSOC);
+// BUSCAS (Países agora explicitamente ordenados por ID)
+$paises_select = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::FETCH_ASSOC); // Para os selects de formulário
+$paises_historico = $pdo->query("SELECT * FROM paises ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC); // Histórico por ID solicitado
 $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM partidas p JOIN paises t1 ON p.id_casa = t1.id JOIN paises t2 ON p.id_fora = t2.id ORDER BY p.id DESC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -91,6 +100,7 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
         th { background: #f2f2f2; }
         .btn-edit { color: #0056b3; text-decoration: none; font-weight: bold; margin-right: 10px; }
         .btn-del { color: #e63946; text-decoration: none; font-weight: bold; }
+        .barra-pesquisa { background: #fff; border: 2px solid #0056b3; padding: 8px; margin-top: 10px; border-radius: 4px; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -124,12 +134,12 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
             <label>Casa:</label>
             <select name="id_casa" required>
                 <option value="">Selecione...</option>
-                <?php foreach($paises as $p): ?> <option value="<?=$p['id']?>"><?=$p['nome']?></option> <?php endforeach; ?>
+                <?php foreach($paises_select as $p): ?> <option value="<?=$p['id']?>"><?=$p['nome']?></option> <?php endforeach; ?>
             </select>
             <label>Visita:</label>
             <select name="id_fora" required>
                 <option value="">Selecione...</option>
-                <?php foreach($paises as $p): ?> <option value="<?=$p['id']?>"><?=$p['nome']?></option> <?php endforeach; ?>
+                <?php foreach($paises_select as $p): ?> <option value="<?=$p['id']?>"><?=$p['nome']?></option> <?php endforeach; ?>
             </select>
             <label>Sets Casa:</label> <input type="number" name="pontos_casa" min="0" max="3" required>
             <label>Sets Visita:</label> <input type="number" name="pontos_fora" min="0" max="3" required>
@@ -139,13 +149,14 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
 
     <div class="box">
         <h2>Gerenciar Países Cadastrados</h2>
-        <table>
+        <input type="text" id="buscaPaises" class="barra-pesquisa" onkeyup="filtrarPaises()" placeholder="🔎 Digite o nome do país para buscar...">
+        <table id="tabelaPaises">
             <thead><tr><th>ID</th><th>País</th><th>Ações</th></tr></thead>
             <tbody>
-                <?php foreach($paises as $p): ?>
+                <?php foreach($paises_historico as $p): ?>
                 <tr>
                     <td><?=$p['id']?></td>
-                    <td><?=$p['nome']?></td>
+                    <td class="nome-alvo"><?=$p['nome']?></td>
                     <td>
                         <a href="editar_pais.php?id=<?=$p['id']?>" class="btn-edit">Editar</a>
                         <a href="cadastro.php?excluir_pais=<?=$p['id']?>" class="btn-del" onclick="return confirm('Confirmar exclusão?')">Excluir</a>
@@ -158,12 +169,13 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
 
     <div class="box">
         <h2>Gerenciar Partidas Registradas</h2>
-        <table>
+        <input type="text" id="buscaPartidas" class="barra-pesquisa" onkeyup="filtrarPartidas()" placeholder="🔎 Digite o nome de um país para buscar confrontos...">
+        <table id="tabelaPartidas">
             <thead><tr><th>Confronto</th><th>Placar</th><th>Cat.</th><th>Ações</th></tr></thead>
             <tbody>
                 <?php foreach($partidas as $part): ?>
                 <tr>
-                    <td><?=$part['casa']?> x <?=$part['fora']?></td>
+                    <td class="confronto-alvo"><?=$part['casa']?> x <?=$part['fora']?></td>
                     <td><?=$part['pontos_casa']?> x <?=$part['pontos_fora']?></td>
                     <td><?=$part['genero'] == 'M' ? 'Masc' : 'Fem'?></td>
                     <td>
@@ -175,6 +187,46 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
             </tbody>
         </table>
     </div>
+
+    <script>
+    function filtrarPaises() {
+        var input = document.getElementById("buscaPaises");
+        var filter = input.value.toUpperCase();
+        var table = document.getElementById("tabelaPaises");
+        var tr = table.getElementsByTagName("tr");
+
+        for (var i = 1; i < tr.length; i++) {
+            var td = tr[i].getElementsByClassName("nome-alvo")[0];
+            if (td) {
+                var txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+
+    function filtrarPartidas() {
+        var input = document.getElementById("buscaPartidas");
+        var filter = input.value.toUpperCase();
+        var table = document.getElementById("tabelaPartidas");
+        var tr = table.getElementsByTagName("tr");
+
+        for (var i = 1; i < tr.length; i++) {
+            var td = tr[i].getElementsByClassName("confronto-alvo")[0];
+            if (td) {
+                var txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+    </script>
 
 </body>
 </html>
