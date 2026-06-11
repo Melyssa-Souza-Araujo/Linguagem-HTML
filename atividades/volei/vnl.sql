@@ -33,3 +33,17 @@ TRUNCATE TABLE partidas;
 ALTER TABLE paises ADD COLUMN sigla VARCHAR(2) DEFAULT 'BR';
 
 ALTER TABLE partidas ADD COLUMN fase VARCHAR(50) DEFAULT 'Fase de Grupos';
+
+-- Criar a tabela de usuários
+CREATE TABLE IF NOT EXISTS usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    login VARCHAR(50) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL,
+    nivel VARCHAR(10) DEFAULT 'usuario' -- 'admin' ou 'usuario'
+);
+
+-- Inserir o Administrador Padrão (Login: admin / Senha: 123)
+-- A senha já está criptografada com password_hash
+INSERT INTO usuarios (login, senha, nivel) 
+VALUES ('admin', '$2y$10$wN3tN3G7XNHeK4Dk9xI.XebScltU.A2I7bY4mZc3Rfe76Q9/uVq2q', 'admin')
+ON DUPLICATE KEY UPDATE login=login;
