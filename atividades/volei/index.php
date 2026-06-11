@@ -5,6 +5,9 @@ error_reporting(E_ALL);
 
 include 'conexao.php';
 
+// Captura o filtro selecionado (padrão: Todos)
+$filtro = isset($_GET['filtro']) ? $_GET['filtro'] : 'todos';
+
 // 1. Puxar todos os países cadastrados para a estrutura base
 $paises = $pdo->query("SELECT * FROM paises")->fetchAll(PDO::FETCH_ASSOC);
 
@@ -14,12 +17,21 @@ foreach ($paises as $p) {
         'nome' => $p['nome'],
         'vitorias' => 0,
         'derrotas' => 0,
-        'pontos' => 0
+        'pontos' => 0,
+        'jogou' => false // Flag para saber se o país tem jogos no filtro atual
     ];
 }
 
-// 2. Puxar todas as partidas gravadas para processar a pontuação da tabela
-$partidas_votos = $pdo->query("SELECT * FROM partidas")->fetchAll(PDO::FETCH_ASSOC);
+// 2. Puxar todas as partidas gravadas aplicando o filtro se necessário
+if ($filtro == 'M') {
+    $stmt_partidas = $pdo->query("SELECT * FROM partidas WHERE genero = 'M'");
+} elseif ($filtro == 'F') {
+    $stmt_partidas = $pdo->query("SELECT * FROM partidas WHERE genero = 'F'");
+} else {
+    $stmt_partidas = $pdo->query("SELECT * FROM partidas");
+}
+$partidas_votos = $stmt_partidas->fetchAll(PDO::FETCH_ASSOC);
+
 foreach ($partidas_votos as $partida) {
     $casa = $partida['id_casa'];
     $fora = $partida['id_fora'];
@@ -29,6 +41,10 @@ foreach ($partidas_votos as $partida) {
     if (!isset($tabela[$casa]) || !isset($tabela[$fora])) {
         continue;
     }
+
+    // Marca que os países participaram deste campeonato/filtro
+    $tabela[$casa]['jogou'] = true;
+    $tabela[$fora]['jogou'] = true;
 
     if ($p_casa > $p_fora) {
         $tabela[$casa]['vitorias'] += 1;
@@ -53,6 +69,13 @@ foreach ($partidas_votos as $partida) {
     }
 }
 
+// Se um filtro específico (M ou F) estiver ativo, removemos da exibição os países que não têm jogos nele
+if ($filtro != 'todos') {
+    $tabela = array_filter($tabela, function($item) {
+        return $item['jogou'] === true;
+    });
+}
+
 // 3. Ordenar a classificação (Mais Vitórias -> Mais Pontos)
 uasort($tabela, function($a, $b) {
     if ($a['vitorias'] != $b['vitorias']) {
@@ -69,7 +92,13 @@ uasort($tabela, function($a, $b) {
     <title>Classificação VNL</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 30px; background-color: #0d1b2a; color: #f4f4f9; }
-        h1 { text-align: center; color: #e0e1dd; }
+        h1 { text-align: center; color: #e0e1dd; margin-bottom: 10px; }
+        
+        .filtros-container { text-align: center; margin: 20px auto; }
+        .btn-filtro { background: #1b263b; color: #e0e1dd; border: 2px solid #415a77; padding: 8px 20px; margin: 0 5px; border-radius: 20px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; }
+        .btn-filtro:hover { background: #415a77; }
+        .btn-filtro.ativo { background: #2a9d8f; border-color: #2a9d8f; color: white; }
+
         table { width: 100%; max-width: 800px; margin: 20px auto; border-collapse: collapse; background: #1b263b; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         th, td { padding: 12px 15px; text-align: center; }
         th { background-color: #415a77; font-weight: bold; text-transform: uppercase; font-size: 14px; }
@@ -88,6 +117,12 @@ uasort($tabela, function($a, $b) {
 
     <h1>CLASSIFICAÇÃO VNL</h1>
     
+    <div class="filtros-container">
+        <a href="index.php?filtro=todos" class="btn-filtro <?=$filtro=='todos'?'ativo':''?>">Geral</a>
+        <a href="index.php?filtro=F" class="btn-filtro <?=$filtro=='F'?'ativo':''?>">Feminino</a>
+        <a href="index.php?filtro=M" class="btn-filtro <?=$filtro=='M'?'ativo':''?>">Masculino</a>
+    </div>
+
     <a href="cadastro.php" class="btn-gerenciar">Painel de Cadastro →</a>
 
     <table>
@@ -116,7 +151,12 @@ uasort($tabela, function($a, $b) {
             <?php 
             $pos++;
             endforeach; 
+            if(empty($tabela)):
             ?>
+            <tr>
+                <td colspan="5" style="color: #888; font-style: italic; padding: 20px;">Nenhuma partida registrada para esta categoria.</td>
+            </tr>
+            <?php endif; ?>
         </tbody>
     </table>
 
