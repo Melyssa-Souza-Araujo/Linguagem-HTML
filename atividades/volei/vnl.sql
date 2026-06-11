@@ -31,3 +31,5 @@ ALTER TABLE partidas DROP COLUMN youtube_url;
 TRUNCATE TABLE partidas;
 
 ALTER TABLE paises ADD COLUMN sigla VARCHAR(2) DEFAULT 'BR';
+
+ALTER TABLE partidas ADD COLUMN fase VARCHAR(50) DEFAULT 'Fase de Grupos';
