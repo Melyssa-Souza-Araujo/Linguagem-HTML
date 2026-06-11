@@ -1,10 +1,13 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 include 'conexao.php';
 
-// 1. Puxar todos os países cadastrados
+// 1. Puxar todos os países cadastrados para a estrutura base
 $paises = $pdo->query("SELECT * FROM paises")->fetchAll(PDO::FETCH_ASSOC);
 
-// 2. Criar uma estrutura de dados na memória para calcular a tabela
 $tabela = [];
 foreach ($paises as $p) {
     $tabela[$p['id']] = [
@@ -15,20 +18,23 @@ foreach ($paises as $p) {
     ];
 }
 
-// 3. Puxar todas as partidas gravadas e somar as vitórias, derrotas e pontuação
-$partidas = $pdo->query("SELECT * FROM partidas")->fetchAll(PDO::FETCH_ASSOC);
-foreach ($partidas as $partida) {
+// 2. Puxar todas as partidas gravadas para processar a pontuação da tabela
+$partidas_votos = $pdo->query("SELECT * FROM partidas")->fetchAll(PDO::FETCH_ASSOC);
+foreach ($partidas_votos as $partida) {
     $casa = $partida['id_casa'];
     $fora = $partida['id_fora'];
     $p_casa = $partida['pontos_casa'];
     $p_fora = $partida['pontos_fora'];
 
-    // No vôlei, quem ganha 3 sets ganha a partida
+    // Evita erros caso o país tenha sido excluído mas o histórico ficou pendente
+    if (!isset($tabela[$casa]) || !isset($tabela[$fora])) {
+        continue;
+    }
+
     if ($p_casa > $p_fora) {
         $tabela[$casa]['vitorias'] += 1;
         $tabela[$fora]['derrotas'] += 1;
         
-        // Atribuição de pontos pelas regras do vôlei (3x0 ou 3x1 = 3pts, 3x2 = 2pts para vencedor e 1pt para perdedor)
         if ($p_casa == 3 && ($p_fora == 0 || $p_fora == 1)) {
             $tabela[$casa]['pontos'] += 3;
         } elseif ($p_casa == 3 && $p_fora == 2) {
@@ -48,22 +54,49 @@ foreach ($partidas as $partida) {
     }
 }
 
-// 4. Ordenar a tabela: Primeiro por número de Vitórias (V), depois por Pontos (Pts)
+// 3. Ordenar a classificação (Mais Vitórias -> Mais Pontos)
 uasort($tabela, function($a, $b) {
     if ($a['vitorias'] != $b['vitorias']) {
-        return $b['vitorias'] <=> $a['vitorias']; // Mais vitórias primeiro
+        return $b['vitorias'] <=> $a['vitorias'];
     }
-    return $b['pontos'] <=> $a['pontos']; // Mais pontos como critério de desempate
+    return $b['pontos'] <=> $a['pontos'];
 });
 
-// Função auxiliar para transformar o link normal do YouTube em link incorporado (embed) seguro para o iframe
+// 4. BUSCA ISOLADA PARA OS VÍDEOS (Trazendo os nomes certos direto do banco)
+$query_videos = "SELECT p.*, t1.nome AS nome_casa, t2.nome AS nome_fora 
+                 FROM partidas p 
+                 JOIN paises t1 ON p.id_casa = t1.id 
+                 JOIN paises t2 ON p.id_fora = t2.id 
+                 ORDER BY p.id DESC";
+$lista_videos = $pdo->query($query_videos)->fetchAll(PDO::FETCH_ASSOC);
+
+// 5. FUNÇÃO DO YOUTUBE MELHORADA (Trata links normais, Shorts, Compartilhados e Celular)
 function obterLinkEmbedYoutube($url) {
     if (empty($url)) return null;
     
-    // Filtros regex para detectar ID do vídeo padrão ou encurtado (youtu.be)
-    if (preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $url, $match)) {
-        return "https://www.youtube.com/embed/" . $match[1];
+    $video_id = "";
+    
+    // Testa formato encurtado: youtu.be/ID
+    if (preg_match('/youtu\.be\/([^\?&#]+)/', $url, $matches)) {
+        $video_id = $matches[1];
     }
+    // Testa formato de Shorts: youtube.com/shorts/ID
+    elseif (preg_match('/youtube\.com\/shorts\/([^\?&#]+)/', $url, $matches)) {
+        $video_id = $matches[1];
+    }
+    // Testa formato padrão: youtube.com/watch?v=ID
+    elseif (preg_match('/v=([^&#]+)/', $url, $matches)) {
+        $video_id = $matches[1];
+    }
+    // Testa formato embed já pronto caso cole por engano
+    elseif (preg_match('/embed\/([^\?&#]+)/', $url, $matches)) {
+        $video_id = $matches[1];
+    }
+    
+    if (!empty($video_id)) {
+        return "https://www.youtube.com/embed/" . $video_id;
+    }
+    
     return null;
 }
 ?>
@@ -82,17 +115,17 @@ function obterLinkEmbedYoutube($url) {
         tr { border-bottom: 1px solid #415a77; }
         tr:last-child { border-bottom: none; }
         
-        /* Destaque visual baseado nos prints enviados (G8 avança para o mata-mata) */
         .zona-classificacao { border-left: 5px solid #2a9d8f; }
         .posicao-numero { font-weight: bold; color: #e0e1dd; }
         .nome-pais { text-align: left; font-weight: bold; }
         
         .container-videos { max-width: 800px; margin: 40px auto; }
-        .video-card { background: #1b263b; padding: 15px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-        .iframe-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; margin-top: 10px; border-radius: 4px; }
+        .video-card { background: #1b263b; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .iframe-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; margin-top: 15px; border-radius: 6px; border: 1px solid #415a77; }
         .iframe-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-        .btn-gerenciar { display: block; width: 200px; margin: 20px auto; text-align: center; background: #e0e1dd; color: #0d1b2a; padding: 10px; border-radius: 4px; text-decoration: none; font-weight: bold; }
+        .btn-gerenciar { display: block; width: 200px; margin: 20px auto; text-align: center; background: #e0e1dd; color: #0d1b2a; padding: 10px; border-radius: 4px; text-decoration: none; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .btn-gerenciar:hover { background: #cbd5e1; }
+        .tag-genero { display: inline-block; padding: 3px 8px; font-size: 11px; font-weight: bold; border-radius: 3px; background: #415a77; margin-left: 10px; vertical-align: middle; }
     </style>
 </head>
 <body>
@@ -115,7 +148,6 @@ function obterLinkEmbedYoutube($url) {
             <?php 
             $pos = 1;
             foreach ($tabela as $item): 
-                // Aplica a classe verde de mata-mata para os 8 primeiros colocados
                 $classeZona = ($pos <= 8) ? "zona-classificacao" : "";
             ?>
             <tr class="<?=$classeZona?>">
@@ -134,19 +166,22 @@ function obterLinkEmbedYoutube($url) {
 
     <div class="container-videos">
         <h2>Histórico de Partidas e Vídeos</h2>
-        <?php if (empty($partidas)): ?>
-            <p style="text-align:center; color:#888;">Nenhuma partida com vídeo cadastrada ainda.</p>
+        
+        <?php if (empty($lista_videos)): ?>
+            <p style="text-align:center; color:#888; margin-top: 30px;">Nenhuma partida registrada até o momento.</p>
         <?php endif; ?>
 
-        <?php foreach ($partidas as $partida): 
-            $casaNome = $tabela[$partida['id_casa']]['nome'];
-            $foraNome = $tabela[$partida['id_fora']]['nome'];
-            $embedUrl = obterLinkEmbedYoutube($partida['youtube_url']);
+        <?php foreach ($lista_videos as $part): 
+            $embedUrl = obterLinkEmbedYoutube($part['youtube_url']);
+            $categoria = ($part['genero'] == 'M') ? 'Masculino' : 'Feminino';
         ?>
             <div class="video-card">
-                <h3><?=$casaNome?> <?=$partida['pontos_casa']?> x <?=$partida['pontos_fora']?> <?=$foraNome?></h3>
+                <h3 style="margin-top: 0; margin-bottom: 10px;">
+                    <?=$part['nome_casa']?> <?=$part['pontos_casa']?> x <?=$part['pontos_fora']?> <?=$part['nome_fora']?>
+                    <span class="tag-genero"><?=$categoria?></span>
+                </h3>
                 
-                <?php if ($embedUrl): ?>
+                <?php if (!empty($embedUrl)): ?>
                     <div class="iframe-wrapper">
                         <iframe src="<?=$embedUrl?>" 
                                 title="YouTube video player" 
@@ -155,7 +190,7 @@ function obterLinkEmbedYoutube($url) {
                         </iframe>
                     </div>
                 <?php else: ?>
-                    <p style="color: #888; font-size: 14px;">Nenhum vídeo anexado para esta partida.</p>
+                    <p style="color: #888; font-size: 14px; margin: 10px 0 0 0; font-style: italic;">Nenhum vídeo anexado para esta partida.</p>
                 <?php endif; ?>
             </div>
         <?php endforeach; ?>
