@@ -27,15 +27,15 @@ if (isset($_POST['cadastrar_partida'])) {
     $id_fora = $_POST['id_fora'];
     $p_casa = $_POST['pontos_casa'];
     $p_fora = $_POST['pontos_fora'];
-    $url = trim($_POST['youtube_url']);
     $genero = $_POST['genero'];
 
     if ($id_casa == $id_fora) {
         $mensagem_erro = "Erro: Um país não pode jogar contra ele mesmo!";
     } else {
         try {
-            $stmt = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, youtube_url, genero) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$id_casa, $id_fora, $p_casa, $p_fora, $url, $genero]);
+            // QUERY ATUALIZADA - Sem youtube_url
+            $stmt = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, genero) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$id_casa, $id_fora, $p_casa, $p_fora, $genero]);
             header("Location: cadastro.php?sucesso=partida");
             exit;
         } catch (PDOException $e) { $mensagem_erro = "Erro: " . $e->getMessage(); }
@@ -60,12 +60,12 @@ if (isset($_GET['excluir_partida'])) {
 if (isset($_GET['sucesso'])) {
     if ($_GET['sucesso'] == 'pais') $mensagem_sucesso = "País cadastrado com sucesso!";
     if ($_GET['sucesso'] == 'partida') $mensagem_sucesso = "Partida registrada com sucesso!";
-    if ($_GET['sucesso'] == 'del_pais') $mensagem_sucesso = "País (e suas partidas) removido com sucesso!";
+    if ($_GET['sucesso'] == 'del_pais') $mensagem_sucesso = "País removido com sucesso!";
     if ($_GET['sucesso'] == 'del_partida') $mensagem_sucesso = "Partida excluída com sucesso!";
     if ($_GET['sucesso'] == 'editado') $mensagem_sucesso = "Dados atualizados com sucesso!";
 }
 
-// BUSCAS PARA LISTAGENS
+// BUSCAS
 $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::FETCH_ASSOC);
 $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM partidas p JOIN paises t1 ON p.id_casa = t1.id JOIN paises t2 ON p.id_fora = t2.id ORDER BY p.id DESC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -87,8 +87,6 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
         .radio-group { margin-top: 8px; display: flex; gap: 20px; }
         .radio-group label { display: inline; font-weight: normal; margin-top: 0; cursor: pointer; }
         .radio-group input { width: auto; margin-top: 0; margin-right: 5px; }
-        
-        /* Estilos das tabelas de gerência */
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
         th { background: #f2f2f2; }
@@ -102,9 +100,6 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
 
     <?php if (!empty($mensagem_sucesso)): ?>
         <div style="background-color: #d4edda; color: #155724; padding: 15px; margin: 20px auto; max-width: 700px; border-radius: 4px; font-weight: bold; text-align: center; border: 1px solid #c3e6cb;"><?php echo $mensagem_sucesso; ?></div>
-    <?php endif; ?>
-    <?php if (!empty($mensagem_erro)): ?>
-        <div style="background-color: #f8d7da; color: #721c24; padding: 15px; margin: 20px auto; max-width: 700px; border-radius: 4px; font-weight: bold; text-align: center; border: 1px solid #f5c6cb;"><?php echo $mensagem_erro; ?></div>
     <?php endif; ?>
 
     <div class="box">
@@ -136,7 +131,6 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
             </select>
             <label>Sets Casa:</label> <input type="number" name="pontos_casa" min="0" max="3" required>
             <label>Sets Visita:</label> <input type="number" name="pontos_fora" min="0" max="3" required>
-            <label>YouTube Link:</label> <input type="url" name="youtube_url">
             <button type="submit" name="cadastrar_partida">Registrar Partida</button>
         </form>
     </div>
@@ -152,7 +146,7 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
                     <td><?=$p['nome']?></td>
                     <td>
                         <a href="editar_pais.php?id=<?=$p['id']?>" class="btn-edit">Editar</a>
-                        <a href="cadastro.php?excluir_pais=<?=$p['id']?>" class="btn-del" onclick="return confirm('ATENÇÃO: Excluir este país apagará TODOS os jogos dele. Confirmar?')">Excluir</a>
+                        <a href="cadastro.php?excluir_pais=<?=$p['id']?>" class="btn-del" onclick="return confirm('Confirmar exclusão?')">Excluir</a>
                     </td>
                 </tr>
                 <?php endforeach; ?>
