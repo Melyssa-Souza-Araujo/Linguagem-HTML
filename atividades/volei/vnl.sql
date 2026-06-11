@@ -17,3 +17,5 @@ CREATE TABLE partidas (
     FOREIGN KEY (id_casa) REFERENCES paises(id),
     FOREIGN KEY (id_fora) REFERENCES paises(id)
 );
+
+ALTER TABLE partidas ADD COLUMN genero ENUM('M', 'F') NOT NULL DEFAULT 'F' AFTER youtube_url;
