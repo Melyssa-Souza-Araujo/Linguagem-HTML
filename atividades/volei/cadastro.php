@@ -194,6 +194,37 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
     </div>
 
     <script>
+        // Captura os seletores de times
+const selectCasa = document.getElementsByName('id_casa')[0];
+const selectFora = document.getElementsByName('id_fora')[0];
+
+function ajustarOpcoesConfronto() {
+    const valorSelecionadoCasa = selectCasa.value;
+    const valorSelecionadoFora = selectFora.value;
+
+    // Restaura a visibilidade de todas as opções do time de fora
+    Array.from(selectFora.options).forEach(opcao => {
+        if (opcao.value === valorSelecionadoCasa && opcao.value !== "") {
+            opcao.style.display = "none"; // Esconde o time selecionado na casa
+        } else {
+            opcao.style.display = "block";
+        }
+    });
+
+    // Restaura a visibilidade de todas as opções do time de casa
+    Array.from(selectCasa.options).forEach(opcao => {
+        if (opcao.value === valorSelecionadoFora && opcao.value !== "") {
+            opcao.style.display = "none"; // Esconde o time selecionado fora
+        } else {
+            opcao.style.display = "block";
+        }
+    });
+}
+
+// Vincula o evento de mudança aos seletores
+selectCasa.addEventListener('change', ajustarOpcoesConfronto);
+selectFora.addEventListener('change', ajustarOpcoesConfronto);
+        
     // Banco de dados em JS para autodetectar as principais siglas da VNL de forma instantânea
     const dicionarioPaises = {
         "brasil": "BR", "brazil": "BR",
