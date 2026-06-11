@@ -13,7 +13,6 @@ if (isset($_POST['cadastrar_pais'])) {
     $nome = trim($_POST['nome_pais']);
     if (!empty($nome)) {
         try {
-            // Verifica se o país já existe na base de dados
             $verificar = $pdo->prepare("SELECT COUNT(*) FROM paises WHERE LOWER(nome) = LOWER(?)");
             $verificar->execute([$nome]);
             
@@ -52,10 +51,22 @@ if (isset($_POST['cadastrar_partida'])) {
 // DELETAR PAÍS OU PARTIDA
 if (isset($_GET['excluir_pais'])) {
     $id = $_GET['excluir_pais'];
-    $pdo->prepare("DELETE FROM paises WHERE id = ?")->execute([$id]);
-    header("Location: cadastro.php?sucesso=del_pais");
-    exit;
+    try {
+        $pdo->prepare("DELETE FROM paises WHERE id = ?")->execute([$id]);
+        
+        // MÁGICA: Se a tabela ficou vazia, reseta o auto_increment para 1 automaticamente
+        $total = $pdo->query("SELECT COUNT(*) FROM paises")->fetchColumn();
+        if ($total == 0) {
+            $pdo->query("ALTER TABLE paises AUTO_INCREMENT = 1");
+        }
+
+        header("Location: cadastro.php?sucesso=del_pais");
+        exit;
+    } catch (PDOException $e) { 
+        $mensagem_erro = "Erro: Não é possível deletar este país porque ele já possui partidas registradas!"; 
+    }
 }
+
 if (isset($_GET['excluir_partida'])) {
     $id = $_GET['excluir_partida'];
     $pdo->prepare("DELETE FROM partidas WHERE id = ?")->execute([$id]);
@@ -69,12 +80,12 @@ if (isset($_GET['sucesso'])) {
     if ($_GET['sucesso'] == 'partida') $mensagem_sucesso = "Partida registrada com sucesso!";
     if ($_GET['sucesso'] == 'del_pais') $mensagem_sucesso = "País removido com sucesso!";
     if ($_GET['sucesso'] == 'del_partida') $mensagem_sucesso = "Partida excluída com sucesso!";
-    if ($_GET['sucesso'] == 'editado') $mensagem_sucesso = "Dados atualizados com sucesso!";
+    if ($_GET['sucesso'] == 'editado') $mensagem_sucesso = "Dados updated com sucesso!";
 }
 
-// BUSCAS (Países agora explicitamente ordenados por ID)
-$paises_select = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::FETCH_ASSOC); // Para os selects de formulário
-$paises_historico = $pdo->query("SELECT * FROM paises ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC); // Histórico por ID solicitado
+// BUSCAS
+$paises_select = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::FETCH_ASSOC); 
+$paises_historico = $pdo->query("SELECT * FROM paises ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC); 
 $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM partidas p JOIN paises t1 ON p.id_casa = t1.id JOIN paises t2 ON p.id_fora = t2.id ORDER BY p.id DESC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -100,7 +111,7 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
         th { background: #f2f2f2; }
         .btn-edit { color: #0056b3; text-decoration: none; font-weight: bold; margin-right: 10px; }
         .btn-del { color: #e63946; text-decoration: none; font-weight: bold; }
-        .barra-pesquisa { background: #fff; border: 2px solid #0056b3; padding: 8px; margin-top: 10px; border-radius: 4px; font-size: 14px; }
+        .barra-pesquisa { background: #fff; border: 2px solid #0056b3; padding: 8px; margin-top: 10px; border-radius: 4px; font-size: 14px; width: 100%; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -151,18 +162,24 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
         <h2>Gerenciar Países Cadastrados</h2>
         <input type="text" id="buscaPaises" class="barra-pesquisa" onkeyup="filtrarPaises()" placeholder="🔎 Digite o nome do país para buscar...">
         <table id="tabelaPaises">
-            <thead><tr><th>ID</th><th>País</th><th>Ações</th></tr></thead>
+            <thead><tr><th width="60">Nº</th><th>País</th><th>Ações</th></tr></thead>
             <tbody>
-                <?php foreach($paises_historico as $p): ?>
+                <?php 
+                $numero_visual = 1; // Contador sequencial perfeito para a tela
+                foreach($paises_historico as $p): 
+                ?>
                 <tr>
-                    <td><?=$p['id']?></td>
-                    <td class="nome-alvo"><?=$p['nome']?></td>
+                    <td style="font-weight: bold; text-align: center; color: #777;"><?=$numero_visual?></td>
+                    <td class="nome-alvo" style="font-weight: bold;"><?=$p['nome']?></td>
                     <td>
                         <a href="editar_pais.php?id=<?=$p['id']?>" class="btn-edit">Editar</a>
-                        <a href="cadastro.php?excluir_pais=<?=$p['id']?>" class="btn-del" onclick="return confirm('Confirmar exclusão?')">Excluir</a>
+                        <a href="cadastro.php?excluir_pais=<?=$p['id']?>" class="btn-del" onclick="return confirm('Atenção: Excluir um país apagará seu histórico de forma permanente se ele não tiver partidas vinculadas. Confirmar exclusão?')">Excluir</a>
                     </td>
                 </tr>
-                <?php endforeach; ?>
+                <?php 
+                $numero_visual++; 
+                endforeach; 
+                ?>
             </tbody>
         </table>
     </div>
