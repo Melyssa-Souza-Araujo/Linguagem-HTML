@@ -4,24 +4,22 @@ include 'conexao.php';
 if (!isset($_GET['id'])) { header("Location: cadastro.php"); exit; }
 $id = $_GET['id'];
 
-// Buscar dados da partida atual
 $stmt = $pdo->prepare("SELECT * FROM partidas WHERE id = ?");
 $stmt->execute([$id]);
 $partida = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$partida) { header("Location: cadastro.php"); exit; }
 
-// Processar edição
 if (isset($_POST['atualizar_partida'])) {
     $id_casa = $_POST['id_casa'];
     $id_fora = $_POST['id_fora'];
     $p_casa = $_POST['pontos_casa'];
     $p_fora = $_POST['pontos_fora'];
-    $url = trim($_POST['youtube_url']);
     $genero = $_POST['genero'];
 
     if ($id_casa != $id_fora) {
-        $stmt = $pdo->prepare("UPDATE partidas SET id_casa = ?, id_fora = ?, pontos_casa = ?, pontos_fora = ?, youtube_url = ?, genero = ? WHERE id = ?");
-        $stmt->execute([$id_casa, $id_fora, $p_casa, $p_fora, $url, $genero, $id]);
+        // Query de UPDATE sem youtube_url
+        $stmt = $pdo->prepare("UPDATE partidas SET id_casa = ?, id_fora = ?, pontos_casa = ?, pontos_fora = ?, genero = ? WHERE id = ?");
+        $stmt->execute([$id_casa, $id_fora, $p_casa, $p_fora, $genero, $id]);
         header("Location: cadastro.php?sucesso=editado");
         exit;
     }
@@ -72,9 +70,6 @@ $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::F
 
             <label>Sets Visita:</label>
             <input type="number" name="pontos_fora" min="0" max="3" value="<?=$partida['pontos_fora']?>" required>
-
-            <label>YouTube Link:</label>
-            <input type="url" name="youtube_url" value="<?=$partida['youtube_url']?>">
 
             <button type="submit" name="atualizar_partida">Salvar Alterações</button>
         </form>
