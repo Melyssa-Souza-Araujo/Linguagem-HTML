@@ -8,7 +8,7 @@ include 'conexao.php';
 $mensagem_sucesso = "";
 $mensagem_erro = "";
 
-// PROCESSAR CADASTRO DE PAÍS (AGORA COM SIGLA)
+// PROCESSAR CADASTRO DE PAÍS
 if (isset($_POST['cadastrar_pais'])) {
     $nome = trim($_POST['nome_pais']);
     $sigla = strtoupper(trim($_POST['sigla_pais']));
@@ -66,11 +66,12 @@ if (isset($_POST['cadastrar_partida'])) {
 if (isset($_GET['excluir_pais'])) {
     $id = $_GET['excluir_pais'];
     try {
+        $pdo->prepare("DELETE FROM photos WHERE id_pais = ?")->execute([$id]); // Opcional se houver fotos vinculadas
         $pdo->prepare("DELETE FROM paises WHERE id = ?")->execute([$id]);
         header("Location: cadastro.php?sucesso=del_pais");
         exit;
     } catch (PDOException $e) { 
-        $mensagem_erro = "Erro: Este país possui partidas vinculadas!"; 
+        $mensagem_erro = "Erro: Este país possui partidas vinculadas e não pode ser deletado!"; 
     }
 }
 
@@ -82,11 +83,10 @@ if (isset($_GET['excluir_partida'])) {
 }
 
 if (isset($_GET['sucesso'])) {
-    if ($_GET['sucesso'] == 'pais') $mensagem_sucesso = "País cadastrado com sucesso!";
+    if ($_GET['sucesso'] == 'pais') $mensagem_sucesso = "Operação com país realizada com sucesso!";
     if ($_GET['sucesso'] == 'partida') $mensagem_sucesso = "Partida registrada com sucesso!";
     if ($_GET['sucesso'] == 'del_pais') $mensagem_sucesso = "País removido com sucesso!";
     if ($_GET['sucesso'] == 'del_partida') $mensagem_sucesso = "Partida excluída com sucesso!";
-    if ($_GET['sucesso'] == 'reset') $mensagem_sucesso = "Campeonato resetado com sucesso!";
 }
 
 $paises_select = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::FETCH_ASSOC); 
@@ -111,8 +111,9 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
         th { background: #f2f2f2; }
+        .btn-edit { color: #0056b3; text-decoration: none; font-weight: bold; margin-right: 12px; }
         .btn-del { color: #e63946; text-decoration: none; font-weight: bold; }
-        .barra-pesquisa { background: #fff; border: 2px solid #0056b3; padding: 8px; margin-top: 10px; border-radius: 4px; }
+        .barra-pesquisa { background: #fff; border: 2px solid #0056b3; padding: 8px; margin-top: 10px; border-radius: 4px; width: 100%; box-sizing: border-box; }
         .flag { width: 24px; height: 16px; margin-right: 8px; vertical-align: middle; border: 1px solid #ddd; object-fit: cover; }
     </style>
 </head>
@@ -127,9 +128,11 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
         <h2>Cadastrar Novo País</h2>
         <form method="POST" action="cadastro.php">
             <label>Nome do País:</label>
-            <input type="text" name="nome_pais" required placeholder="Ex: Brasil">
-            <label>Sigla do País (2 letras para a bandeira):</label>
-            <input type="text" name="sigla_pais" required maxlength="2" placeholder="Ex: BR, US, IT, JP">
+            <input type="text" id="nome_pais" name="nome_pais" required placeholder="Ex: Brasil, Japão, Estados Unidos" oninput="autodetectarSigla()">
+            
+            <label>Sigla do País (Preenchida Automaticamente):</label>
+            <input type="text" id="sigla_pais" name="sigla_pais" required maxlength="2" placeholder="Ex: BR">
+            
             <button type="submit" name="cadastrar_pais">Salvar País</button>
         </form>
     </div>
@@ -180,7 +183,10 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
                     <td><img class="flag" src="https://flagcdn.com/w40/<?=strtolower($p['sigla'])?>.png" alt="Bandeira"></td>
                     <td class="nome-alvo" style="font-weight: bold;"><?=$p['nome']?></td>
                     <td><?=strtoupper($p['sigla'])?></td>
-                    <td><a href="cadastro.php?excluir_pais=<?=$p['id']?>" class="btn-del" onclick="return confirm('Confirmar exclusão?')">Excluir</a></td>
+                    <td>
+                        <a href="editar_pais.php?id=<?=$p['id']?>" class="btn-edit">Editar</a>
+                        <a href="cadastro.php?excluir_pais=<?=$p['id']?>" class="btn-del" onclick="return confirm('Confirmar exclusão?')">Excluir</a>
+                    </td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -188,6 +194,45 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
     </div>
 
     <script>
+    // Banco de dados em JS para autodetectar as principais siglas da VNL de forma instantânea
+    const dicionarioPaises = {
+        "brasil": "BR", "brazil": "BR",
+        "italia": "IT", "itália": "IT", "italy": "IT",
+        "japao": "JP", "japão": "JP", "japan": "JP",
+        "estados unidos": "US", "usa": "US", "eua": "US",
+        "franca": "FR", "frança": "FR", "france": "FR",
+        "polonia": "PL", "polônia": "PL", "poland": "PL",
+        "servia": "RS", "sérvia": "RS", "serbia": "RS",
+        "turquia": "TR", "turkey": "TR",
+        "china": "CN",
+        "alemanha": "DE", "germany": "DE",
+        "argentina": "AR",
+        "canada": "CA", "canadá": "CA",
+        "holanda": "NL", "netherlands": "NL",
+        "eslovenia": "SI", "eslovênia": "SI", "slovenia": "SI",
+        "iran": "IR", "irã": "IR",
+        "cuba": "CU",
+        "bulgaria": "BG", "bulgária": "BG",
+        "republica dominicana": "DO", "rep dominicana": "DO", "dominican republic": "DO",
+        "tailandia": "TH", "tailândia": "TH", "thailand": "TH",
+        "coreia": "KR", "coreia do sul": "KR", "korea": "KR"
+    };
+
+    function autodetectarSigla() {
+        const nomeDigitado = document.getElementById('nome_pais').value.toLowerCase().trim();
+        const campoSigla = document.getElementById('sigla_pais');
+        
+        // Remove acentos comuns para melhorar a busca
+        const nomeLimpo = nomeDigitado.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+        if (dicionarioPaises[nomeDigitado]) {
+            campoSigla.value = dicionarioPaises[nomeDigitado];
+        } else if (dicionarioPaises[nomeLimpo]) {
+            campoSigla.value = dicionarioPaises[nomeLimpo];
+        }
+    }
+
+    // Travas do placar do vôlei
     const campoCasa = document.getElementById('pontos_casa');
     const campoFora = document.getElementById('pontos_fora');
     campoCasa.addEventListener('input', function() {
