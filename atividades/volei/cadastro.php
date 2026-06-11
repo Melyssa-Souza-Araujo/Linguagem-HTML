@@ -1,5 +1,5 @@
 <?php
-// Ativa a exibição de erros na tela para ajudar no diagnóstico se algo der errado no banco
+// Ativa a exibição de erros na tela para ajudar no diagnóstico
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -17,21 +17,24 @@ if (isset($_POST['cadastrar_pais'])) {
     }
 }
 
-// Processar Cadastro de Partida
+// Processar Cadastro de Partida (Com a inclusão do Gênero)
 if (isset($_POST['cadastrar_partida'])) {
     $id_casa = $_POST['id_casa'];
     $id_fora = $_POST['id_fora'];
     $p_casa = $_POST['pontos_casa'];
     $p_fora = $_POST['pontos_fora'];
     $url = trim($_POST['youtube_url']);
+    $genero = $_POST['genero']; // Captura o valor do novo campo
 
     if ($id_casa == $id_fora) {
         echo "<script>alert('Erro: Um país não pode jogar contra ele mesmo!'); window.location.href='cadastro.php';</script>";
         exit;
     }
 
-    $stmt = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, youtube_url) VALUES (?, ?, ?, ?, ?)");
-    $stmt->execute([$id_casa, $id_fora, $p_casa, $p_fora, $url]);
+    // Query atualizada incluindo o campo 'genero'
+    $stmt = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, youtube_url, genero) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$id_casa, $id_fora, $p_casa, $p_fora, $url, $genero]);
+    
     echo "<script>alert('Partida registrada com sucesso!'); window.location.href='cadastro.php';</script>";
     exit;
 }
@@ -54,6 +57,9 @@ $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::F
         button:hover { background: #004085; }
         .voltar { display: block; text-align: center; margin-bottom: 25px; color: #0056b3; text-decoration: none; font-weight: bold; }
         h2 { margin-top: 0; color: #0056b3; border-bottom: 2px solid #0056b3; padding-bottom: 8px; }
+        .radio-group { margin-top: 8px; display: flex; gap: 20px; }
+        .radio-group label { display: inline; font-weight: normal; margin-top: 0; cursor: pointer; }
+        .radio-group input { width: auto; margin-top: 0; margin-right: 5px; }
     </style>
 </head>
 <body>
@@ -72,6 +78,13 @@ $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::F
     <div class="box">
         <h2>Registrar Nova Partida (Resultado)</h2>
         <form method="POST" action="cadastro.php">
+            
+            <label>Categoria do Torneio:</label>
+            <div class="radio-group">
+                <label><input type="radio" name="genero" value="F" checked> VNL Feminina</label>
+                <label><input type="radio" name="genero" value="M"> VNL Masculina</label>
+            </div>
+
             <label for="id_casa">País Mandante (Casa):</label>
             <select id="id_casa" name="id_casa" required>
                 <option value="">Selecione o time da casa...</option>
