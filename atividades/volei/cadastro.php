@@ -27,15 +27,15 @@ if (isset($_POST['cadastrar_partida'])) {
     $id_fora = $_POST['id_fora'];
     $p_casa = $_POST['pontos_casa'];
     $p_fora = $_POST['pontos_fora'];
+    $url = trim($_POST['youtube_url']);
     $genero = $_POST['genero'];
 
     if ($id_casa == $id_fora) {
         $mensagem_erro = "Erro: Um país não pode jogar contra ele mesmo!";
     } else {
         try {
-            // QUERY ATUALIZADA - Sem youtube_url
-            $stmt = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, genero) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$id_casa, $id_fora, $p_casa, $p_fora, $genero]);
+            $stmt = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, youtube_url, genero) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$id_casa, $id_fora, $p_casa, $p_fora, $url, $genero]);
             header("Location: cadastro.php?sucesso=partida");
             exit;
         } catch (PDOException $e) { $mensagem_erro = "Erro: " . $e->getMessage(); }
@@ -131,6 +131,7 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
             </select>
             <label>Sets Casa:</label> <input type="number" name="pontos_casa" min="0" max="3" required>
             <label>Sets Visita:</label> <input type="number" name="pontos_fora" min="0" max="3" required>
+            <label>Link do YouTube:</label> <input type="url" name="youtube_url" placeholder="https://www.youtube.com/watch?v=...">
             <button type="submit" name="cadastrar_partida">Registrar Partida</button>
         </form>
     </div>
