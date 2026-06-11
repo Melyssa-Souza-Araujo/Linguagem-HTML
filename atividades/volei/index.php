@@ -1,19 +1,21 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
+session_start();
 include 'conexao.php';
+/** @var PDO $pdo */
+
+// Se o usuário não estiver logado em nenhuma conta, joga para a página de login
+if (!isset($_SESSION['logado'])) {
+    header("Location: login.php");
+    exit;
+}
 
 $pais_filtro = isset($_GET['pais_filtro']) ? $_GET['pais_filtro'] : 'todos';
 $fase_filtro = isset($_GET['fase_filtro']) ? $_GET['fase_filtro'] : 'todos';
 $h2h_1 = isset($_GET['h2h_1']) ? $_GET['h2h_1'] : '';
 $h2h_2 = isset($_GET['h2h_2']) ? $_GET['h2h_2'] : '';
 
-// 1. Puxar países (com suas respectivas siglas de bandeira)
 $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::FETCH_ASSOC);
 
-// Cria mapeamento rápido de ID para Sigla/Nome para otimizar os cards e H2H
 $mapa_paises = [];
 foreach($paises as $p) {
     $mapa_paises[$p['id']] = ['nome' => $p['nome'], 'sigla' => strtolower($p['sigla'])];
@@ -21,23 +23,34 @@ foreach($paises as $p) {
 
 $tabela_F = []; $tabela_M = [];
 foreach ($paises as $p) {
-    $base = ['nome' => $p['nome'], 'sigla' => strtolower($p['sigla']), 'vitorias' => 0, 'derrotas' => 0, 'pontos' => 0, 'sets_pro' => 0, 'sets_contra' => 0, 'jogos_disputados' => 0, 'jogou' => false];
+    $base = ['nome' => $p['nome'], 'sigla' => strtolower($p['sigla']), 'vitorias' => 0, 'derrotas' => 0, 'pontos' => 0, 'sets_pro' => 0, 'sets_contra' => 0, 'jogos_disputados' => 0, 'jogou' => false, 'historico_resultados' => []];
     $tabela_F[$p['id']] = $base; $tabela_M[$p['id']] = $base;
 }
 
-// 2. Puxar todas as partidas gravadas
-$partidas_todas = $pdo->query("SELECT p.*, t1.nome AS casa_nome, t2.nome AS fora_nome FROM partidas p JOIN paises t1 ON p.id_casa = t1.id JOIN paises t2 ON p.id_fora = t2.id ORDER BY p.id DESC")->fetchAll(PDO::FETCH_ASSOC);
+// Puxar todas as partidas organizadas por ID antigo para processar o histórico em ordem cronológica correta
+$partidas_cronologicas = $pdo->query("SELECT p.*, t1.nome AS casa_nome, t2.nome AS fora_nome FROM partidas p JOIN paises t1 ON p.id_casa = t1.id JOIN paises t2 ON p.id_fora = t2.id ORDER BY p.id ASC")->fetchAll(PDO::FETCH_ASSOC);
 
-$h2h_vitorias_1 = 0; $h2h_vitorias_2 = 0; $h2h_jogos = [];
+$h2h_vitorias_1 = 0; $h2h_vitorias_2 = 0;
 
-foreach ($partidas_todas as $partida) {
+// Estrutura para o Chaveamento do Mata-Mata
+$mata_mata = [
+    'F' => ['Quartas' => [], 'Semifinal' => [], 'Final' => []],
+    'M' => ['Quartas' => [], 'Semifinal' => [], 'Final' => []]
+];
+
+foreach ($partidas_cronologicas as $partida) {
     $casa = $partida['id_casa']; $fora = $partida['id_fora'];
     $p_casa = $partida['pontos_casa']; $p_fora = $partida['pontos_fora'];
     $genero = $partida['genero']; $fase_atual = $partida['fase'] ?? 'Fase de Grupos';
 
+    // Organizar chaves de mata-mata
+    if (in_array($fase_atual, ['Quartas de Final', 'Semifinal', 'Final'])) {
+        $chave_fase = $fase_atual == 'Quartas de Final' ? 'Quartas' : ($fase_atual == 'Semifinal' ? 'Semifinal' : 'Final');
+        $mata_mata[$genero][$chave_fase][] = $partida;
+    }
+
     if (!empty($h2h_1) && !empty($h2h_2)) {
         if (($casa == $h2h_1 && $fora == $h2h_2) || ($casa == $h2h_2 && $fora == $h2h_1)) {
-            $h2h_jogos[] = $partida;
             if ($p_casa > $p_fora) {
                 if ($casa == $h2h_1) $h2h_vitorias_1++; else $h2h_vitorias_2++;
             } else {
@@ -46,28 +59,34 @@ foreach ($partidas_todas as $partida) {
         }
     }
 
-    if ($fase_filtro != 'todos' && $fase_atual != $fase_filtro) continue;
+    if ($genero == 'F') { $ref = &$tabela_F; } else { $ref = &$tabela_M; }
 
-    if ($genero == 'F') {
-        if (!isset($tabela_F[$casa])) continue;
-        $tabela_F[$casa]['jogou'] = true; $tabela_F[$fora]['jogou'] = true; $ref = &$tabela_F;
-    } else {
-        if (!isset($tabela_M[$casa])) continue;
-        $tabela_M[$casa]['jogou'] = true; $tabela_M[$fora]['jogou'] = true; $ref = &$tabela_M;
+    if (!isset($ref[$casa])) continue;
+
+    if ($fase_filtro == 'todos' || $fase_atual == $fase_filtro) {
+        $ref[$casa]['jogou'] = true; $ref[$fora]['jogou'] = true;
+        $ref[$casa]['jogos_disputados']++; $ref[$fora]['jogos_disputados']++;
+        $ref[$casa]['sets_pro'] += $p_casa; $ref[$casa]['sets_contra'] += $p_fora;
+        $ref[$fora]['sets_pro'] += $p_fora; $ref[$fora]['sets_contra'] += $p_casa;
     }
 
-    $ref[$casa]['jogos_disputados']++; $ref[$fora]['jogos_disputados']++;
-    $ref[$casa]['sets_pro'] += $p_casa; $ref[$casa]['sets_contra'] += $p_fora;
-    $ref[$fora]['sets_pro'] += $p_fora; $ref[$fora]['sets_contra'] += $p_casa;
-
     if ($p_casa > $p_fora) {
-        $ref[$casa]['vitorias']++; $ref[$fora]['derrotas']++;
-        if ($p_casa == 3 && ($p_fora == 0 || $p_fora == 1)) $ref[$casa]['pontos'] += 3;
-        elseif ($p_casa == 3 && $p_fora == 2) { $ref[$casa]['pontos'] += 2; $ref[$fora]['pontos'] += 1; }
+        if ($fase_filtro == 'todos' || $fase_atual == $fase_filtro) {
+            $ref[$casa]['vitorias']++; $ref[$fora]['derrotas']++;
+            if ($p_casa == 3 && ($p_fora == 0 || $p_fora == 1)) $ref[$casa]['pontos'] += 3;
+            elseif ($p_casa == 3 && $p_fora == 2) { $ref[$casa]['pontos'] += 2; $ref[$fora]['pontos'] += 1; }
+            else { $ref[$casa]['pontos'] += 3; }
+        }
+        // Armazena no array de Streaks individuais (independente de filtros de visualização de fase)
+        $tabela_F[$casa]['historico_resultados'][] = 'V'; $tabela_F[$fora]['historico_resultados'][] = 'D';
     } else {
-        $ref[$fora]['vitorias']++; $ref[$casa]['derrotas']++;
-        if ($p_fora == 3 && ($p_casa == 0 || $p_casa == 1)) $ref[$fora]['pontos'] += 3;
-        elseif ($p_fora == 3 && $p_casa == 2) { $ref[$fora]['pontos'] += 2; $ref[$casa]['pontos'] += 1; }
+        if ($fase_filtro == 'todos' || $fase_atual == $fase_filtro) {
+            $ref[$fora]['vitorias']++; $ref[$casa]['derrotas']++;
+            if ($p_fora == 3 && ($p_casa == 0 || $p_casa == 1)) $ref[$fora]['pontos'] += 3;
+            elseif ($p_fora == 3 && $p_casa == 2) { $ref[$fora]['pontos'] += 2; $ref[$casa]['pontos'] += 1; }
+            else { $ref[$fora]['pontos'] += 3; }
+        }
+        $tabela_F[$fora]['historico_resultados'][] = 'V'; $tabela_F[$casa]['historico_resultados'][] = 'D';
     }
 }
 
@@ -83,11 +102,16 @@ $ordenar_fivb = function($a, $b) {
 };
 uasort($tabela_F, $ordenar_fivb); uasort($tabela_M, $ordenar_fivb);
 
-$historico_filtrado = [];
-foreach ($partidas_todas as $part) {
-    if (($pais_filtro == 'todos' || $part['id_casa'] == $pais_filtro || $part['id_fora'] == $pais_filtro) && ($fase_filtro == 'todos' || ($part['fase'] ?? 'Fase de Grupos') == $fase_filtro)) {
-        $historico_filtrado[] = $part;
+// Função auxiliar interna para gerar as Badges de Sequência (Streak)
+function calcularBadgeStreak($historico) {
+    if (empty($historico)) return "<span class='streak-badge empty'>-</span>";
+    $ultimos = array_slice($historico, -5); // Pega os últimos 5 jogos disputados
+    $html = "";
+    foreach($ultimos as $res) {
+        $classe = ($res == 'V') ? 'vitoria' : 'derrota';
+        $html .= "<span class='streak-dot $classe'>$res</span>";
     }
+    return $html;
 }
 ?>
 
@@ -96,76 +120,118 @@ foreach ($partidas_todas as $part) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classificação VNL Premium</title>
+    <title>Classificação Geral VNL</title>
     <style>
-        /* Variáveis de Cores (Suporte Nativo a Temas) */
         :root {
             --bg-body: #0d1b2a; --txt-main: #f4f4f9; --txt-heading: #e0e1dd;
             --bg-card: #1b263b; --border-line: #415a77; --bg-g8: #1f3147;
-            --btn-bg: #e0e1dd; --btn-txt: #0d1b2a; --btn-hover: #cbd5e1;
+            --btn-bg: #e0e1dd; --btn-txt: #0d1b2a;
         }
         [data-theme="light"] {
             --bg-body: #f4f6f9; --txt-main: #1e293b; --txt-heading: #0f172a;
             --bg-card: #ffffff; --border-line: #cbd5e1; --bg-g8: #f1f5f9;
-            --btn-bg: #0f172a; --btn-txt: #ffffff; --btn-hover: #1e293b;
+            --btn-bg: #0f172a; --btn-txt: #ffffff;
         }
 
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: var(--bg-body); color: var(--txt-main); transition: background 0.3s, color 0.3s; }
+        /* ANIMAÇÃO NA TRANSIÇÃO DO TEMA (SUA SOLICITAÇÃO) */
+        body, .box, table, tr, td, th, input, select, .partida-card, .bracket-game {
+            transition: all 0.4s ease;
+        }
+
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: var(--bg-body); color: var(--txt-main); }
         h1, h2, h3 { text-align: center; color: var(--txt-heading); }
         h2 { margin-top: 40px; border-bottom: 2px solid var(--border-line); padding-bottom: 10px; }
         
-        /* Botão Alternador de Tema */
-        .theme-toggle { position: fixed; top: 15px; right: 15px; background: var(--btn-bg); color: var(--btn-txt); border: none; padding: 8px 15px; font-weight: bold; border-radius: 20px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.15); z-index: 1000; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; max-width: 950px; margin: 0 auto; flex-wrap: wrap; gap: 10px; }
+        .theme-toggle, .btn-logout { background: var(--btn-bg); color: var(--btn-txt); border: none; padding: 8px 15px; font-weight: bold; border-radius: 20px; cursor: pointer; text-decoration: none; font-size: 13px; }
 
-        /* Central de Filtros Responsiva */
         .secao-filtros { background: var(--bg-card); padding: 15px; border-radius: 8px; max-width: 950px; margin: 20px auto; text-align: center; border: 1px solid var(--border-line); display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; align-items: center; }
-        .secao-filtros select { padding: 8px; border-radius: 4px; background: var(--bg-body); color: var(--txt-main); font-weight: bold; border: 1px solid var(--border-line); }
+        .secao-filtros select { padding: 8px; border-radius: 4px; background: var(--bg-body); color: var(--txt-main); border: 1px solid var(--border-line); }
         .secao-filtros button { padding: 8px 20px; background: #2a9d8f; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
-        /* Estrutura Flexbox das Tabelas (Responsividade Nativa) */
         .tabelas-container { display: flex; flex-direction: column; gap: 40px; align-items: center; margin-top: 20px; width: 100%; }
         .tabela-bloco { width: 100%; max-width: 950px; }
-        
-        /* Container de rolagem para telas muito pequenas de celular */
-        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-        table { width: 100%; border-collapse: collapse; background: var(--bg-card); min-width: 650px; }
+        .table-responsive { width: 100%; overflow-x: auto; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; background: var(--bg-card); min-width: 750px; }
         th, td { padding: 12px 10px; text-align: center; font-size: 14px; }
-        th { background-color: var(--border-line); color: var(--txt-heading); font-size: 11px; text-transform: uppercase; }
+        th { background-color: var(--border-line); color: var(--txt-heading); }
         tr { border-bottom: 1px solid var(--border-line); }
         .g8-zona { background-color: var(--bg-g8); border-left: 5px solid #2a9d8f; }
 
-        /* Ajuste do nome do país com a bandeira */
         .nome-pais { text-align: left; font-weight: bold; display: flex; align-items: center; }
-        .flag { width: 22px; height: 15px; margin-right: 8px; border-radius: 2px; border: 1px solid var(--border-line); object-fit: cover; }
+        .flag { width: 22px; height: 15px; margin-right: 8px; border-radius: 2px; object-fit: cover; }
 
-        .historico-container { max-width: 850px; margin: 20px auto; }
-        .partida-card { background: var(--bg-card); padding: 15px; margin-bottom: 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--border-line); border: 1px solid var(--border-line); }
-        .partida-placar { background: var(--bg-body); padding: 6px 15px; border-radius: 4px; color: #2a9d8f; font-size: 18px; font-weight: bold; min-width: 60px; text-align: center; }
-        
-        .btn-gerenciar { display: block; width: 200px; margin: 20px auto; text-align: center; background: var(--btn-bg); color: var(--btn-txt); padding: 10px; border-radius: 4px; text-decoration: none; font-weight: bold; }
-        .h2h-box { background: var(--bg-card); border: 2px dashed #2a9d8f; padding: 20px; border-radius: 8px; max-width: 850px; margin: 30px auto; text-align: center; }
-        .h2h-placar-geral { font-size: 24px; font-weight: bold; margin: 15px 0; color: #e76f51; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        /* ESTILO DO STREAK (SEQUÊNCIA) */
+        .streak-dot { display: inline-block; width: 18px; height: 18px; line-height: 18px; text-align: center; border-radius: 50%; font-size: 10px; font-weight: bold; margin: 0 2px; color: #fff; }
+        .streak-dot.vitoria { background-color: #2a9d8f; }
+        .streak-dot.derrota { background-color: #e63946; }
 
-        /* Regras adicionais de responsividade para telas pequenas (Mobile First UI) */
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            .secao-filtros form { display: flex; flex-direction: column; width: 100%; gap: 8px; }
-            .secao-filtros select, .secao-filtros button { width: 100%; }
-            .partida-card { flex-direction: column; text-align: center; gap: 10px; }
-            .theme-toggle { padding: 5px 10px; font-size: 12px; }
-        }
+        /* ESTILOS DA ÁRVORE GRÁFICA DO MATA-MATA */
+        .bracket-container { display: flex; justify-content: space-around; align-items: center; background: var(--bg-card); padding: 20px; border-radius: 8px; margin: 20px auto; max-width: 950px; border: 1px solid var(--border-line); flex-wrap: wrap; gap: 20px; }
+        .bracket-column { display: flex; flex-direction: column; gap: 15px; justify-content: center; }
+        .bracket-game { background: var(--bg-body); padding: 10px; border-radius: 6px; border: 1px solid var(--border-line); min-width: 180px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .bracket-team { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 3px 0; font-weight: bold; }
+        .bracket-score { background: var(--border-line); padding: 1px 6px; border-radius: 3px; font-size: 11px; }
+
+        .btn-gerenciar { display: block; width: 220px; margin: 20px auto; text-align: center; background: #e76f51; color: white; padding: 10px; border-radius: 4px; text-decoration: none; font-weight: bold; }
+        .h2h-box { background: var(--bg-card); border: 1px solid var(--border-line); padding: 20px; border-radius: 8px; max-width: 950px; margin: 30px auto; text-align: center; }
     </style>
 </head>
 <body>
 
-    <button class="theme-toggle" onclick="toggleTheme()" id="btnTema">☀️ Modo Claro</button>
+    <div class="header-top">
+        <div>Olá, <strong><?=htmlspecialchars($_SESSION['usuario_login'])?></strong> (<span style="text-transform: uppercase; font-size: 11px; color: #2a9d8f;"><?=$_SESSION['usuario_nivel']?></span>)</div>
+        <div>
+            <button class="theme-toggle" onclick="toggleTheme()" id="btnTema">☀️ Modo Claro</button>
+            <a href="logout.php" class="btn-logout" style="background:#e63946; color:#fff; margin-left: 10px;">🚪 Sair</a>
+        </div>
+    </div>
 
     <h1>PAINEL DE CLASSIFICAÇÃO VNL</h1>
-    <a href="cadastro.php" class="btn-gerenciar">Painel de Cadastro →</a>
+
+    <?php if ($_SESSION['usuario_nivel'] === 'admin'): ?>
+        <a href="cadastro.php" class="btn-gerenciar">⚙️ Painel de Cadastro (Admin) →</a>
+    <?php endif; ?>
+
+    <h2>🌴 Árvore de Chaveamento do Mata-Mata (Feminino & Masculino)</h2>
+    <?php foreach(['F' => 'Feminino', 'M' => 'Masculino'] as $g_key => $g_nome): ?>
+        <h3 style="margin-top:20px; font-size:14px; color:#2a9d8f;">Fase Eliminatória - <?=$g_nome?></h3>
+        <div class="bracket-container">
+            <div class="bracket-column">
+                <span style="font-size:10px; text-transform:uppercase; text-align:center; display:block; color:#888;">Quartas de Final</span>
+                <?php if(empty($mata_mata[$g_key]['Quartas'])): ?><p style="font-size:11px; color:#666;">Aguardando definição</p><?php endif; ?>
+                <?php foreach($mata_mata[$g_key]['Quartas'] as $jogo): ?>
+                    <div class="bracket-game">
+                        <div class="bracket-team"><span><?=$mapa_paises[$jogo['id_casa']]['nome']?></span> <span class="bracket-score"><?=$jogo['pontos_casa']?></span></div>
+                        <div class="bracket-team"><span><?=$mapa_paises[$jogo['id_fora']]['nome']?></span> <span class="bracket-score"><?=$jogo['pontos_fora']?></span></div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="bracket-column">
+                <span style="font-size:10px; text-transform:uppercase; text-align:center; display:block; color:#888;">Semifinal</span>
+                <?php if(empty($mata_mata[$g_key]['Semifinal'])): ?><p style="font-size:11px; color:#666;">Aguardando definição</p><?php endif; ?>
+                <?php foreach($mata_mata[$g_key]['Semifinal'] as $jogo): ?>
+                    <div class="bracket-game" style="border-color:#2a9d8f;">
+                        <div class="bracket-team"><span><?=$mapa_paises[$jogo['id_casa']]['nome']?></span> <span class="bracket-score"><?=$jogo['pontos_casa']?></span></div>
+                        <div class="bracket-team"><span><?=$mapa_paises[$jogo['id_fora']]['nome']?></span> <span class="bracket-score"><?=$jogo['pontos_fora']?></span></div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="bracket-column">
+                <span style="font-size:10px; text-transform:uppercase; text-align:center; display:block; color:#e76f51; font-weight:bold;">🏆 Grande Final</span>
+                <?php if(empty($mata_mata[$g_key]['Final'])): ?><p style="font-size:11px; color:#666;">Aguardando definição</p><?php endif; ?>
+                <?php foreach($mata_mata[$g_key]['Final'] as $jogo): ?>
+                    <div class="bracket-game" style="border-color:#e76f51; background:#2d1a1a;">
+                        <div class="bracket-team" style="color:#e76f51;"><span><?=$mapa_paises[$jogo['id_casa']]['nome']?></span> <span class="bracket-score"><?=$jogo['pontos_casa']?></span></div>
+                        <div class="bracket-team" style="color:#e76f51;"><span><?=$mapa_paises[$jogo['id_fora']]['nome']?></span> <span class="bracket-score"><?=$jogo['pontos_fora']?></span></div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    <?php endforeach; ?>
 
     <div class="secao-filtros">
         <form method="GET" action="index.php">
-            <label>Filtrar Competição:</label>
             <select name="fase_filtro">
                 <option value="todos" <?=$fase_filtro == 'todos'?'selected':''?>>-- Todas as Fases --</option>
                 <option value="Fase de Grupos" <?=$fase_filtro == 'Fase de Grupos'?'selected':''?>>Fase de Grupos</option>
@@ -173,14 +239,7 @@ foreach ($partidas_todas as $part) {
                 <option value="Semifinal" <?=$fase_filtro == 'Semifinal'?'selected':''?>>Semifinal</option>
                 <option value="Final" <?=$fase_filtro == 'Final'?'selected':''?>>Final</option>
             </select>
-
-            <select name="pais_filtro">
-                <option value="todos" <?=$pais_filtro == 'todos'?'selected':''?>>-- Todos os Países (Histórico) --</option>
-                <?php foreach ($paises as $p): ?>
-                    <option value="<?=$p['id']?>" <?=$pais_filtro == $p['id']?'selected':''?>><?=$p['nome']?></option>
-                <?php endforeach; ?>
-            </select>
-            <button type="submit">Filtrar</button>
+            <button type="submit">Filtrar Tabela</button>
         </form>
     </div>
 
@@ -190,22 +249,20 @@ foreach ($partidas_todas as $part) {
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>Pos</th><th style="text-align:left;">País</th><th>J</th><th>V</th><th>D</th><th>Pts</th><th>Sets P</th><th>Sets C</th><th>Ratio S</th></tr>
+                        <tr><th>Pos</th><th style="text-align:left;">País</th><th>J</th><th>V</th><th>D</th><th>Pts</th><th>Sets P</th><th>Sets C</th><th>Forma (Últimos 5)</th></tr>
                     </thead>
                     <tbody>
-                        <?php $pos = 1; foreach ($tabela_F as $item): 
-                            $ratio = $item['sets_contra'] > 0 ? round($item['sets_pro'] / $item['sets_contra'], 3) : $item['sets_pro'];
-                        ?>
+                        <?php $pos = 1; foreach ($tabela_F as $id_p => $item): ?>
                         <tr class="<?=($pos <= 8)?'g8-zona':''?>">
                             <td><strong><?=$pos?></strong></td>
-                            <td class="nome-pais"><img class="flag" src="https://flagcdn.com/w40/<?=$item['sigla']?>.png" alt="Flag"> <?=$item['nome']?></td>
+                            <td class="nome-pais"><img class="flag" src="https://flagcdn.com/w40/<?=$item['sigla']?>.png"> <?=$item['nome']?></td>
                             <td><?=$item['jogos_disputados']?></td>
                             <td style="color:#2a9d8f; font-weight:bold;"><?=$item['vitorias']?></td>
                             <td style="color:#e63946;"><?=$item['derrotas']?></td>
                             <td><strong><?=$item['pontos']?></strong></td>
                             <td><?=$item['sets_pro']?></td>
                             <td><?=$item['sets_contra']?></td>
-                            <td><strong><?=$ratio?></strong></td>
+                            <td><?=calcularBadgeStreak($item['historico_resultados'])?></td>
                         </tr>
                         <?php $pos++; endforeach; ?>
                     </tbody>
@@ -218,22 +275,20 @@ foreach ($partidas_todas as $part) {
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>Pos</th><th style="text-align:left;">País</th><th>J</th><th>V</th><th>D</th><th>Pts</th><th>Sets P</th><th>Sets C</th><th>Ratio S</th></tr>
+                        <tr><th>Pos</th><th style="text-align:left;">País</th><th>J</th><th>V</th><th>D</th><th>Pts</th><th>Sets P</th><th>Sets C</th><th>Forma (Últimos 5)</th></tr>
                     </thead>
                     <tbody>
-                        <?php $pos = 1; foreach ($tabela_M as $item): 
-                            $ratio = $item['sets_contra'] > 0 ? round($item['sets_pro'] / $item['sets_contra'], 3) : $item['sets_pro'];
-                        ?>
+                        <?php $pos = 1; foreach ($tabela_M as $id_p => $item): ?>
                         <tr class="<?=($pos <= 8)?'g8-zona':''?>">
                             <td><strong><?=$pos?></strong></td>
-                            <td class="nome-pais"><img class="flag" src="https://flagcdn.com/w40/<?=$item['sigla']?>.png" alt="Flag"> <?=$item['nome']?></td>
+                            <td class="nome-pais"><img class="flag" src="https://flagcdn.com/w40/<?=$item['sigla']?>.png"> <?=$item['nome']?></td>
                             <td><?=$item['jogos_disputados']?></td>
                             <td style="color:#2a9d8f; font-weight:bold;"><?=$item['vitorias']?></td>
                             <td style="color:#e63946;"><?=$item['derrotas']?></td>
                             <td><strong><?=$item['pontos']?></strong></td>
                             <td><?=$item['sets_pro']?></td>
                             <td><?=$item['sets_contra']?></td>
-                            <td><strong><?=$ratio?></strong></td>
+                            <td><?=calcularBadgeStreak($item['historico_resultados'])?></td>
                         </tr>
                         <?php $pos++; endforeach; ?>
                     </tbody>
@@ -242,71 +297,18 @@ foreach ($partidas_todas as $part) {
         </div>
     </div>
 
-    <div class="h2h-box">
-        <h3>📊 Comparador Confronto Direto (Head-to-Head)</h3>
-        <form method="GET" action="index.php">
-            <select name="h2h_1" required>
-                <option value="">-- Selecione o País A --</option>
-                <?php foreach ($paises as $p): ?> <option value="<?=$p['id']?>" <?=$h2h_1 == $p['id']?'selected':''?>><?=$p['nome']?></option> <?php endforeach; ?>
-            </select>
-            <span style="font-weight: bold; margin: 0 5px; color:#2a9d8f;">VS</span>
-            <select name="h2h_2" required>
-                <option value="">-- Selecione o País B --</option>
-                <?php foreach ($paises as $p): ?> <option value="<?=$p['id']?>" <?=$h2h_2 == $p['id']?'selected':''?>><?=$p['nome']?></option> <?php endforeach; ?>
-            </select>
-            <button type="submit" style="background:#e76f51; color:white; border:none; padding:8px 15px; border-radius:4px; font-weight:bold; cursor:pointer;">Comparar</button>
-        </form>
-
-        <?php if (!empty($h2h_1) && !empty($h2h_2)): ?>
-            <div class="h2h-placar-geral">
-                <img class="flag" style="width:30px; height:20px;" src="https://flagcdn.com/w40/<?=$mapa_paises[$h2h_1]['sigla']?>.png"> 
-                <?=$mapa_paises[$h2h_1]['nome']?> <?=$h2h_vitorias_1?> x <?=$h2h_vitorias_2?> <?=$mapa_paises[$h2h_2]['nome']?>
-                <img class="flag" style="width:30px; height:20px;" src="https://flagcdn.com/w40/<?=$mapa_paises[$h2h_2]['sigla']?>.png">
-            </div>
-        <?php endif; ?>
-    </div>
-
-    <h2>Histórico de Partidas Filtradas</h2>
-    <div class="historico-container">
-        <?php if (empty($historico_filtrado)): ?>
-            <p style="text-align: center; color: #888; font-style: italic;">Nenhuma partida encontrada.</p>
-        <?php else: ?>
-            <?php foreach ($historico_filtrado as $part): ?>
-                <div class="partida-card">
-                    <div style="font-weight: bold; display:flex; align-items:center; gap:5px; flex-wrap:wrap; justify-content:center;">
-                        <img class="flag" src="https://flagcdn.com/w40/<?=$mapa_paises[$part['id_casa']]['sigla']?>.png">
-                        <span><?=$part['casa_nome']?></span> 
-                        <span style="color:#888; font-weight:normal; margin:0 5px;">vs</span> 
-                        <img class="flag" src="https://flagcdn.com/w40/<?=$mapa_paises[$part['id_fora']]['sigla']?>.png">
-                        <span><?=$part['fora_nome']?></span>
-                        <span style="font-size:10px; background:#e76f51; color:white; padding:2px 6px; border-radius:3px; margin-left:5px;"><?=$part['fase'] ?? 'Fase de Grupos'?></span>
-                        <span style="font-size:10px; background:#415a77; padding:2px 6px; border-radius:3px; color:white;"><?=$part['genero']=='M'?'MASC':'FEM'?></span>
-                    </div>
-                    <div class="partida-placar"><?=$part['pontos_casa']?> x <?=$part['pontos_fora']?></div>
-                </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </div>
-
     <script>
         function applyTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
             const btn = document.getElementById('btnTema');
-            if (theme === 'light') {
-                btn.innerHTML = '🌙 Modo Escuro';
-            } else {
-                btn.innerHTML = '☀️ Modo Claro';
-            }
+            if (theme === 'light') { btn.innerHTML = '🌙 Modo Escuro'; } else { btn.innerHTML = '☀️ Modo Claro'; }
         }
-
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             localStorage.setItem('vnl-theme', newTheme);
             applyTheme(newTheme);
         }
-
-        // Recupera a escolha anterior do usuário assim que a página carrega
         const savedTheme = localStorage.getItem('vnl-theme') || 'dark';
         applyTheme(savedTheme);
     </script>
