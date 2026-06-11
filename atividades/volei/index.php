@@ -62,11 +62,11 @@ uasort($tabela, function($a, $b) {
     return $b['pontos'] <=> $a['pontos'];
 });
 
-// 4. BUSCA ISOLADA PARA OS VÍDEOS (Trazendo os nomes certos direto do banco)
+// 4. BUSCA ISOLADA PARA OS VÍDEOS (Modificada para LEFT JOIN - Garante a exibição)
 $query_videos = "SELECT p.*, t1.nome AS nome_casa, t2.nome AS nome_fora 
                  FROM partidas p 
-                 JOIN paises t1 ON p.id_casa = t1.id 
-                 JOIN paises t2 ON p.id_fora = t2.id 
+                 LEFT JOIN paises t1 ON p.id_casa = t1.id 
+                 LEFT JOIN paises t2 ON p.id_fora = t2.id 
                  ORDER BY p.id DESC";
 $lista_videos = $pdo->query($query_videos)->fetchAll(PDO::FETCH_ASSOC);
 
@@ -174,10 +174,14 @@ function obterLinkEmbedYoutube($url) {
         <?php foreach ($lista_videos as $part): 
             $embedUrl = obterLinkEmbedYoutube($part['youtube_url']);
             $categoria = ($part['genero'] == 'M') ? 'Masculino' : 'Feminino';
+            
+            // Tratamento caso o país tenha sido deletado para não deixar o nome em branco
+            $casaNome = !empty($part['nome_casa']) ? $part['nome_casa'] : "País Removido";
+            $foraNome = !empty($part['nome_fora']) ? $part['nome_fora'] : "País Removido";
         ?>
             <div class="video-card">
                 <h3 style="margin-top: 0; margin-bottom: 10px;">
-                    <?=$part['nome_casa']?> <?=$part['pontos_casa']?> x <?=$part['pontos_fora']?> <?=$part['nome_fora']?>
+                    <?=$casaNome?> <?=$part['pontos_casa']?> x <?=$part['pontos_fora']?> <?=$foraNome?>
                     <span class="tag-genero"><?=$categoria?></span>
                 </h3>
                 
