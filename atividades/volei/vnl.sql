@@ -26,3 +26,6 @@ ALTER TABLE partidas DROP FOREIGN KEY partidas_ibfk_2;
 
 ALTER TABLE partidas ADD CONSTRAINT fk_partidas_casa FOREIGN KEY (id_casa) REFERENCES paises(id) ON DELETE CASCADE;
 ALTER TABLE partidas ADD CONSTRAINT fk_partidas_fora FOREIGN KEY (id_fora) REFERENCES paises(id) ON DELETE CASCADE;
+
+ALTER TABLE partidas DROP COLUMN youtube_url;
+TRUNCATE TABLE partidas;
