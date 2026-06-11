@@ -60,6 +60,39 @@ uasort($tabela, function($a, $b) {
     }
     return $b['pontos'] <=> $a['pontos'];
 });
+
+// 4. BUSCA ISOLADA PARA OS VÍDEOS (Trazendo apenas as partidas que têm link preenchido)
+$query_videos = "SELECT p.*, t1.nome AS nome_casa, t2.nome AS nome_fora 
+                 FROM partidas p 
+                 LEFT JOIN paises t1 ON p.id_casa = t1.id 
+                 LEFT JOIN paises t2 ON p.id_fora = t2.id 
+                 WHERE p.youtube_url IS NOT NULL AND p.youtube_url != ''
+                 ORDER BY p.id DESC";
+$lista_videos = $pdo->query($query_videos)->fetchAll(PDO::FETCH_ASSOC);
+
+// 5. FUNÇÃO DO YOUTUBE SUPER TOLERANTE
+function obterLinkEmbedYoutube($url) {
+    if (empty($url)) return null;
+    $url = trim($url);
+    
+    if (strpos($url, 'embed/') !== false) {
+        return $url;
+    }
+    
+    $video_id = "";
+    if (preg_match('/youtu\.be\/([^\?&#]+)/', $url, $matches)) {
+        $video_id = $matches[1];
+    } elseif (preg_match('/youtube\.com\/shorts\/([^\?&#]+)/', $url, $matches)) {
+        $video_id = $matches[1];
+    } elseif (preg_match('/v=([^&#]+)/', $url, $matches)) {
+        $video_id = $matches[1];
+    }
+    
+    if (!empty($video_id)) {
+        return "https://www.youtube.com/embed/" . $video_id;
+    }
+    return null;
+}
 ?>
 
 <!DOCTYPE html>
@@ -69,7 +102,7 @@ uasort($tabela, function($a, $b) {
     <title>Classificação VNL</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 30px; background-color: #0d1b2a; color: #f4f4f9; }
-        h1 { text-align: center; color: #e0e1dd; }
+        h1, h2 { text-align: center; color: #e0e1dd; }
         table { width: 100%; max-width: 800px; margin: 20px auto; border-collapse: collapse; background: #1b263b; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         th, td { padding: 12px 15px; text-align: center; }
         th { background-color: #415a77; font-weight: bold; text-transform: uppercase; font-size: 14px; }
@@ -80,8 +113,13 @@ uasort($tabela, function($a, $b) {
         .posicao-numero { font-weight: bold; color: #e0e1dd; }
         .nome-pais { text-align: left; font-weight: bold; }
         
+        .container-videos { max-width: 800px; margin: 40px auto; }
+        .video-card { background: #1b263b; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .iframe-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; margin-top: 15px; border-radius: 6px; border: 1px solid #415a77; }
+        .iframe-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
         .btn-gerenciar { display: block; width: 200px; margin: 20px auto; text-align: center; background: #e0e1dd; color: #0d1b2a; padding: 10px; border-radius: 4px; text-decoration: none; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .btn-gerenciar:hover { background: #cbd5e1; }
+        .tag-genero { display: inline-block; padding: 3px 8px; font-size: 11px; font-weight: bold; border-radius: 3px; background: #415a77; margin-left: 10px; vertical-align: middle; }
     </style>
 </head>
 <body>
@@ -119,6 +157,36 @@ uasort($tabela, function($a, $b) {
             ?>
         </tbody>
     </table>
+
+    <?php if (!empty($lista_videos)): ?>
+        <div class="container-videos">
+            <h2>Histórico de Partidas e Vídeos</h2>
+            
+            <?php foreach ($lista_videos as $part): 
+                $embedUrl = obterLinkEmbedYoutube($part['youtube_url']);
+                if (empty($embedUrl)) continue; // Ignora se o link não for conversível
+                
+                $categoria = ($part['genero'] == 'M') ? 'Masculino' : 'Feminino';
+                $casaNome = !empty($part['nome_casa']) ? $part['nome_casa'] : "País Removido";
+                $foraNome = !empty($part['nome_fora']) ? $part['nome_fora'] : "País Removido";
+            ?>
+                <div class="video-card">
+                    <h3 style="margin-top: 0; margin-bottom: 10px;">
+                        <?=$casaNome?> <?=$part['pontos_casa']?> x <?=$part['pontos_fora']?> <?=$foraNome?>
+                        <span class="tag-genero"><?=$categoria?></span>
+                    </h3>
+                    
+                    <div class="iframe-wrapper">
+                        <iframe src="<?=$embedUrl?>" 
+                                title="YouTube video player" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
 
 </body>
 </html>
