@@ -4,10 +4,21 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 include 'conexao.php';
+session_start();
+/** @var PDO $pdo */
+
+// BLOQUEIO DE SESSÃO: Se não estiver logado ou se não for administrador, joga para o login
+if (!isset($_SESSION['logado']) || $_SESSION['usuario_nivel'] !== 'admin') {
+    header("Location: login.php");
+    exit;
+}
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 $mensagem_sucesso = "";
 $mensagem_erro = "";
-
 // PROCESSAR CADASTRO DE PAÍS
 if (isset($_POST['cadastrar_pais'])) {
     $nome = trim($_POST['nome_pais']);
