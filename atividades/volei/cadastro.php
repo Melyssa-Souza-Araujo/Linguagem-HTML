@@ -1,45 +1,62 @@
 <?php
-// Ativa a exibição de erros na tela para ajudar no diagnóstico
+// 1. ATIVAÇÃO DE ERROS PARA DIAGNÓSTICO
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 include 'conexao.php';
 
-// Processar Cadastro de País
+$mensagem_sucesso = "";
+$mensagem_erro = "";
+
+// 2. PROCESSAR CADASTRO DE PAÍS
 if (isset($_POST['cadastrar_pais'])) {
     $nome = trim($_POST['nome_pais']);
     if (!empty($nome)) {
-        $stmt = $pdo->prepare("INSERT INTO paises (nome) VALUES (?)");
-        $stmt->execute([$nome]);
-        echo "<script>alert('País cadastrado com sucesso!'); window.location.href='cadastro.php';</script>";
-        exit;
+        try {
+            $stmt = $pdo->prepare("INSERT INTO paises (nome) VALUES (?)");
+            $stmt->execute([$nome]);
+            
+            // Redirecionamento nativo limpo (evita erro de reenvio)
+            header("Location: cadastro.php?sucesso=pais");
+            exit;
+        } catch (PDOException $e) {
+            $mensagem_erro = "Erro ao salvar no banco: " . $e->getMessage();
+        }
     }
 }
 
-// Processar Cadastro de Partida (Com a inclusão do Gênero)
+// 3. PROCESSAR CADASTRO DE PARTIDA
 if (isset($_POST['cadastrar_partida'])) {
     $id_casa = $_POST['id_casa'];
     $id_fora = $_POST['id_fora'];
     $p_casa = $_POST['pontos_casa'];
     $p_fora = $_POST['pontos_fora'];
     $url = trim($_POST['youtube_url']);
-    $genero = $_POST['genero']; // Captura o valor do novo campo
+    $genero = $_POST['genero'];
 
     if ($id_casa == $id_fora) {
-        echo "<script>alert('Erro: Um país não pode jogar contra ele mesmo!'); window.location.href='cadastro.php';</script>";
-        exit;
+        $mensagem_erro = "Erro: Um país não pode jogar contra ele mesmo!";
+    } else {
+        try {
+            $stmt = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, youtube_url, genero) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$id_casa, $id_fora, $p_casa, $p_fora, $url, $genero]);
+            
+            header("Location: cadastro.php?sucesso=partida");
+            exit;
+        } catch (PDOException $e) {
+            $mensagem_erro = "Erro ao salvar partida: " . $e->getMessage();
+        }
     }
-
-    // Query atualizada incluindo o campo 'genero'
-    $stmt = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, youtube_url, genero) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$id_casa, $id_fora, $p_casa, $p_fora, $url, $genero]);
-    
-    echo "<script>alert('Partida registrada com sucesso!'); window.location.href='cadastro.php';</script>";
-    exit;
 }
 
-// Buscar todos os países cadastrados para listar nos selects
+// 4. CAPTURAR ERROS VINDOS DO REDIRECIONAMENTO
+if (isset($_GET['sucesso'])) {
+    if ($_GET['sucesso'] == 'pais') $mensagem_sucesso = "País cadastrado com sucesso!";
+    if ($_GET['sucesso'] == 'partida') $mensagem_sucesso = "Partida registrada com sucesso!";
+}
+
+// Buscar países para as caixas de seleção (Selects)
 $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -66,6 +83,19 @@ $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::F
 
     <a href="index.php" class="voltar">← Ver Tabela de Classificação Geral</a>
 
+    <?php if (!empty($mensagem_sucesso)): ?>
+        <div style="background-color: #d4edda; color: #155724; padding: 15px; margin: 20px auto; max-width: 600px; border-radius: 4px; font-weight: bold; text-align: center; border: 1px solid #c3e6cb;">
+            <?php echo $mensagem_sucesso; ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if (!empty($mensagem_erro)): ?>
+        <div style="background-color: #f8d7da; color: #721c24; padding: 15px; margin: 20px auto; max-width: 600px; border-radius: 4px; font-weight: bold; text-align: center; border: 1px solid #f5c6cb;">
+            <?php echo $mensagem_erro; ?>
+        </div>
+    <?php endif; ?>
+
+
     <div class="box">
         <h2>Cadastrar Novo País</h2>
         <form method="POST" action="cadastro.php">
@@ -74,6 +104,7 @@ $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::F
             <button type="submit" name="cadastrar_pais">Salvar País</button>
         </form>
     </div>
+
 
     <div class="box">
         <h2>Registrar Nova Partida (Resultado)</h2>
