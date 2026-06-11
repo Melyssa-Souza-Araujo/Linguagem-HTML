@@ -29,3 +29,5 @@ ALTER TABLE partidas ADD CONSTRAINT fk_partidas_fora FOREIGN KEY (id_fora) REFER
 
 ALTER TABLE partidas DROP COLUMN youtube_url;
 TRUNCATE TABLE partidas;
+
+ALTER TABLE paises ADD COLUMN sigla VARCHAR(2) DEFAULT 'BR';
