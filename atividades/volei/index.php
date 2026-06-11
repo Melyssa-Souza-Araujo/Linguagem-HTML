@@ -21,14 +21,16 @@ foreach ($paises as $p) {
         'nome' => $p['nome'],
         'vitorias' => 0,
         'derrotas' => 0,
-        'pontos' => 0
+        'pontos' => 0,
+        'jogou_F' => false // Identificador para saber se participou do feminino
     ];
     // Inicializa a estrutura para o Masculino
     $tabela_M[$p['id']] = [
         'nome' => $p['nome'],
         'vitorias' => 0,
         'derrotas' => 0,
-        'pontos' => 0
+        'pontos' => 0,
+        'jogou_M' => false // Identificador para saber se participou do masculino
     ];
 }
 
@@ -42,12 +44,16 @@ foreach ($partidas_todas as $partida) {
     $p_fora = $partida['pontos_fora'];
     $genero = $partida['genero'];
 
-    // Define qual tabela de classificação vai pontuar com base no gênero da partida
+    // Define qual tabela de classificação vai pontuar com base no gênero da partida e ativa a flag
     if ($genero == 'F') {
         if (!isset($tabela_F[$casa]) || !isset($tabela_F[$fora])) continue;
+        $tabela_F[$casa]['jogou_F'] = true;
+        $tabela_F[$fora]['jogou_F'] = true;
         $ref_tabela = &$tabela_F;
     } else {
         if (!isset($tabela_M[$casa]) || !isset($tabela_M[$fora])) continue;
+        $tabela_M[$casa]['jogou_M'] = true;
+        $tabela_M[$fora]['jogou_M'] = true;
         $ref_tabela = &$tabela_M;
     }
 
@@ -75,7 +81,11 @@ foreach ($partidas_todas as $partida) {
     }
 }
 
-// Ordenar as duas classificações de forma independente (Mais Vitórias -> Mais Pontos)
+// Filtra as tabelas para remover quem NÃO jogou na respectiva categoria
+$tabela_F = array_filter($tabela_F, function($item) { return $item['jogou_F'] === true; });
+$tabela_M = array_filter($tabela_M, function($item) { return $item['jogou_M'] === true; });
+
+// Ordenar as duas classificações filtradas (Mais Vitórias -> Mais Pontos)
 $ordenar_tabela = function($a, $b) {
     if ($a['vitorias'] != $b['vitorias']) {
         return $b['vitorias'] <=> $a['vitorias'];
@@ -164,7 +174,10 @@ foreach ($partidas_todas as $part) {
                         <td style="color: #e63946;"><?=$item['derrotas']?></td>
                         <td style="font-weight: bold;"><?=$item['pontos']?></td>
                     </tr>
-                    <?php $pos++; endforeach; ?>
+                    <?php $pos++; endforeach; 
+                    if(empty($tabela_F)): ?>
+                        <tr><td colspan="5" style="color: #888; font-style: italic; padding: 15px;">Nenhum time feminino jogou ainda.</td></tr>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
@@ -194,7 +207,10 @@ foreach ($partidas_todas as $part) {
                         <td style="color: #e63946;"><?=$item['derrotas']?></td>
                         <td style="font-weight: bold;"><?=$item['pontos']?></td>
                     </tr>
-                    <?php $pos++; endforeach; ?>
+                    <?php $pos++; endforeach; 
+                    if(empty($tabela_M)): ?>
+                        <tr><td colspan="5" style="color: #888; font-style: italic; padding: 15px;">Nenhum time masculino jogou ainda.</td></tr>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
