@@ -27,15 +27,14 @@ if (isset($_POST['cadastrar_partida'])) {
     $id_fora = $_POST['id_fora'];
     $p_casa = $_POST['pontos_casa'];
     $p_fora = $_POST['pontos_fora'];
-    $url = trim($_POST['youtube_url']);
     $genero = $_POST['genero'];
 
     if ($id_casa == $id_fora) {
         $mensagem_erro = "Erro: Um país não pode jogar contra ele mesmo!";
     } else {
         try {
-            $stmt = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, youtube_url, genero) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$id_casa, $id_fora, $p_casa, $p_fora, $url, $genero]);
+            $stmt = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, genero) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$id_casa, $id_fora, $p_casa, $p_fora, $genero]);
             header("Location: cadastro.php?sucesso=partida");
             exit;
         } catch (PDOException $e) { $mensagem_erro = "Erro: " . $e->getMessage(); }
@@ -101,6 +100,9 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
     <?php if (!empty($mensagem_sucesso)): ?>
         <div style="background-color: #d4edda; color: #155724; padding: 15px; margin: 20px auto; max-width: 700px; border-radius: 4px; font-weight: bold; text-align: center; border: 1px solid #c3e6cb;"><?php echo $mensagem_sucesso; ?></div>
     <?php endif; ?>
+    <?php if (!empty($mensagem_erro)): ?>
+        <div style="background-color: #f8d7da; color: #721c24; padding: 15px; margin: 20px auto; max-width: 700px; border-radius: 4px; font-weight: bold; text-align: center; border: 1px solid #f5c6cb;"><?php echo $mensagem_erro; ?></div>
+    <?php endif; ?>
 
     <div class="box">
         <h2>Cadastrar Novo País</h2>
@@ -131,7 +133,6 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
             </select>
             <label>Sets Casa:</label> <input type="number" name="pontos_casa" min="0" max="3" required>
             <label>Sets Visita:</label> <input type="number" name="pontos_fora" min="0" max="3" required>
-            <label>Link do YouTube:</label> <input type="url" name="youtube_url" placeholder="https://www.youtube.com/watch?v=...">
             <button type="submit" name="cadastrar_partida">Registrar Partida</button>
         </form>
     </div>
