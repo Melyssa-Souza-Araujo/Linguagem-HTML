@@ -6,18 +6,20 @@ include 'conexao.php';
 $erro = "";
 
 if (isset($_POST['logar'])) {
+    // trim() remove espaços em branco acidentais antes ou depois do texto
     $login = trim($_POST['login']);
     $senha = trim($_POST['senha']);
 
-    $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE login = ?");
+    $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE LOWER(login) = LOWER(?)");
     $stmt->execute([$login]);
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($usuario && password_verify($senha, $usuario['senha'])) {
+    // Teste de comparação limpando qualquer quebra de linha ou espaço da senha do banco
+    if ($usuario && password_verify($senha, trim($usuario['senha']))) {
         $_SESSION['logado'] = true;
         $_SESSION['usuario_id'] = $usuario['id'];
         $_SESSION['usuario_login'] = $usuario['login'];
-        $_SESSION['usuario_nivel'] = $usuario['nivel']; // 'admin' ou 'usuario'
+        $_SESSION['usuario_nivel'] = trim($usuario['nivel']); // Evita espaços aqui também
         
         header("Location: index.php");
         exit;
@@ -25,6 +27,7 @@ if (isset($_POST['logar'])) {
         $erro = "Usuário ou senha incorretos!";
     }
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
