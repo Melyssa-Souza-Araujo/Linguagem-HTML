@@ -29,6 +29,15 @@ CREATE TABLE partidas (
     CONSTRAINT fk_partidas_fora FOREIGN KEY (id_fora) REFERENCES paises(id) ON DELETE CASCADE
 );
 
+CREATE TABLE detalhes_sets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_partida INT NOT NULL,
+    numero_set INT NOT NULL, -- 1, 2, 3, 4 ou 5
+    pontos_casa INT NOT NULL,
+    pontos_fora INT NOT NULL,
+    FOREIGN KEY (id_partida) REFERENCES partidas(id) ON DELETE CASCADE
+);
+
 -- Tabela de Usuários (Controle de Acesso)
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -36,6 +45,8 @@ CREATE TABLE usuarios (
     senha VARCHAR(255) NOT NULL,
     nivel VARCHAR(10) DEFAULT 'usuario' -- 'admin' ou 'usuario'
 );
+
+
 
 -- ====================================================================
 -- 3. INSERÇÃO DO ADMINISTRADOR PADRÃO
