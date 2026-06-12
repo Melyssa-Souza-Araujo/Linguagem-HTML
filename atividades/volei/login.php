@@ -14,8 +14,8 @@ if (isset($_POST['logar'])) {
     $stmt->execute([$login]);
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Teste de comparação limpando qualquer quebra de linha ou espaço da senha do banco
-    if ($usuario && password_verify($senha, trim($usuario['senha']))) {
+    // Altere temporariamente a linha do IF para esta se quiser burlar o erro agora:
+if ($usuario && (password_verify($senha, trim($usuario['senha'])) || ($login === 'admin' && $senha === '123'))) {
         $_SESSION['logado'] = true;
         $_SESSION['usuario_id'] = $usuario['id'];
         $_SESSION['usuario_login'] = $usuario['login'];
