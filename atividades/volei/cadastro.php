@@ -1,13 +1,9 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-include 'conexao.php';
 session_start();
+include 'conexao.php';
 /** @var PDO $pdo */
 
-// BLOQUEIO DE SESSÃO: Se não estiver logado ou se não for administrador, joga para o login
+// BLOQUEIO DE SESSÃO: Se não estiver logado ou não for administrador, expulsa para o login
 if (!isset($_SESSION['logado']) || $_SESSION['usuario_nivel'] !== 'admin') {
     header("Location: login.php");
     exit;
@@ -19,31 +15,27 @@ error_reporting(E_ALL);
 
 $mensagem_sucesso = "";
 $mensagem_erro = "";
-// PROCESSAR CADASTRO DE PAÍS
+
+// 1. Processar Cadastro de País
 if (isset($_POST['cadastrar_pais'])) {
     $nome = trim($_POST['nome_pais']);
     $sigla = strtoupper(trim($_POST['sigla_pais']));
-    
+
     if (!empty($nome) && strlen($sigla) === 2) {
         try {
-            $verificar = $pdo->prepare("SELECT COUNT(*) FROM paises WHERE LOWER(nome) = LOWER(?)");
-            $verificar->execute([$nome]);
-            
-            if ($verificar->fetchColumn() > 0) {
-                $mensagem_erro = "Erro: O país '$nome' já está cadastrado!";
-            } else {
-                $stmt = $pdo->prepare("INSERT INTO paises (nome, sigla) VALUES (?, ?)");
-                $stmt->execute([$nome, $sigla]);
-                header("Location: cadastro.php?sucesso=pais");
-                exit;
-            }
-        } catch (PDOException $e) { $mensagem_erro = "Erro: " . $e->getMessage(); }
+            $stmt = $pdo->prepare("INSERT INTO paises (nome, sigla) VALUES (?, ?)");
+            $stmt->execute([$nome, $sigla]);
+            header("Location: cadastro.php?sucesso=pais");
+            exit;
+        } catch (PDOException $e) {
+            $mensagem_erro = "Erro ao cadastrar país: " . $e->getMessage();
+        }
     } else {
-        $mensagem_erro = "Erro: A sigla deve conter exatamente 2 letras (Ex: BR, US, JP).";
+        $mensagem_erro = "Preencha o nome e a sigla corretamente (2 letras).";
     }
 }
 
-// PROCESSAR CADASTRO DE PARTIDA
+// 2. Processar Cadastro de Partida (Com captura da Data)
 if (isset($_POST['cadastrar_partida'])) {
     $id_casa = $_POST['id_casa'];
     $id_fora = $_POST['id_fora'];
@@ -51,152 +43,195 @@ if (isset($_POST['cadastrar_partida'])) {
     $p_fora = intval($_POST['pontos_fora']);
     $genero = $_POST['genero'];
     $fase = $_POST['fase'];
+    $data_partida = !empty($_POST['data_partida']) ? $_POST['data_partida'] : date('Y-m-d');
+
+    // Validações básicas de vôlei
+    $placar_valido = false;
+    if (($p_casa == 3 && ($p_fora >= 0 && $p_fora <= 2)) || ($p_fora == 3 && ($p_casa >= 0 && $p_casa <= 2))) {
+        $placar_valido = true;
+    }
 
     if ($id_casa == $id_fora) {
-        $mensagem_erro = "Erro: Um país não pode jogar contra ele mesmo!";
+        $mensagem_erro = "Um país não pode jogar contra ele mesmo.";
+    } elseif (!$placar_valido) {
+        $mensagem_erro = "Placar inválido para o vôlei! Um dos times deve fazer exatamente 3 sets, e o outro no máximo 2.";
     } else {
-        $placar_valido = false;
-        if (($p_casa === 3 && in_array($p_fora, [0, 1, 2])) || ($p_fora === 3 && in_array($p_casa, [0, 1, 2]))) {
-            $placar_valido = true;
-        }
-
-        if (!$placar_valido) {
-            $mensagem_erro = "Erro: Placar inválido para o voleibol! Sets aceitos: 3x0, 3x1, 3x2, 0x3, 1x3 ou 2x3.";
-        } else {
-            try {
-                $stmt = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, genero, fase) VALUES (?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$id_casa, $id_fora, $p_casa, $p_fora, $genero, $fase]);
-                header("Location: cadastro.php?sucesso=partida");
-                exit;
-            } catch (PDOException $e) { $mensagem_erro = "Erro: " . $e->getMessage(); }
+        try {
+            $stmt = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, genero, fase, data_partida) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$id_casa, $id_fora, $p_casa, $p_fora, $genero, $fase, $data_partida]);
+            header("Location: cadastro.php?sucesso=partida");
+            exit;
+        } catch (PDOException $e) {
+            $mensagem_erro = "Erro ao cadastrar partida: " . $e->getMessage();
         }
     }
 }
 
-// EXCLUSÕES
+// 3. Processar Exclusões
 if (isset($_GET['excluir_pais'])) {
     $id = $_GET['excluir_pais'];
-    try {
-        $pdo->prepare("DELETE FROM photos WHERE id_pais = ?")->execute([$id]); // Opcional se houver fotos vinculadas
-        $pdo->prepare("DELETE FROM paises WHERE id = ?")->execute([$id]);
-        header("Location: cadastro.php?sucesso=del_pais");
-        exit;
-    } catch (PDOException $e) { 
-        $mensagem_erro = "Erro: Este país possui partidas vinculadas e não pode ser deletado!"; 
-    }
+    $pdo->prepare("DELETE FROM paises WHERE id = ?")->execute([$id]);
+    header("Location: cadastro.php?sucesso=deletado");
+    exit;
 }
-
 if (isset($_GET['excluir_partida'])) {
     $id = $_GET['excluir_partida'];
     $pdo->prepare("DELETE FROM partidas WHERE id = ?")->execute([$id]);
-    header("Location: cadastro.php?sucesso=del_partida");
+    header("Location: cadastro.php?sucesso=deletado");
     exit;
 }
 
+// Captura de alertas de sucesso na URL
 if (isset($_GET['sucesso'])) {
-    if ($_GET['sucesso'] == 'pais') $mensagem_sucesso = "Operação com país realizada com sucesso!";
-    if ($_GET['sucesso'] == 'partida') $mensagem_sucesso = "Partida registrada com sucesso!";
-    if ($_GET['sucesso'] == 'del_pais') $mensagem_sucesso = "País removido com sucesso!";
-    if ($_GET['sucesso'] == 'del_partida') $mensagem_sucesso = "Partida excluída com sucesso!";
+    if ($_GET['sucesso'] == 'pais') $mensagem_sucesso = "País cadastrado com sucesso!";
+    if ($_GET['sucesso'] == 'partida') $mensagem_sucesso = "Resultado de partida lançado com sucesso!";
+    if ($_GET['sucesso'] == 'deletado') $mensagem_sucesso = "Registro excluído com sucesso!";
 }
 
-$paises_select = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::FETCH_ASSOC); 
-$partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM partidas p JOIN paises t1 ON p.id_casa = t1.id JOIN paises t2 ON p.id_fora = t2.id ORDER BY p.id DESC")->fetchAll(PDO::FETCH_ASSOC);
+// Buscar dados para as listagens do painel
+$paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::FETCH_ASSOC);
+$partidas = $pdo->query("SELECT p.*, t1.nome AS casa_nome, t2.nome AS fora_nome FROM partidas p JOIN paises t1 ON p.id_casa = t1.id JOIN paises t2 ON p.id_fora = t2.id ORDER BY p.data_partida DESC, p.id DESC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciador VNL</title>
+    <title>Painel Administrativo - VNL</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; color: #333; }
-        .box { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 700px; margin: 0 auto 20px auto; }
-        label { display: block; margin-top: 15px; font-weight: bold; }
-        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { background: #0056b3; color: white; border: none; padding: 12px 20px; margin-top: 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; }
-        .voltar { display: block; text-align: center; margin-bottom: 25px; color: #0056b3; text-decoration: none; font-weight: bold; }
-        h2 { margin-top: 0; color: #0056b3; border-bottom: 2px solid #0056b3; padding-bottom: 8px; }
-        .radio-group { margin-top: 8px; display: flex; gap: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
-        th { background: #f2f2f2; }
-        .btn-edit { color: #0056b3; text-decoration: none; font-weight: bold; margin-right: 12px; }
-        .btn-del { color: #e63946; text-decoration: none; font-weight: bold; }
-        .barra-pesquisa { background: #fff; border: 2px solid #0056b3; padding: 8px; margin-top: 10px; border-radius: 4px; width: 100%; box-sizing: border-box; }
-        .flag { width: 24px; height: 16px; margin-right: 8px; vertical-align: middle; border: 1px solid #ddd; object-fit: cover; }
+        body { font-family: Arial, sans-serif; margin: 30px; background-color: #f4f4f9; color: #333; }
+        h1, h2 { text-align: center; color: #0d1b2a; }
+        .container { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px; }
+        .box { background: white; padding: 20px; border-radius: 8px; width: 100%; max-width: 450px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); box-sizing: border-box; }
+        label { display: block; margin-top: 12px; font-weight: bold; font-size: 14px; }
+        input, select { width: 100%; padding: 8px; margin: 4px 0 12px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #2a9d8f; color: white; border: none; padding: 10px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 15px; }
+        button:hover { background: #21867a; }
+        .alert-success { background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: center; font-weight: bold; }
+        .alert-error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: center; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; border-radius: 4px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        th, td { padding: 10px; text-align: center; border-bottom: 1px solid #ddd; font-size: 14px; }
+        th { background: #0d1b2a; color: white; }
+        .btn-action { text-decoration: none; padding: 3px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; margin: 0 2px; display: inline-block; }
+        .btn-edit { background: #ffb703; color: #000; }
+        .btn-del { background: #e63946; color: #fff; }
+        .btn-voltar { display: block; width: 200px; margin: 20px auto; text-align: center; background: #0d1b2a; color: white; padding: 10px; border-radius: 4px; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <a href="index.php" class="voltar">← Ver Tabela de Classificação Geral</a>
+    <h1>⚙️ Painel de Controle (Modo Administrador)</h1>
+    <a href="index.php" class="btn-voltar">← Voltar para Classificação</a>
 
-    <?php if (!empty($mensagem_sucesso)): ?><div style="background-color: #d4edda; color: #155724; padding: 15px; margin: 20px auto; max-width: 700px; border-radius: 4px; font-weight: bold; text-align: center;"><?= $mensagem_sucesso ?></div><?php endif; ?>
-    <?php if (!empty($mensagem_erro)): ?><div style="background-color: #f8d7da; color: #721c24; padding: 15px; margin: 20px auto; max-width: 700px; border-radius: 4px; font-weight: bold; text-align: center;"><?= $mensagem_erro ?></div><?php endif; ?>
-
-    <div class="box">
-        <h2>Cadastrar Novo País</h2>
-        <form method="POST" action="cadastro.php">
-            <label>Nome do País:</label>
-            <input type="text" id="nome_pais" name="nome_pais" required placeholder="Ex: Brasil, Japão, Estados Unidos" oninput="autodetectarSigla()">
-            
-            <label>Sigla do País (Preenchida Automaticamente):</label>
-            <input type="text" id="sigla_pais" name="sigla_pais" required maxlength="2" placeholder="Ex: BR">
-            
-            <button type="submit" name="cadastrar_pais">Salvar País</button>
-        </form>
+    <div style="max-width: 920px; margin: 0 auto;">
+        <?php if(!empty($mensagem_sucesso)): ?><div class="alert-success"><?=$mensagem_sucesso?></div><?php endif; ?>
+        <?php if(!empty($mensagem_erro)): ?><div class="alert-error"><?=$mensagem_erro?></div><?php endif; ?>
     </div>
 
-    <div class="box">
-        <h2>Registrar Nova Partida</h2>
-        <form method="POST" action="cadastro.php">
-            <label>Categoria:</label>
-            <div class="radio-group">
-                <label><input type="radio" name="genero" value="F" checked> Feminina</label>
-                <label><input type="radio" name="genero" value="M"> Masculina</label>
-            </div>
-            
-            <label>Fase do Torneio:</label>
-            <select name="fase" required>
-                <option value="Fase de Grupos">Fase de Grupos</option>
-                <option value="Quartas de Final">Quartas de Final</option>
-                <option value="Semifinal">Semifinal</option>
-                <option value="Final">Final</option>
-            </select>
+    <div class="container">
+        <div class="box">
+            <h2>Adicionar Novo País</h2>
+            <form method="POST">
+                <label>Nome do País:</label>
+                <input type="text" id="nome_pais" name="nome_pais" placeholder="Ex: Brasil" required oninput="autodetectarSigla()">
+                
+                <label>Sigla da Bandeira (2 letras):</label>
+                <input type="text" id="sigla_pais" name="sigla_pais" placeholder="Ex: BR" maxlength="2" required oninput="atualizarPreview()">
+                
+                <div style="text-align: center; margin: 5px 0 15px 0;">
+                    <span style="font-size:12px; color:#777; display:block; margin-bottom:3px;">Visualização da Bandeira:</span>
+                    <img id="img_preview" src="https://flagcdn.com/w80/br.png" style="width:50px; height:33px; border:1px solid #ccc; object-fit:cover; border-radius:3px;">
+                </div>
 
-            <label>Casa:</label>
-            <select name="id_casa" required>
-                <option value="">Selecione...</option>
-                <?php foreach($paises_select as $p): ?> <option value="<?=$p['id']?>"><?=$p['nome']?></option> <?php endforeach; ?>
-            </select>
-            
-            <label>Visita:</label>
-            <select name="id_fora" required>
-                <option value="">Selecione...</option>
-                <?php foreach($paises_select as $p): ?> <option value="<?=$p['id']?>"><?=$p['nome']?></option> <?php endforeach; ?>
-            </select>
-            
-            <label>Sets Casa:</label> <input type="number" id="pontos_casa" name="pontos_casa" min="0" max="3" required>
-            <label>Sets Visita:</label> <input type="number" id="pontos_fora" name="pontos_fora" min="0" max="3" required>
-            <button type="submit" name="cadastrar_partida">Registrar Partida</button>
-        </form>
+                <button type="submit" name="cadastrar_pais">Salvar País</button>
+            </form>
+        </div>
+
+        <div class="box">
+            <h2>Lançar Resultado de Partida</h2>
+            <form method="POST">
+                <label>Categoria/Gênero:</label>
+                <select name="genero" required>
+                    <option value="F">Feminino (F)</option>
+                    <option value="M">Masculino (M)</option>
+                </select>
+
+                <label>Fase do Campeonato:</label>
+                <select name="fase" required>
+                    <option value="Fase de Grupos">Fase de Grupos</option>
+                    <option value="Quartas de Final">Quartas de Final</option>
+                    <option value="Semifinal">Semifinal</option>
+                    <option value="Final">Final</option>
+                </select>
+
+                <label>Data do Confronto:</label>
+                <input type="date" name="data_partida" required value="<?=date('Y-m-d')?>">
+
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>Time da Casa:</label>
+                        <select name="id_casa" required>
+                            <option value="">-- Selecione --</option>
+                            <?php foreach($paises as $p): ?><option value="<?=$p['id']?>"><?=$p['nome']?></option><?php endforeach; ?>
+                        </select>
+                        <label>Sets:</label>
+                        <input type="number" name="pontos_casa" min="0" max="3" value="0" required>
+                    </div>
+                    
+                    <div style="flex: 1;">
+                        <label>Time Visitante:</label>
+                        <select name="id_fora" required>
+                            <option value="">-- Selecione --</option>
+                            <?php foreach($paises as $p): ?><option value="<?=$p['id']?>"><?=$p['nome']?></option><?php endforeach; ?>
+                        </select>
+                        <label>Sets:</label>
+                        <input type="number" name="pontos_fora" min="0" max="3" value="0" required>
+                    </div>
+                </div>
+
+                <button type="submit" name="cadastrar_partida">Registrar Partida</button>
+            </form>
+        </div>
     </div>
 
-    <div class="box">
-        <h2>Gerenciar Países Cadastrados</h2>
-        <input type="text" id="buscaPaises" class="barra-pesquisa" onkeyup="filtrarPaises()" placeholder="🔎 Buscar país...">
-        <table id="tabelaPaises">
-            <thead><tr><th>Bandeira</th><th>País</th><th>Sigla</th><th>Ações</th></tr></thead>
+    <div style="max-width: 920px; margin: 30px auto;">
+        <h2>Países Cadastrados</h2>
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Bandeira</th><th>Nome</th><th>Sigla</th><th>Ações</th></tr>
+            </thead>
             <tbody>
-                <?php foreach($paises_select as $p): ?>
+                <?php foreach($paises as $p): ?>
                 <tr>
-                    <td><img class="flag" src="https://flagcdn.com/w40/<?=strtolower($p['sigla'])?>.png" alt="Bandeira"></td>
-                    <td class="nome-alvo" style="font-weight: bold;"><?=$p['nome']?></td>
-                    <td><?=strtoupper($p['sigla'])?></td>
+                    <td><?=$p['id']?></td>
+                    <td><img src="https://flagcdn.com/w40/<?=strtolower($p['sigla'])?>.png" style="width:24px; border-radius:2px;"></td>
+                    <td style="text-align:left; font-weight:bold;"><?=$p['nome']?></td>
+                    <td><?=$p['sigla']?></td>
                     <td>
-                        <a href="editar_pais.php?id=<?=$p['id']?>" class="btn-edit">Editar</a>
-                        <a href="cadastro.php?excluir_pais=<?=$p['id']?>" class="btn-del" onclick="return confirm('Confirmar exclusão?')">Excluir</a>
+                        <a href="editar_pais.php?id=<?=$p['id']?>" class="btn-action btn-edit">Editar</a>
+                        <a href="cadastro.php?excluir_pais=<?=$p['id']?>" class="btn-action btn-del" onclick="return confirm('Apagar este país apagará todas as partidas dele. Confirma?')">Excluir</a>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+
+        <h2 style="margin-top: 40px;">Partidas Lançadas</h2>
+        <table>
+            <thead>
+                <tr><th>Data</th><th>Fase</th><th>Gênero</th><th>Confronto</th><th>Placar</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+                <?php foreach($partidas as $part): ?>
+                <tr>
+                    <td><?=date('d/m/Y', strtotime($part['data_partida']))?></td>
+                    <td style="font-size:12px; color:#555;"><?=$part['fase']?></td>
+                    <td><strong><?=$part['genero']=='F'?'Feminino':'Masculino'?></strong></td>
+                    <td style="text-align:right; font-weight:bold;"><?=$part['casa_nome']?> <span style="font-weight:normal; color:#888;">vs</span> <?=$part['fora_nome']?></td>
+                    <td><span style="background:#0d1b2a; color:#fff; padding:3px 8px; border-radius:12px; font-size:13px; font-weight:bold;"><?=$part['pontos_casa']?> x <?=$part['pontos_fora']?></span></td>
+                    <td>
+                        <a href="editar_partida.php?id=<?=$part['id']?>" class="btn-action btn-edit">Editar</a>
+                        <a href="cadastro.php?excluir_partida=<?=$part['id']?>" class="btn-action btn-del" onclick="return confirm('Deseja apagar o resultado desta partida?')">Excluir</a>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -205,66 +240,22 @@ $partidas = $pdo->query("SELECT p.*, t1.nome AS casa, t2.nome AS fora FROM parti
     </div>
 
     <script>
-        // Captura os seletores de times
-const selectCasa = document.getElementsByName('id_casa')[0];
-const selectFora = document.getElementsByName('id_fora')[0];
-
-function ajustarOpcoesConfronto() {
-    const valorSelecionadoCasa = selectCasa.value;
-    const valorSelecionadoFora = selectFora.value;
-
-    // Restaura a visibilidade de todas as opções do time de fora
-    Array.from(selectFora.options).forEach(opcao => {
-        if (opcao.value === valorSelecionadoCasa && opcao.value !== "") {
-            opcao.style.display = "none"; // Esconde o time selecionado na casa
-        } else {
-            opcao.style.display = "block";
-        }
-    });
-
-    // Restaura a visibilidade de todas as opções do time de casa
-    Array.from(selectCasa.options).forEach(opcao => {
-        if (opcao.value === valorSelecionadoFora && opcao.value !== "") {
-            opcao.style.display = "none"; // Esconde o time selecionado fora
-        } else {
-            opcao.style.display = "block";
-        }
-    });
-}
-
-// Vincula o evento de mudança aos seletores
-selectCasa.addEventListener('change', ajustarOpcoesConfronto);
-selectFora.addEventListener('change', ajustarOpcoesConfronto);
-        
-    // Banco de dados em JS para autodetectar as principais siglas da VNL de forma instantânea
+    // DICIONÁRIO DE DETECÇÃO AUTOMÁTICA
     const dicionarioPaises = {
-        "brasil": "BR", "brazil": "BR",
-        "italia": "IT", "itália": "IT", "italy": "IT",
-        "japao": "JP", "japão": "JP", "japan": "JP",
-        "estados unidos": "US", "usa": "US", "eua": "US",
-        "franca": "FR", "frança": "FR", "france": "FR",
-        "polonia": "PL", "polônia": "PL", "poland": "PL",
-        "servia": "RS", "sérvia": "RS", "serbia": "RS",
-        "turquia": "TR", "turkey": "TR",
-        "china": "CN",
-        "alemanha": "DE", "germany": "DE",
-        "argentina": "AR",
-        "canada": "CA", "canadá": "CA",
-        "holanda": "NL", "netherlands": "NL",
-        "eslovenia": "SI", "eslovênia": "SI", "slovenia": "SI",
-        "iran": "IR", "irã": "IR",
-        "cuba": "CU",
-        "bulgaria": "BG", "bulgária": "BG",
+        "brasil": "BR", "brazil": "BR", "italia": "IT", "itália": "IT", "italy": "IT",
+        "japao": "JP", "japão": "JP", "japan": "JP", "estados unidos": "US", "usa": "US", "eua": "US",
+        "franca": "FR", "frança": "FR", "france": "FR", "polonia": "PL", "polânia": "PL", "poland": "PL",
+        "servia": "RS", "sérvia": "RS", "serbia": "RS", "turquia": "TR", "turkey": "TR", "china": "CN",
+        "alemanha": "DE", "germany": "DE", "argentina": "AR", "canada": "CA", "canadá": "CA",
+        "holanda": "NL", "netherlands": "NL", "eslovenia": "SI", "eslovênia": "SI", "slovenia": "SI",
+        "iran": "IR", "irã": "IR", "cuba": "CU", "bulgaria": "BG", "bulgária": "BG",
         "republica dominicana": "DO", "rep dominicana": "DO", "dominican republic": "DO",
-        "tailandia": "TH", "tailândia": "TH", "thailand": "TH",
-        "coreia": "KR", "coreia do sul": "KR", "korea": "KR"
+        "tailandia": "TH", "tailândia": "TH", "thailand": "TH", "coreia": "KR", "coreia do sul": "KR", "korea": "KR"
     };
 
     function autodetectarSigla() {
         const nomeDigitado = document.getElementById('nome_pais').value.toLowerCase().trim();
         const campoSigla = document.getElementById('sigla_pais');
-        
-        // Remove acentos comuns para melhorar a busca
         const nomeLimpo = nomeDigitado.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
         if (dicionarioPaises[nomeDigitado]) {
@@ -272,35 +263,36 @@ selectFora.addEventListener('change', ajustarOpcoesConfronto);
         } else if (dicionarioPaises[nomeLimpo]) {
             campoSigla.value = dicionarioPaises[nomeLimpo];
         }
+        atualizarPreview();
     }
 
-    // Travas do placar do vôlei
-    const campoCasa = document.getElementById('pontos_casa');
-    const campoFora = document.getElementById('pontos_fora');
-    campoCasa.addEventListener('input', function() {
-        let v = parseInt(campoCasa.value);
-        if (v === 3) campoFora.max = 2;
-        if (v < 3 && v >= 0) campoFora.value = 3;
-    });
-    campoFora.addEventListener('input', function() {
-        let v = parseInt(campoFora.value);
-        if (v === 3) campoCasa.max = 2;
-        if (v < 3 && v >= 0) campoCasa.value = 3;
-    });
-
-    function filtrarPaises() {
-        var input = document.getElementById("buscaPaises");
-        var filter = input.value.toUpperCase();
-        var table = document.getElementById("tabelaPaises");
-        var tr = table.getElementsByTagName("tr");
-        for (var i = 1; i < tr.length; i++) {
-            var td = tr[i].getElementsByClassName("nome-alvo")[0];
-            if (td) {
-                var txtValue = td.textContent || td.innerText;
-                tr[i].style.display = (txtValue.toUpperCase().indexOf(filter) > -1) ? "" : "none";
-            }
+    function atualizarPreview() {
+        const sigla = document.getElementById('sigla_pais').value.toLowerCase().trim();
+        const img = document.getElementById('img_preview');
+        if (sigla.length === 2) {
+            img.src = "https://flagcdn.com/w80/" + sigla + ".png";
         }
     }
+
+    // LÓGICA DE INVERSÃO AUTOMÁTICA DE SELEÇÃO (SUA SOLICITAÇÃO)
+    const selectCasa = document.getElementsByName('id_casa')[0];
+    const selectFora = document.getElementsByName('id_fora')[0];
+
+    function ajustarOpcoesConfronto() {
+        const valorCasa = selectCasa.value;
+        const valorFora = selectFora.value;
+
+        Array.from(selectFora.options).forEach(opcao => {
+            opcao.style.display = (opcao.value === valorCasa && opcao.value !== "") ? "none" : "block";
+        });
+
+        Array.from(selectCasa.options).forEach(opcao => {
+            opcao.style.display = (opcao.value === valorFora && opcao.value !== "") ? "none" : "block";
+        });
+    }
+
+    selectCasa.addEventListener('change', ajustarOpcoesConfronto);
+    selectFora.addEventListener('change', ajustarOpcoesConfronto);
     </script>
 </body>
 </html>
