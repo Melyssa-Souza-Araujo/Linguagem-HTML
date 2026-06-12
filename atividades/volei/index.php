@@ -65,7 +65,7 @@ $ordenar_fivb = function($a, $b) {
 };
 uasort($tabela_F, $ordenar_fivb); uasort($tabela_M, $ordenar_fivb);
 
-// 2. CONSTRUIR A CONSULTA FILTRADA DO HISTÓRICO DE PARTIDAS (SUA SOLICITAÇÃO)
+// 2. CONSTRUIR A CONSULTA FILTRADA DO HISTÓRICO DE PARTIDAS
 $sql_historico = "SELECT p.*, t1.nome AS casa_nome, t1.sigla AS casa_sigla, t2.nome AS fora_nome, t2.sigla AS fora_sigla 
                   FROM partidas p 
                   JOIN paises t1 ON p.id_casa = t1.id 
@@ -157,15 +157,20 @@ function calcularBadgeStreak($historico) {
         .btn-gerenciar { display: block; width: 220px; margin: 20px auto; text-align: center; background: #e76f51; color: white; padding: 10px; border-radius: 4px; text-decoration: none; font-weight: bold; }
         
         /* CARDS DO HISTÓRICO DE PARTIDAS */
-        .historico-container { max-width: 950px; margin: 20px auto; display: flex; flex-direction: column; gap: 10px; }
-        .partida-card { background: var(--bg-card); border: 1px solid var(--border-line); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .historico-container { max-width: 950px; margin: 20px auto; display: flex; flex-direction: column; gap: 12px; }
+        .link-card-jogo { text-decoration: none; color: inherit; display: block; }
+        .partida-card { background: var(--bg-card); border: 1px solid var(--border-line); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; cursor: pointer; }
+        .partida-card:hover { border-color: #2a9d8f; box-shadow: 0 2px 10px rgba(42, 157, 143, 0.2); }
+        
         .partida-info { font-size: 12px; color: #888; display: flex; flex-direction: column; gap: 4px; }
         .partida-confronto { display: flex; align-items: center; gap: 20px; font-size: 16px; font-weight: bold; }
-        .time-box { display: flex; align-items: center; gap: 8px; min-width: 15px; }
+        .time-box { display: flex; align-items: center; gap: 8px; }
         .placar-box { background: var(--bg-body); padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border-line); font-size: 15px; letter-spacing: 2px; }
         .genero-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; color: #fff; text-transform: uppercase; }
         .badge-f { background-color: #e76f51; }
         .badge-m { background-color: #2a9d8f; }
+        
+        .texto-grafico { font-size: 11px; color: #2a9d8f; font-weight: bold; display: flex; align-items: center; gap: 4px; }
     </style>
 </head>
 <body>
@@ -268,33 +273,39 @@ function calcularBadgeStreak($historico) {
         <?php endif; ?>
 
         <?php foreach($historico_partidas as $partida): ?>
-            <div class="partida-card">
-                <div class="partida-info">
-                    <span>📅 <?=date('d/m/Y', strtotime($partida['data_partida']))?></span>
-                    <span>📌 <?=$partida['fase']?></span>
-                    <span>
-                        <span class="genero-badge <?=($partida['genero']=='F')?'badge-f':'badge-m'?>">
-                            <?=($partida['genero']=='F')?'Feminino':'Masculino'?>
+            <a href="detalhe_jogo.php?id=<?=$partida['id']?>" class="link-card-jogo" title="Clique para ver a evolução gráfica dos sets">
+                <div class="partida-card">
+                    <div class="partida-info">
+                        <span>📅 <?=date('d/m/Y', strtotime($partida['data_partida']))?></span>
+                        <span>📌 <?=$partida['fase']?></span>
+                        <span>
+                            <span class="genero-badge <?=($partida['genero']=='F')?'badge-f':'badge-m'?>">
+                                <?=($partida['genero']=='F')?'Feminino':'Masculino'?>
+                            </span>
                         </span>
-                    </span>
-                </div>
-
-                <div class="partida-confronto">
-                    <div class="time-box">
-                        <img class="flag" src="https://flagcdn.com/w40/<?=strtolower($partida['casa_sigla'])?>.png">
-                        <span><?=$partida['casa_nome']?></span>
-                    </div>
-                    
-                    <div class="placar-box">
-                        <?=$partida['pontos_casa']?>x<?=$partida['pontos_fora']?>
                     </div>
 
-                    <div class="time-box">
-                        <span><?=$partida['fora_nome']?></span>
-                        <img class="flag" src="https://flagcdn.com/w40/<?=strtolower($partida['fora_sigla'])?>.png">
+                    <div class="partida-confronto">
+                        <div class="time-box">
+                            <img class="flag" src="https://flagcdn.com/w40/<?=strtolower($partida['casa_sigla'])?>.png">
+                            <span><?=$partida['casa_nome']?></span>
+                        </div>
+                        
+                        <div class="placar-box">
+                            <?=$partida['pontos_casa']?>x<?=$partida['pontos_fora']?>
+                        </div>
+
+                        <div class="time-box">
+                            <span><?=$partida['fora_nome']?></span>
+                            <img class="flag" src="https://flagcdn.com/w40/<?=strtolower($partida['fora_sigla'])?>.png">
+                        </div>
+                    </div>
+
+                    <div class="texto-grafico">
+                        <span>📈 Ver Gráfico</span>
                     </div>
                 </div>
-            </div>
+            </a>
         <?php endforeach; ?>
     </div>
 
