@@ -47,3 +47,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
 INSERT INTO usuarios (login, senha, nivel) 
 VALUES ('admin', '$2y$10$wN3tN3G7XNHeK4Dk9xI.XebScltU.A2I7bY4mZc3Rfe76Q9/uVq2q', 'admin')
 ON DUPLICATE KEY UPDATE login=login;
+
+UPDATE usuarios 
+SET senha = '$2y$10$wN3tN3G7XNHeK4Dk9xI.XebScltU.A2I7bY4mZc3Rfe76Q9/uVq2q' 
+WHERE login = 'admin';
+
