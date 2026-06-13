@@ -8,21 +8,18 @@ if (!isset($_SESSION['logado'])) {
     exit;
 }
 
-// CAPTURA DOS FILTROS DA TABELA E DO HISTÓRICO
 $genero_filtro = isset($_GET['genero_filtro']) ? $_GET['genero_filtro'] : 'todos';
 $pais_filtro = isset($_GET['pais_filtro']) ? $_GET['pais_filtro'] : 'todos';
 $data_filtro = isset($_GET['data_filtro']) ? $_GET['data_filtro'] : '';
 
 $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::FETCH_ASSOC);
 
-// Inicialização das tabelas de classificação
 $tabela_F = []; $tabela_M = [];
 foreach ($paises as $p) {
     $base = ['nome' => $p['nome'], 'sigla' => strtolower($p['sigla']), 'vitorias' => 0, 'derrotas' => 0, 'pontos' => 0, 'sets_pro' => 0, 'sets_contra' => 0, 'jogos_disputados' => 0, 'jogou' => false, 'historico_resultados' => []];
     $tabela_F[$p['id']] = $base; $tabela_M[$p['id']] = $base;
 }
 
-// 1. BUSCAR TODAS AS PARTIDAS EM ORDEM CRONOLÓGICA PARA CALCULAR CLASSIFICAÇÃO E STREAKS
 $todas_partidas = $pdo->query("SELECT * FROM partidas ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($todas_partidas as $partida) {
@@ -65,7 +62,6 @@ $ordenar_fivb = function($a, $b) {
 };
 uasort($tabela_F, $ordenar_fivb); uasort($tabela_M, $ordenar_fivb);
 
-// 2. CONSTRUIR A CONSULTA FILTRADA DO HISTÓRICO DE PARTIDAS
 $sql_historico = "SELECT p.*, t1.nome AS casa_nome, t1.sigla AS casa_sigla, t2.nome AS fora_nome, t2.sigla AS fora_sigla 
                   FROM partidas p 
                   JOIN paises t1 ON p.id_casa = t1.id 
@@ -103,7 +99,6 @@ function calcularBadgeStreak($historico) {
     return $html;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -111,79 +106,97 @@ function calcularBadgeStreak($historico) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VNL - Classificação e Histórico</title>
     <style>
+        /* DEFINIÇÃO DAS NOVAS PALETAS DE CORES AZUIS */
         :root {
-            --bg-body: #0d1b2a; --txt-main: #f4f4f9; --txt-heading: #e0e1dd;
-            --bg-card: #1b263b; --border-line: #415a77; --bg-g8: #1f3147;
-            --btn-bg: #e0e1dd; --btn-txt: #0d1b2a;
+            /* Modo Escuro (Baseado em Azul Escuro) */
+            --bg-body: #0b132b; 
+            --txt-main: #f1f5f9; 
+            --txt-heading: #48cae4;
+            --bg-card: #1c2541; 
+            --border-line: #3a506b; 
+            --bg-g8: #14213d;
+            --btn-bg: #48cae4; 
+            --btn-txt: #0b132b;
+            --accent-blue: #00b4d8;
         }
         [data-theme="light"] {
-            --bg-body: #f4f6f9; --txt-main: #1e293b; --txt-heading: #0f172a;
-            --bg-card: #ffffff; --border-line: #cbd5e1; --bg-g8: #f1f5f9;
-            --btn-bg: #0f172a; --btn-txt: #ffffff;
+            /* Modo Claro (Baseado em Azul Claro) */
+            --bg-body: #e0f2fe; 
+            --txt-main: #0f172a; 
+            --txt-heading: #0369a1;
+            --bg-card: #ffffff; 
+            --border-line: #bae6fd; 
+            --bg-g8: #f0f9ff;
+            --btn-bg: #0284c7; 
+            --btn-txt: #ffffff;
+            --accent-blue: #0284c7;
         }
 
         body, .box, table, tr, td, th, input, select, .partida-card {
-            transition: all 0.4s ease;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: var(--bg-body); color: var(--txt-main); }
         h1, h2, h3 { text-align: center; color: var(--txt-heading); }
+        h1 { font-weight: 800; letter-spacing: 1px; }
         h2 { margin-top: 40px; border-bottom: 2px solid var(--border-line); padding-bottom: 10px; }
         
         .header-top { display: flex; justify-content: space-between; align-items: center; max-width: 950px; margin: 0 auto; flex-wrap: wrap; gap: 10px; }
-        .theme-toggle, .btn-logout { background: var(--btn-bg); color: var(--btn-txt); border: none; padding: 8px 15px; font-weight: bold; border-radius: 20px; cursor: pointer; text-decoration: none; font-size: 13px; }
+        .theme-toggle, .btn-logout { background: var(--btn-bg); color: var(--btn-txt); border: none; padding: 8px 18px; font-weight: bold; border-radius: 20px; cursor: pointer; text-decoration: none; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .theme-toggle:hover { filter: brightness(1.1); }
 
         .secao-filtros { background: var(--bg-card); padding: 15px; border-radius: 8px; max-width: 950px; margin: 20px auto; text-align: center; border: 1px solid var(--border-line); display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; align-items: center; }
-        .secao-filtros select, .secao-filtros input { padding: 8px; border-radius: 4px; background: var(--bg-body); color: var(--txt-main); border: 1px solid var(--border-line); font-size: 13px; }
-        .secao-filtros button { padding: 8px 20px; background: #2a9d8f; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        .secao-filtros a { padding: 8px 12px; background: #e76f51; color: white; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: bold; }
+        .secao-filtros select, .secao-filtros input { padding: 8px; border-radius: 4px; background: var(--bg-body); color: var(--txt-main); border: 1px solid var(--border-line); font-size: 13px; font-weight: bold; }
+        .secao-filtros button { padding: 8px 20px; background: var(--accent-blue); color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .secao-filtros button:hover { filter: brightness(1.1); }
+        .secao-filtros a { padding: 8px 12px; background: #ef4444; color: white; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: bold; }
 
         .tabelas-container { display: flex; flex-direction: column; gap: 40px; align-items: center; margin-top: 20px; width: 100%; }
         .tabela-bloco { width: 100%; max-width: 950px; }
-        .table-responsive { width: 100%; overflow-x: auto; border-radius: 8px; }
+        .table-responsive { width: 100%; overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-line); }
         table { width: 100%; border-collapse: collapse; background: var(--bg-card); min-width: 750px; }
         th, td { padding: 12px 10px; text-align: center; font-size: 14px; }
-        th { background-color: var(--border-line); color: var(--txt-heading); }
+        th { background-color: var(--border-line); color: var(--txt-main); font-weight: bold; }
         tr { border-bottom: 1px solid var(--border-line); }
-        .g8-zona { background-color: var(--bg-g8); border-left: 5px solid #2a9d8f; }
+        .g8-zona { background-color: var(--bg-g8); border-left: 5px solid var(--accent-blue); }
 
         .nome-pais { text-align: left; font-weight: bold; display: flex; align-items: center; }
         .flag { width: 22px; height: 15px; margin-right: 8px; border-radius: 2px; object-fit: cover; vertical-align: middle; }
 
         .streak-dot { display: inline-block; width: 18px; height: 18px; line-height: 18px; text-align: center; border-radius: 50%; font-size: 10px; font-weight: bold; margin: 0 2px; color: #fff; }
-        .streak-dot.vitoria { background-color: #2a9d8f; }
-        .streak-dot.derrota { background-color: #e63946; }
+        .streak-dot.vitoria { background-color: #10b981; }
+        .streak-dot.derrota { background-color: #ef4444; }
 
-        .btn-gerenciar { display: block; width: 220px; margin: 20px auto; text-align: center; background: #e76f51; color: white; padding: 10px; border-radius: 4px; text-decoration: none; font-weight: bold; }
+        .btn-gerenciar { display: block; width: 250px; margin: 20px auto; text-align: center; background: var(--accent-blue); color: white; padding: 12px; border-radius: 6px; text-decoration: none; font-weight: bold; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+        .btn-gerenciar:hover { filter: brightness(1.1); }
         
-        /* CARDS DO HISTÓRICO DE PARTIDAS */
         .historico-container { max-width: 950px; margin: 20px auto; display: flex; flex-direction: column; gap: 12px; }
         .link-card-jogo { text-decoration: none; color: inherit; display: block; }
-        .partida-card { background: var(--bg-card); border: 1px solid var(--border-line); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; cursor: pointer; }
-        .partida-card:hover { border-color: #2a9d8f; box-shadow: 0 2px 10px rgba(42, 157, 143, 0.2); }
+        .partida-card { background: var(--bg-card); border: 1px solid var(--border-line); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .partida-card:hover { border-color: var(--accent-blue); box-shadow: 0 2px 12px rgba(3, 105, 161, 0.25); }
         
-        .partida-info { font-size: 12px; color: #888; display: flex; flex-direction: column; gap: 4px; }
+        .partida-info { font-size: 12px; color: var(--txt-main); opacity: 0.8; display: flex; flex-direction: column; gap: 4px; }
         .partida-confronto { display: flex; align-items: center; gap: 20px; font-size: 16px; font-weight: bold; }
         .time-box { display: flex; align-items: center; gap: 8px; }
-        .placar-box { background: var(--bg-body); padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border-line); font-size: 15px; letter-spacing: 2px; }
-        .genero-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; color: #fff; text-transform: uppercase; }
-        .badge-f { background-color: #e76f51; }
-        .badge-m { background-color: #2a9d8f; }
+        .placar-box { background: var(--bg-body); padding: 5px 15px; border-radius: 20px; border: 1px solid var(--border-line); font-size: 15px; letter-spacing: 2px; font-weight: bold; color: var(--txt-heading); }
+        .genero-badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: bold; color: #fff; text-transform: uppercase; }
+        .badge-f { background-color: #ec4899; }
+        .badge-m { background-color: #3b82f6; }
         
-        .texto-grafico { font-size: 11px; color: #2a9d8f; font-weight: bold; display: flex; align-items: center; gap: 4px; }
+        .texto-grafico { font-size: 12px; color: var(--accent-blue); font-weight: bold; display: flex; align-items: center; gap: 4px; }
     </style>
 </head>
 <body>
 
     <div class="header-top">
-        <div>Olá, <strong><?=htmlspecialchars($_SESSION['usuario_login'])?></strong> (<span style="text-transform: uppercase; font-size: 11px; color: #2a9d8f;"><?=$_SESSION['usuario_nivel']?></span>)</div>
+        <div>Olá, <strong><?=htmlspecialchars($_SESSION['usuario_login'])?></strong> (<span style="text-transform: uppercase; font-size: 11px; color: var(--accent-blue); font-weight: bold;"><?=$_SESSION['usuario_nivel']?></span>)</div>
         <div>
             <button class="theme-toggle" onclick="toggleTheme()" id="btnTema">☀️ Modo Claro</button>
-            <a href="logout.php" class="btn-logout" style="background:#e63946; color:#fff; margin-left: 10px;">🚪 Sair</a>
+            <a href="logout.php" class="btn-logout" style="background:#ef4444; color:#fff; margin-left: 10px;">🚪 Sair</a>
         </div>
     </div>
 
-    <h1>PAINEL DE CLASSIFICAÇÃO VNL</h1>
+    <h1>PANORAMA DE CLASSIFICAÇÃO VNL</h1>
 
     <?php if ($_SESSION['usuario_nivel'] === 'admin'): ?>
         <a href="cadastro.php" class="btn-gerenciar">⚙️ Painel de Cadastro (Admin) →</a>
@@ -195,7 +208,7 @@ function calcularBadgeStreak($historico) {
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>Pos</th><th style="text-align:left;">País</th><th>J</th><th>V</th><th>D</th><th>Pts</th><th>Sets P</th><th>Sets C</th><th>Forma (Últimos 5)</th></tr>
+                        <tr><th>Pos</th><th style="text-align:left;">País</th><th>J</th><th>V</th><th>D</th><th>Pts</th><th>Sets P</th><th>Sets C</th><th>Forma</th></tr>
                     </thead>
                     <tbody>
                         <?php $pos = 1; foreach ($tabela_F as $id_p => $item): ?>
@@ -203,8 +216,8 @@ function calcularBadgeStreak($historico) {
                             <td><strong><?=$pos?></strong></td>
                             <td class="nome-pais"><img class="flag" src="https://flagcdn.com/w40/<?=$item['sigla']?>.png"> <?=$item['nome']?></td>
                             <td><?=$item['jogos_disputados']?></td>
-                            <td style="color:#2a9d8f; font-weight:bold;"><?=$item['vitorias']?></td>
-                            <td style="color:#e63946;"><?=$item['derrotas']?></td>
+                            <td style="color:#10b981; font-weight:bold;"><?=$item['vitorias']?></td>
+                            <td style="color:#ef4444;"><?=$item['derrotas']?></td>
                             <td><strong><?=$item['pontos']?></strong></td>
                             <td><?=$item['sets_pro']?></td>
                             <td><?=$item['sets_contra']?></td>
@@ -221,7 +234,7 @@ function calcularBadgeStreak($historico) {
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>Pos</th><th style="text-align:left;">País</th><th>J</th><th>V</th><th>D</th><th>Pts</th><th>Sets P</th><th>Sets C</th><th>Forma (Últimos 5)</th></tr>
+                        <tr><th>Pos</th><th style="text-align:left;">País</th><th>J</th><th>V</th><th>D</th><th>Pts</th><th>Sets P</th><th>Sets C</th><th>Forma</th></tr>
                     </thead>
                     <tbody>
                         <?php $pos = 1; foreach ($tabela_M as $id_p => $item): ?>
@@ -229,8 +242,8 @@ function calcularBadgeStreak($historico) {
                             <td><strong><?=$pos?></strong></td>
                             <td class="nome-pais"><img class="flag" src="https://flagcdn.com/w40/<?=$item['sigla']?>.png"> <?=$item['nome']?></td>
                             <td><?=$item['jogos_disputados']?></td>
-                            <td style="color:#2a9d8f; font-weight:bold;"><?=$item['vitorias']?></td>
-                            <td style="color:#e63946;"><?=$item['derrotas']?></td>
+                            <td style="color:#10b981; font-weight:bold;"><?=$item['vitorias']?></td>
+                            <td style="color:#ef4444;"><?=$item['derrotas']?></td>
                             <td><strong><?=$item['pontos']?></strong></td>
                             <td><?=$item['sets_pro']?></td>
                             <td><?=$item['sets_contra']?></td>
@@ -269,7 +282,7 @@ function calcularBadgeStreak($historico) {
 
     <div class="historico-container">
         <?php if(empty($historico_partidas)): ?>
-            <p style="text-align:center; color:#888; padding:20px;">Nenhuma partida encontrada para os filtros selecionados.</p>
+            <p style="text-align:center; color:var(--txt-main); opacity:0.6; padding:20px;">Nenhuma partida encontrada para os filtros selecionados.</p>
         <?php endif; ?>
 
         <?php foreach($historico_partidas as $partida): ?>
@@ -302,7 +315,7 @@ function calcularBadgeStreak($historico) {
                     </div>
 
                     <div class="texto-grafico">
-                        <span>📈 Ver Gráfico</span>
+                        <span>📊 Grafico →</span>
                     </div>
                 </div>
             </a>
