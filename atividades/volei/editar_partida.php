@@ -3,7 +3,6 @@ session_start();
 include 'conexao.php';
 /** @var PDO $pdo */
 
-// BLOQUEIO DE SESSÃO: Garante que apenas o admin consiga acessar este arquivo de edição
 if (!isset($_SESSION['logado']) || $_SESSION['usuario_nivel'] !== 'admin') {
     header("Location: login.php");
     exit;
@@ -15,7 +14,6 @@ error_reporting(E_ALL);
 
 $mensagem_erro = "";
 
-// Verifica se o ID da partida foi passado na URL
 if (!isset($_GET['id'])) {
     header("Location: cadastro.php");
     exit;
@@ -23,7 +21,6 @@ if (!isset($_GET['id'])) {
 
 $id_partida = intval($_GET['id']);
 
-// 1. Processar a Atualização dos Dados (Salvar as alterações)
 if (isset($_POST['atualizar_partida'])) {
     $id_casa = $_POST['id_casa'];
     $id_fora = $_POST['id_fora'];
@@ -33,7 +30,6 @@ if (isset($_POST['atualizar_partida'])) {
     $fase = $_POST['fase'];
     $data_partida = $_POST['data_partida'];
 
-    // Validações de vôlei para o placar geral
     $placar_valido = false;
     if (($p_casa == 3 && ($p_fora >= 0 && $p_fora <= 2)) || ($p_fora == 3 && ($p_casa >= 0 && $p_casa <= 2))) {
         $placar_valido = true;
@@ -47,14 +43,11 @@ if (isset($_POST['atualizar_partida'])) {
         try {
             $pdo->beginTransaction();
 
-            // Atualiza a tabela principal 'partidas'
             $stmt = $pdo->prepare("UPDATE partidas SET id_casa = ?, id_fora = ?, pontos_casa = ?, pontos_fora = ?, genero = ?, fase = ?, data_partida = ? WHERE id = ?");
             $stmt->execute([$id_casa, $id_fora, $p_casa, $p_fora, $genero, $fase, $data_partida, $id_partida]);
             
-            // Limpa as parciais antigas deste jogo para evitar duplicados ou conflitos
             $pdo->prepare("DELETE FROM detalhes_sets WHERE id_partida = ?")->execute([$id_partida]);
 
-            // Insere as novas parciais digitadas nos inputs dos sets
             if (isset($_POST['pontos_set_casa'])) {
                 foreach ($_POST['pontos_set_casa'] as $index => $pts_c) {
                     $pts_f = $_POST['pontos_set_fora'][$index];
@@ -77,7 +70,6 @@ if (isset($_POST['atualizar_partida'])) {
     }
 }
 
-// 2. Buscar os dados atuais desta partida para preencher o formulário
 $stmt = $pdo->prepare("SELECT * FROM partidas WHERE id = ?");
 $stmt->execute([$id_partida]);
 $partida = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -87,21 +79,15 @@ if (!$partida) {
     exit;
 }
 
-// 3. Buscar as parciais de sets já existentes para esta partida (se houver)
 $stmt_sets = $pdo->prepare("SELECT * FROM detalhes_sets WHERE id_partida = ? ORDER BY numero_set ASC");
 $stmt_sets->execute([$id_partida]);
 $sets_carregados = $stmt_sets->fetchAll(PDO::FETCH_ASSOC);
 
-// Indexa as parciais por número do set para facilitar o preenchimento automático no HTML
 $valores_sets = [];
 foreach ($sets_carregados as $s) {
-    $valores_sets[$s['numero_set']] = [
-        'casa' => $s['pontos_casa'],
-        'fora' => $s['pontos_fora']
-    ];
+    $valores_sets[$s['numero_set']] = ['casa' => $s['pontos_casa'], 'fora' => $s['pontos_fora']];
 }
 
-// Buscar todos os países para alimentar os seletores de times
 $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
@@ -111,27 +97,46 @@ $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::F
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Partida - VNL</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 30px; background-color: #f4f4f9; color: #333; }
-        h1, h2 { text-align: center; color: #0d1b2a; }
-        .box { background: white; padding: 25px; border-radius: 8px; width: 100%; max-width: 500px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); box-sizing: border-box; margin: 20px auto; }
-        label { display: block; margin-top: 12px; font-weight: bold; font-size: 14px; }
-        input, select { width: 100%; padding: 8px; margin: 4px 0 12px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        button { background: #ffb703; color: #000; border: none; padding: 12px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 15px; margin-top: 15px; }
-        button:hover { background: #e5a300; }
-        .alert-error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: center; font-weight: bold; }
-        .btn-voltar { display: block; width: 200px; margin: 20px auto; text-align: center; background: #0d1b2a; color: white; padding: 10px; border-radius: 4px; text-decoration: none; font-weight: bold; }
+        :root {
+            --bg-body: #0b132b; --txt-main: #f1f5f9; --txt-heading: #48cae4;
+            --bg-card: #1c2541; --border-line: #3a506b; --btn-bg: #48cae4; 
+            --btn-txt: #0b132b; --accent-blue: #00b4d8; --input-bg: #0b132b;
+        }
+        [data-theme="light"] {
+            --bg-body: #e0f2fe; --txt-main: #0f172a; --txt-heading: #0369a1;
+            --bg-card: #ffffff; --border-line: #bae6fd; --btn-bg: #0284c7; 
+            --btn-txt: #ffffff; --accent-blue: #0284c7; --input-bg: #f8fafc;
+        }
+
+        body, .box, input, select { transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: var(--bg-body); color: var(--txt-main); }
+        h1, h2 { text-align: center; color: var(--txt-heading); }
         
-        /* Estilo para a grade de pontos por set */
-        .grid-sets { display: flex; flex-direction: column; gap: 8px; background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px dashed #cbd5e1; margin-bottom: 12px; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; max-width: 500px; margin: 0 auto; }
+        .theme-toggle { background: var(--btn-bg); color: var(--btn-txt); border: none; padding: 8px 18px; font-weight: bold; border-radius: 20px; cursor: pointer; font-size: 13px; }
+
+        .box { background: var(--bg-card); padding: 25px; border-radius: 8px; width: 100%; max-width: 500px; border: 1px solid var(--border-line); box-sizing: border-box; margin: 20px auto; }
+        label { display: block; margin-top: 12px; font-weight: bold; font-size: 14px; }
+        input, select { width: 100%; padding: 8px; margin: 4px 0 12px 0; box-sizing: border-box; border: 1px solid var(--border-line); background: var(--input-bg); color: var(--txt-main); border-radius: 4px; font-weight: bold; }
+        
+        button { background: var(--accent-blue); color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 15px; margin-top: 15px; }
+        button:hover { filter: brightness(1.1); }
+        .alert-error { background: #ef4444; color: white; padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: center; font-weight: bold; }
+        
+        .grid-sets { display: flex; flex-direction: column; gap: 8px; background: var(--bg-body); padding: 12px; border-radius: 6px; border: 1px dashed var(--border-line); margin-bottom: 12px; }
         .linha-set { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        .linha-set span { font-weight: bold; font-size: 13px; min-width: 45px; color: #475569; }
+        .linha-set span { font-weight: bold; font-size: 13px; min-width: 45px; }
         .linha-set input { margin: 0; text-align: center; padding: 6px; }
     </style>
 </head>
 <body>
 
+    <div class="header-top">
+        <a href="cadastro.php" style="text-decoration: none; font-weight: bold; color: var(--accent-blue);">← Voltar</a>
+        <button class="theme-toggle" onclick="toggleTheme()" id="btnTema">☀️ Modo Claro</button>
+    </div>
+
     <h1>✏️ Editar Resultado de Partida</h1>
-    <a href="cadastro.php" class="btn-voltar">← Cancelar e Voltar</a>
 
     <div class="box">
         <?php if(!empty($mensagem_erro)): ?><div class="alert-error"><?=$mensagem_erro?></div><?php endif; ?>
@@ -159,12 +164,10 @@ $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::F
                     <label>Time da Casa:</label>
                     <select name="id_casa" required>
                         <?php foreach($paises as $p): ?>
-                            <option value="<?=$p['id']?>" <?=$partida['id_casa'] == $p['id'] ? 'selected' : ''?>>
-                                <?=$p['nome']?>
-                            </option>
+                            <option value="<?=$p['id']?>" <?=$partida['id_casa'] == $p['id'] ? 'selected' : ''?>><?=$p['nome']?></option>
                         <?php endforeach; ?>
                     </select>
-                    <label>Placar Geral (Sets):</label>
+                    <label>Placar (Sets):</label>
                     <input type="number" name="pontos_casa" min="0" max="3" value="<?=$partida['pontos_casa']?>" required>
                 </div>
                 
@@ -172,29 +175,26 @@ $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::F
                     <label>Time Visitante:</label>
                     <select name="id_fora" required>
                         <?php foreach($paises as $p): ?>
-                            <option value="<?=$p['id']?>" <?=$partida['id_fora'] == $p['id'] ? 'selected' : ''?>>
-                                <?=$p['nome']?>
-                            </option>
+                            <option value="<?=$p['id']?>" <?=$partida['id_fora'] == $p['id'] ? 'selected' : ''?>><?=$p['nome']?></option>
                         <?php endforeach; ?>
                     </select>
-                    <label>Placar Geral (Sets):</label>
+                    <label>Placar (Sets):</label>
                     <input type="number" name="pontos_fora" min="0" max="3" value="<?=$partida['pontos_fora']?>" required>
                 </div>
             </div>
 
-            <label>Pontuação por Set (Para alimentar o gráfico):</label>
+            <label>Pontuação por Set (Gráfico):</label>
             <div class="grid-sets">
                 <?php for($i = 0; $i < 5; $i++): 
                     $num_set = $i + 1;
-                    // Resgata o valor antigo salvo se existir, caso contrário deixa vazio
                     $val_casa = isset($valores_sets[$num_set]) ? $valores_sets[$num_set]['casa'] : '';
                     $val_fora = isset($valores_sets[$num_set]) ? $valores_sets[$num_set]['fora'] : '';
                 ?>
                     <div class="linha-set">
                         <span>Set <?=$num_set?>:</span>
-                        <input type="number" name="pontos_set_casa[<?=$i?>]" value="<?=$val_casa?>" placeholder="Casa" min="0">
+                        <input type="number" name="pontos_set_casa[<?=$i?>]" value="<?=$val_casa?>" placeholder="Casa">
                         x
-                        <input type="number" name="pontos_set_fora[<?=$i?>]" value="<?=$val_fora?>" placeholder="Fora" min="0">
+                        <input type="number" name="pontos_set_fora[<?=$i?>]" value="<?=$val_fora?>" placeholder="Fora">
                     </div>
                 <?php endfor; ?>
             </div>
@@ -204,28 +204,18 @@ $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::F
     </div>
 
     <script>
-    // Mantém a inversão automática de seleção ativa também na tela de edição
-    const selectCasa = document.getElementsByName('id_casa')[0];
-    const selectFora = document.getElementsByName('id_fora')[0];
-
-    function ajustarOpcoesConfronto() {
-        const valorCasa = selectCasa.value;
-        const valorFora = selectFora.value;
-
-        Array.from(selectFora.options).forEach(opcao => {
-            opcao.style.display = (opcao.value === valorCasa && opcao.value !== "") ? "none" : "block";
-        });
-
-        Array.from(selectCasa.options).forEach(opcao => {
-            opcao.style.display = (opcao.value === valorFora && opcao.value !== "") ? "none" : "block";
-        });
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        const btn = document.getElementById('btnTema');
+        if (theme === 'light') { btn.innerHTML = '🌙 Modo Escuro'; } else { btn.innerHTML = '☀️ Modo Claro'; }
     }
-
-    // Executa no carregamento para travar as opções iniciais
-    ajustarOpcoesConfronto();
-
-    selectCasa.addEventListener('change', ajustarOpcoesConfronto);
-    selectFora.addEventListener('change', ajustarOpcoesConfronto);
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('vnl-theme', newTheme);
+        applyTheme(newTheme);
+    }
+    applyTheme(localStorage.getItem('vnl-theme') || 'dark');
     </script>
 </body>
 </html>
