@@ -2,22 +2,33 @@
 session_start();
 require 'conexao.php';
 
-// Bloqueia o acesso direto se o usuário não estiver logado
+// 1. Se não tiver a chave na sessão, manda de volta para o login
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: login.html");
+    header("Location: login.html"); // mude para login.php se alterou o nome do arquivo
     exit;
 }
 
 $usuario_id = $_SESSION['usuario_id'];
 
-// Busca os dados do usuário atual para saber se ele já tem um parceiro
-$stmt = $pdo->prepare("SELECT parceiro_id FROM usuarios WHERE id = ?");
-$stmt->execute([$usuario_id]);
-$usuario_atual = $stmt->fetch(PDO::FETCH_ASSOC);
-$parceiro_id = $usuario_atual['parceiro_id'];
+// 2. Busca apenas o parceiro_id do usuário que acabou de logar
+try {
+    $stmt = $pdo->prepare("SELECT parceiro_id FROM usuarios WHERE id = ?");
+    $stmt->execute([$usuario_id]);
+    $usuario_atual = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Se por acaso a conta sumiu do banco mas a sessão continuava aberta
+    if (!$usuario_atual) {
+        header("Location: logout.php");
+        exit;
+    }
+    
+    $parceiro_id = $usuario_atual['parceiro_id'];
+} catch (PDOException $e) {
+    die("Erro ao verificar usuário: " . $e->getMessage());
+}
 
 // Se NÃO tiver parceiro, exibe a tela de busca e conexão
-if (!$parceiro_id): 
+if (!$parceiro_id):  
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
