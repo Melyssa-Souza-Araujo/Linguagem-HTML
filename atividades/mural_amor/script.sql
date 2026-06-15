@@ -17,3 +17,6 @@ CREATE TABLE posts (
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
+
+ALTER TABLE usuarios ADD COLUMN parceiro_id INT DEFAULT NULL;
+ALTER TABLE usuarios ADD CONSTRAINT fk_parceiro FOREIGN KEY (parceiro_id) REFERENCES usuarios(id) ON DELETE SET NULL;
