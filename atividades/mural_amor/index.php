@@ -7,6 +7,73 @@ if (!isset($_SESSION['usuario_id'])) {
     header("Location: login.html");
     exit;
 }
+
+$usuario_id = $_SESSION['usuario_id'];
+
+// Busca os dados do usuário atual para saber se ele já tem um parceiro
+$stmt = $pdo->prepare("SELECT parceiro_id FROM usuarios WHERE id = ?");
+$stmt->execute([$usuario_id]);
+$usuario_atual = $stmt->fetch(PDO::FETCH_ASSOC);
+$parceiro_id = $usuario_atual['parceiro_id'];
+
+// Se NÃO tiver parceiro, exibe a tela de busca e conexão
+if (!$parceiro_id): 
+?>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conectar com seu Amor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #fff5f5; color: #3a2020; padding: 40px 20px; display: flex; justify-content: center; }
+        .connect-container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 15px rgba(211,47,47,0.08); width: 100%; max-width: 450px; text-align: center; }
+        h1 { font-family: 'Dancing Script', cursive; color: #d32f2f; font-size: 36px; margin-bottom: 10px; }
+        p { color: #755b5b; font-size: 14px; margin-bottom: 25px; }
+        .user-list { list-style: none; padding: 0; text-align: left; }
+        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #ffcdd2; }
+        .user-name { font-weight: 600; font-size: 15px; }
+        .btn-connect { background-color: #d32f2f; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none;}
+        .btn-connect:hover { background-color: #b71c1c; }
+        .logout-link { display: inline-block; margin-top: 20px; color: #755b5b; text-decoration: none; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="connect-container">
+        <h1>❤️ Quase lá...</h1>
+        <p>Para ver o mural, conecte-se com o seu amor abaixo:</p>
+        
+        <ul class="user-list">
+            <?php
+            // Lista todos os usuários cadastrados (exceto você mesmo e quem já tem parceiro)
+            $stmt_users = $pdo->prepare("SELECT id, nome FROM usuarios WHERE id != ? AND parceiro_id IS NULL");
+            $stmt_users->execute([$usuario_id]);
+            $usuarios = $stmt_users->fetchAll(PDO::FETCH_ASSOC);
+
+            if (empty($usuarios)) {
+                echo '<p style="text-align:center; color:#755b5b;">Seu amor ainda não se cadastrou? Peça para ele(a) criar uma conta!</p>';
+            } else {
+                foreach ($usuarios as $user) {
+                    echo '<li class="user-item">';
+                    echo '  <span class="user-name">' . htmlspecialchars($user['nome']) . '</span>';
+                    echo '  <a href="conectar.php?id=' . $user['id'] . '" class="btn-connect">Conectar</a>';
+                    echo '</li>';
+                }
+            }
+            ?>
+        </ul>
+        <a href="logout.php" class="logout-link">Sair da Conta</a>
+    </div>
+</body>
+</html>
+<?php 
+exit; // Interrompe o arquivo para não mostrar o mural antes da conexão
+endif; 
+
+// -------------------------------------------------------------------------
+// SE CHEGOU AQUI, SIGNIFICA QUE JÁ ESTÁ CONECTADO! EXIBE O MURAL NORMALMENTE
+// -------------------------------------------------------------------------
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -301,8 +368,15 @@ if (!isset($_SESSION['usuario_id'])) {
         <div id="feedContainer">
             <?php
             try {
-                // Junta a tabela de posts e a de usuários para exibir quem digitou a mensagem
-                $stmt = $pdo->query("SELECT posts.*, usuarios.nome FROM posts JOIN usuarios ON posts.usuario_id = usuarios.id ORDER BY posts.criado_em DESC");
+                // AGORA O FILTRO SÓ TRAZ POSTS SEUS OU DO SEU PARCEIRO CONECTADO
+                $stmt = $pdo->prepare("
+                    SELECT posts.*, usuarios.nome 
+                    FROM posts 
+                    JOIN usuarios ON posts.usuario_id = usuarios.id 
+                    WHERE posts.usuario_id = ? OR posts.usuario_id = ?
+                    ORDER BY posts.criado_em DESC
+                ");
+                $stmt->execute([$usuario_id, $parceiro_id]);
                 $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                 if (empty($posts)) {
@@ -310,8 +384,7 @@ if (!isset($_SESSION['usuario_id'])) {
                 }
 
                 foreach ($posts as $post) {
-                    // Define se a postagem é sua ou do parceiro para exibição textual inteligente
-                    $autor = ($post['usuario_id'] == $_SESSION['usuario_id']) ? 'Você' : htmlspecialchars($post['nome']);
+                    $autor = ($post['usuario_id'] == $usuario_id) ? 'Você' : htmlspecialchars($post['nome']);
 
                     echo '<div class="post-card">';
                     echo '  <div class="post-header">';
@@ -344,7 +417,6 @@ if (!isset($_SESSION['usuario_id'])) {
         themeBtn.addEventListener('click', () => {
             let theme = document.documentElement.getAttribute('data-theme');
             let newTheme = theme === 'dark' ? 'light' : 'dark';
-            
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             updateThemeUI(newTheme);
