@@ -1,3 +1,12 @@
+<?php
+session_start();
+// Se o usuário já tiver uma sessão ativa, manda direto para o mural
+if (isset($_SESSION['usuario_id'])) {
+    header("Location: index.php");
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
