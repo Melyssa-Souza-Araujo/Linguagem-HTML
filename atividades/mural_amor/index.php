@@ -4,7 +4,7 @@ require 'conexao.php';
 
 // 1. Se não tiver a chave na sessão, manda de volta para o login
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: login.html"); // mude para login.php se alterou o nome do arquivo
+    header("Location: login.php"); // mude para login.php se alterou o nome do arquivo
     exit;
 }
 
