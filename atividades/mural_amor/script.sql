@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     parceiro_id INT DEFAULT NULL,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_parceiro FOREIGN KEY (parceiro_id) REFERENCES usuarios(id) ON DELETE SET NULL
-) ENGINE=InnoDB;
+);
 
 -- 3. Cria a tabela de Postagens (O mural de memórias)
 CREATE TABLE IF NOT EXISTS posts (
