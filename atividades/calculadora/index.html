@@ -71,6 +71,55 @@
 
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // Selecionando os elementos da tela
+const display = document.querySelector('.display');
+const botoes = document.querySelectorAll('.btn');
+const btnLimpar = document.querySelector('.btn-limpar');
+
+const telaCalculadora = document.getElementById('calculadora');
+const telaPaywall = document.getElementById('paywall');
+const btnFechar = document.getElementById('btn-fechar');
+
+// Limpa o display inicial para o usuário digitar do zero
+display.textContent = '';
+
+// Monitora o clique em cada botão da calculadora
+botoes.forEach(botao => {
+    botao.addEventListener('click', () => {
+        const textoBotao = botao.textContent;
+
+        // Se for o botão de igual, ativa o paywall
+        if (textoBotao.includes('=')) {
+            // Só avança se o usuário tiver digitado algo
+            if (display.textContent.trim() !== '') {
+                telaCalculadora.classList.add('escondido');
+                telaPaywall.classList.remove('escondido');
+            }
+        } 
+        // Se for qualquer outro botão, adiciona o caractere no display
+        else {
+            // Troca os símbolos visuais pelos símbolos que o JavaScript entende internamente
+            let caractere = textoBotao;
+            if (caractere === '×') caractere = '*';
+            if (caractere === '÷') caractere = '/';
+            
+            display.textContent += caractere;
+        }
+    });
+});
+
+// Lógica do botão "Limpar"
+btnLimpar.addEventListener('click', () => {
+    display.textContent = '';
+});
+
+// Lógica do botão "Fechar" na tela de planos (para voltar e tentar outra conta)
+btnFechar.addEventListener('click', () => {
+    telaPaywall.classList.add('escondido');
+    telaCalculadora.classList.remove('escondido');
+    display.textContent = ''; // Limpa a tela para a próxima "vítima"
+});
+    </script>
 </body>
 </html>
