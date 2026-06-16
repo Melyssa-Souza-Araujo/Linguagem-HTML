@@ -4,16 +4,191 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora Premium™</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: radial-gradient(circle, #2b5c8f 0%, #162a45 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+        }
+        .escondido {
+            display: none !important;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            text-align: center;
+        }
+        #calculadora {
+            width: 320px;
+        }
+        #calculadora h3 {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+        .display {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            text-align: right;
+            font-weight: bold;
+        }
+        .teclado {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px; 
+        }
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 1.2rem;
+        }
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .btn.operador {
+            background: #1e70e0;
+        }
+        .btn.operador:hover {
+            background: #1456b3;
+        }
+        .btn.acao {
+            background: #0084ff;
+            font-weight: bold;
+        }
+        .btn-limpar {
+            width: 100%;
+            background: #cc2929;
+            color: #ffffff;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+        .btn-limpar:hover {
+            background: #a31e1e;
+        }
+        #paywall {
+            max-width: 850px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .cadeado {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        .subtitulo {
+            color: #a0aec0;
+            margin: 10px 0 25px 0;
+        }
+        .planos {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 25px
+        }
+        .plano-card {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            width: 230px;
+            position: relative;
+        }
+        .plano-card.destaque {
+            border: 2px solid #0084ff;
+            background: rgba(0, 132, 255, 0.05);
+            transform: scale(1.05);
+        }
+        .badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0084ff;
+            font-size: 0.7rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .preco {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .preco span {
+            font-size: 0.9rem;
+            opacity: 0.6;
+        }
+        ul {
+            text-align: left;
+            list-style: none;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .btn-assinar{
+            width: 100%;
+            background: #0084ff;
+            color: #ffffff;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-assinar:hover {
+            background: #0066cc;
+        }
+        .btn-voltar{
+            background: transparent;
+            border: none;
+            color: #a0aec0;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
 <body>
-
     <div class="container">
-        
         <div id="calculadora" class="card">
             <h3>📊 Calculadora Premium™</h3>
             <div class="display">26*3</div>
-            
             <div class="teclado">
                 <button class="btn">7</button><button class="btn">8</button><button class="btn">9</button><button class="btn operador">÷</button>
                 <button class="btn">4</button><button class="btn">5</button><button class="btn">6</button><button class="btn operador">×</button>
@@ -24,12 +199,10 @@
             </div>
             <button class="btn-limpar">Limpar</button>
         </div>
-
         <div id="paywall" class="card escondido">
             <div class="cadeado">🔒</div>
             <h2>Resultado Calculado!</h2>
             <p class="subtitulo">Para visualizar o resultado, escolha um plano Premium™.</p>
-            
             <div class="planos">
                 <div class="plano-card">
                     <h4>Plano Básico</h4>
@@ -41,7 +214,6 @@
                     </ul>
                     <button class="btn-assinar">Assinar</button>
                 </div>
-
                 <div class="plano-card destaque">
                     <span class="badge">MAIS POPULAR</span>
                     <h4>Plano Profissional</h4>
@@ -53,7 +225,6 @@
                     </ul>
                     <button class="btn-assinar">Assinar Agora</button>
                 </div>
-
                 <div class="plano-card">
                     <h4>Plano Enterprise</h4>
                     <div class="preco">R$ 999<span>/mês</span></div>
@@ -65,61 +236,58 @@
                     <button class="btn-assinar">Assinar</button>
                 </div>
             </div>
-            
             <button id="btn-fechar" class="btn-voltar">Fechar</button>
         </div>
-
     </div>
-
     <script>
-        // Selecionando os elementos da tela
-const display = document.querySelector('.display');
-const botoes = document.querySelectorAll('.btn');
-const btnLimpar = document.querySelector('.btn-limpar');
+         // Selecionando os elementos da tela
+        const display = document.querySelector('.display');
+        const botoes = document.querySelectorAll('.btn');
+        const btnLimpar = document.querySelector('.btn-limpar');
 
-const telaCalculadora = document.getElementById('calculadora');
-const telaPaywall = document.getElementById('paywall');
-const btnFechar = document.getElementById('btn-fechar');
+        const telaCalculadora = document.getElementById('calculadora');
+        const telaPaywall = document.getElementById('paywall');
+        const btnFechar = document.getElementById('btn-fechar');
 
-// Limpa o display inicial para o usuário digitar do zero
-display.textContent = '';
+        // Limpa o display inicial para o usuário digitar do zero
+        display.textContent = '';
 
-// Monitora o clique em cada botão da calculadora
-botoes.forEach(botao => {
-    botao.addEventListener('click', () => {
-        const textoBotao = botao.textContent;
+        // Monitora o clique em cada botão da calculadora
+        botoes.forEach(botao => {
+            botao.addEventListener('click', () => {
+                const textoBotao = botao.textContent;
 
-        // Se for o botão de igual, ativa o paywall
-        if (textoBotao.includes('=')) {
-            // Só avança se o usuário tiver digitado algo
-            if (display.textContent.trim() !== '') {
-                telaCalculadora.classList.add('escondido');
-                telaPaywall.classList.remove('escondido');
-            }
-        } 
-        // Se for qualquer outro botão, adiciona o caractere no display
-        else {
-            // Troca os símbolos visuais pelos símbolos que o JavaScript entende internamente
-            let caractere = textoBotao;
-            if (caractere === '×') caractere = '*';
-            if (caractere === '÷') caractere = '/';
-            
-            display.textContent += caractere;
-        }
-    });
-});
+                // Se for o botão de igual, ativa o paywall
+                if (textoBotao.includes('=')) {
+                    // Só avança se o usuário tiver digitado algo
+                    if (display.textContent.trim() !== '') {
+                        telaCalculadora.classList.add('escondido');
+                        telaPaywall.classList.remove('escondido');
+                    }
+                } 
+                // Se for qualquer outro botão, adiciona o caractere no display
+                else {
+                    // Troca os símbolos visuais pelos símbolos que o JavaScript entende internamente
+                    let caractere = textoBotao;
+                    if (caractere === '×') caractere = '*';
+                    if (caractere === '÷') caractere = '/';
+                    
+                    display.textContent += caractere;
+                }
+            });
+        });
 
-// Lógica do botão "Limpar"
-btnLimpar.addEventListener('click', () => {
-    display.textContent = '';
-});
+        // Lógica do botão "Limpar"
+        btnLimpar.addEventListener('click', () => {
+            display.textContent = '';
+        });
 
-// Lógica do botão "Fechar" na tela de planos (para voltar e tentar outra conta)
-btnFechar.addEventListener('click', () => {
-    telaPaywall.classList.add('escondido');
-    telaCalculadora.classList.remove('escondido');
-    display.textContent = ''; // Limpa a tela para a próxima "vítima"
-});
+        // Lógica do botão "Fechar" na tela de planos (para voltar e tentar outra conta)
+        btnFechar.addEventListener('click', () => {
+            telaPaywall.classList.add('escondido');
+            telaCalculadora.classList.remove('escondido');
+            display.textContent = ''; // Limpa a tela para a próxima "vítima"
+        });
     </script>
 </body>
 </html>
