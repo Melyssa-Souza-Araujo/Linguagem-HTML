@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Premium™</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        
+        <div id="calculadora" class="card">
+            <h3>📊 Calculadora Premium™</h3>
+            <div class="display">26*3</div>
+            
+            <div class="teclado">
+                <button class="btn">7</button><button class="btn">8</button><button class="btn">9</button><button class="btn operador">÷</button>
+                <button class="btn">4</button><button class="btn">5</button><button class="btn">6</button><button class="btn operador">×</button>
+                <button class="btn">1</button><button class="btn">2</button><button class="btn">3</button><button class="btn operador">-</button>
+                <button class="btn">0</button><button class="btn">.</button>
+                <button id="btn-igual" class="btn acao">🔑 =</button>
+                <button class="btn operador">+</button>
+            </div>
+            <button class="btn-limpar">Limpar</button>
+        </div>
+
+        <div id="paywall" class="card escondido">
+            <div class="cadeado">🔒</div>
+            <h2>Resultado Calculado!</h2>
+            <p class="subtitulo">Para visualizar o resultado, escolha um plano Premium™.</p>
+            
+            <div class="planos">
+                <div class="plano-card">
+                    <h4>Plano Básico</h4>
+                    <div class="preco">R$ 19<span>/mês</span></div>
+                    <ul>
+                        <li>✅ Até 10 cálculos/mês</li>
+                        <li>✅ Soma desbloqueada</li>
+                        <li>❌ Multiplicação Premium</li>
+                    </ul>
+                    <button class="btn-assinar">Assinar</button>
+                </div>
+
+                <div class="plano-card destaque">
+                    <span class="badge">MAIS POPULAR</span>
+                    <h4>Plano Profissional</h4>
+                    <div class="preco">R$ 99<span>/mês</span></div>
+                    <ul>
+                        <li>✅ Cálculos ilimitados</li>
+                        <li>✅ Multiplicação Premium</li>
+                        <li>✅ Divisão Avançada</li>
+                    </ul>
+                    <button class="btn-assinar">Assinar Agora</button>
+                </div>
+
+                <div class="plano-card">
+                    <h4>Plano Enterprise</h4>
+                    <div class="preco">R$ 999<span>/mês</span></div>
+                    <ul>
+                        <li>✅ Resultados em HD</li>
+                        <li>✅ 2 casas decimais</li>
+                        <li>✅ Suporte VIP</li>
+                    </ul>
+                    <button class="btn-assinar">Assinar</button>
+                </div>
+            </div>
+            
+            <button id="btn-fechar" class="btn-voltar">Fechar</button>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
