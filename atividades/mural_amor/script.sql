@@ -1,22 +1,24 @@
-CREATE DATABASE mural_amor;
+-- 1. Cria o banco de dados com suporte a emojis e caracteres especiais
+CREATE DATABASE IF NOT EXISTS mural_amor;
 USE mural_amor;
 
-CREATE TABLE usuarios (
-    id INT PRIMARY KEY,
+-- 2. Cria a tabela de Usuários (O casal)
+CREATE TABLE IF NOT EXISTS usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(50) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     senha VARCHAR(255) NOT NULL,
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    parceiro_id INT DEFAULT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_parceiro FOREIGN KEY (parceiro_id) REFERENCES usuarios(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
 
-CREATE TABLE posts (
-    id INT PRIMARY KEY,
-    usuario_id INT,
-    texto TEXT,
+-- 3. Cria a tabela de Postagens (O mural de memórias)
+CREATE TABLE IF NOT EXISTS posts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    texto TEXT DEFAULT NULL,
     imagem_url VARCHAR(255) DEFAULT NULL,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+    CONSTRAINT fk_usuario_post FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 );
-
-ALTER TABLE usuarios ADD COLUMN parceiro_id INT DEFAULT NULL;
-ALTER TABLE usuarios ADD CONSTRAINT fk_parceiro FOREIGN KEY (parceiro_id) REFERENCES usuarios(id) ON DELETE SET NULL;
