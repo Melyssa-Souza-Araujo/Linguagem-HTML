@@ -8,14 +8,14 @@ if (isset($_SESSION['usuario_id'])) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Entrar - Nosso Espaço de Amor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Inter:wght@300;400;500;600;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-page: #fff5f5;
@@ -28,6 +28,7 @@ if (isset($_SESSION['usuario_id'])) {
             --shadow: rgba(211, 47, 47, 0.08);
             --input-bg: #ffffff;
         }
+
         [data-theme="dark"] {
             --bg-page: #1a0a0a;
             --bg-card: #2a1212;
@@ -39,30 +40,34 @@ if (isset($_SESSION['usuario_id'])) {
             --shadow: rgba(0, 0, 0, 0.4);
             --input-bg: #1a0a0a;
         }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-page);
             color: var(--text-main);
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             min-height: 100vh;
             padding: 20px;
         }
+
         .theme-container {
             position: absolute;
             top: 20px;
             right: 20px;
         }
+
         .theme-toggle {
-            background-color: var(--bg-card);
+            background: var(--bg-card);
             border: 1px solid var(--border-color);
             color: var(--text-main);
             padding: 8px 12px;
@@ -74,16 +79,18 @@ if (isset($_SESSION['usuario_id'])) {
             gap: 5px;
             box-shadow: 0 2px 5px var(--shadow);
         }
+
         .login-card {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 24px;
             padding: 40px 30px;
-            box-shadow: 0 10px 25px var(--shadow);
-            text-align: center;
             width: 100%;
             max-width: 400px;
+            box-shadow: 0 10px 25px var(--shadow);
+            text-align: center;
         }
+
         .logo {
             font-family: 'Dancing Script', cursive;
             font-size: 42px;
@@ -92,67 +99,79 @@ if (isset($_SESSION['usuario_id'])) {
             display: block;
             text-decoration: none;
         }
+
         .subtitle {
             font-size: 14px;
             color: var(--text-muted);
             margin-bottom: 30px;
         }
+
         .form-group {
             margin-bottom: 20px;
             text-align: left;
         }
+
         label {
-            font-size: 13px;
-            color: var(--text-muted);
             display: block;
-            margin-bottom: 6px;
+            font-size: 13px;
             font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-muted);
         }
+
         input {
             width: 100%;
             padding: 12px 16px;
+            background-color: var(--input-bg);
             border: 1px solid var(--border-color);
             border-radius: 10px;
-            background-color: var(--input-bg);
             color: var(--text-main);
             font-family: inherit;
             font-size: 14px;
         }
+
         input:focus {
             outline: none;
             border-color: var(--primary);
         }
+
         .btn-submit {
             width: 100%;
             background-color: var(--primary);
-            color: #ffffff;
+            color: white;
             border: none;
-            border-radius: 10px;
             padding: 14px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 15px;
             font-weight: 600;
             margin-top: 10px;
         }
+
         .btn-submit:hover {
             background-color: var(--primary-hover);
         }
+
         .switch-form {
             margin-top: 25px;
             font-size: 13px;
             color: var(--text-muted);
         }
+
         .switch-form a {
             color: var(--primary);
             text-decoration: none;
             font-weight: 500;
+            cursor: pointer;
         }
+
         .switch-form a:hover {
             text-decoration: underline;
         }
     </style>
 </head>
 <body>
+
     <div class="theme-container">
         <button class="theme-toggle" id="themeBtn">
             <span id="themeIcon">🌙</span> <span id="themeText">Modo Escuro</span>
@@ -163,31 +182,33 @@ if (isset($_SESSION['usuario_id'])) {
         <a href="#" class="logo">❤️ Nosso Espaço</a>
         <p class="subtitle" id="pageSubtitle">Conecte-se ao diário do casal</p>
 
-        <form action="autenticar.php" method="post" id="authForm">
+        <form id="authForm" action="autenticar.php" method="POST">
+            
             <div id="nameField" class="form-group" style="display: none;">
                 <label for="nome">Seu Nome / Apelido</label>
-                <input type="text" id="nome" name="nome" required>
+                <input type="text" id="nome" name="nome" placeholder="Como seu par te chama?">
             </div>
 
             <div class="form-group">
                 <label for="email">E-mail</label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="email" name="email" placeholder="seuemail@email.com" required>
             </div>
 
             <div class="form-group">
                 <label for="senha">Senha</label>
-                <input type="password" id="senha" name="senha" required>
+                <input type="password" id="senha" name="senha" placeholder="••••••••" required>
             </div>
 
             <button type="submit" class="btn-submit" id="btnSubmit">Entrar</button>
         </form>
 
         <p class="switch-form" id="switchText">
-            Ainda não tem o espaço do casal? <a href="#" id="toggleAuthLink">Criar Conta</a>
+            Ainda não tem o espaço do casal? <a id="toggleAuthLink">Criar Conta</a>
         </p>
     </div>
 
     <script>
+        // Tema Escuro / Claro
         const themeBtn = document.getElementById('themeBtn');
         const themeIcon = document.getElementById('themeIcon');
         const themeText = document.getElementById('themeText');
@@ -195,15 +216,15 @@ if (isset($_SESSION['usuario_id'])) {
         const currentTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', currentTheme);
         updateThemeUI(currentTheme);
-        
+
         themeBtn.addEventListener('click', () => {
             let theme = document.documentElement.getAttribute('data-theme');
-            let  newTheme = theme === 'dark' ? 'light' : 'dark';
+            let newTheme = theme === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             updateThemeUI(newTheme);
         });
-        
+
         function updateThemeUI(theme) {
             if (theme === 'dark') {
                 themeIcon.textContent = '☀️';
@@ -214,37 +235,46 @@ if (isset($_SESSION['usuario_id'])) {
             }
         }
 
+        // Alternador entre modo Login e modo Cadastro
         let isLoginMode = true;
+        const toggleLink = document.getElementById('toggleAuthLink');
+        
+        toggleLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            isLoginMode = !isLoginMode;
 
-        document.body.addEventListener('click', function(e) {
-            if (e.target && e.target.id === 'toggleAuthLink') {
-                e.preventDefault();
-                isLoginMode = !isLoginMode;
-                
-                const pageSubtitle = document.getElementById('pageSubtitle');
-                const nameField = document.getElementById('nameField');
-                const nomeInput = document.getElementById('nome');
-                const btnSubmit = document.getElementById('btnSubmit');
-                const authForm = document.getElementById('authForm');
-                const switchText = document.getElementById('switchText');
+            const pageSubtitle = document.getElementById('pageSubtitle');
+            const nameField = document.getElementById('nameField');
+            const nomeInput = document.getElementById('nome');
+            const btnSubmit = document.getElementById('btnSubmit');
+            const authForm = document.getElementById('authForm');
 
-                if (isLoginMode) {
-                    pageSubtitle.textContent = 'Conecte-se ao diário do casal';
-                    nameField.style.display = 'none';
-                    nomeInput.required = false;
-                    btnSubmit.textContent = 'Entrar';
-                    authForm.action = 'autenticar.php';
-                    switchText.innerHTML = `Ainda não tem o espaço do casal? <a href="#" id="toggleAuthLink">Criar Conta</a>`;
-                } else {
-                    pageSubtitle.textContent = "Crie uma conta para iniciar seu mural";
-                    nameField.style.display = 'block';
-                    nomeInput.required = true;
-                    btnSubmit.textContent = "Cadastrar Casal";
-                    authForm.action = 'cadastrar.php';
-                    switchText.innerHTML = `Já tem uma conta? <a href="#" id="toggleAuthLink">Entrar</a>`;
-                }
+            if (isLoginMode) {
+                pageSubtitle.textContent = "Conecte-se ao diário do casal";
+                nameField.style.display = "none";
+                nomeInput.required = false;
+                btnSubmit.textContent = "Entrar";
+                authForm.action = "autenticar.php"; // Envia para o script de login
+                toggleLink.textContent = "Criar Conta";
+                document.querySelector('.switch-form').innerHTML = `Ainda não tem o espaço do casal? <a id="toggleAuthLink">Criar Conta</a>`;
+                // Força o re-vínculo do evento já que reescrevemos o HTML
+                recriarEvento();
+            } else {
+                pageSubtitle.textContent = "Crie uma conta para iniciar seu mural";
+                nameField.style.display = "block";
+                nomeInput.required = true;
+                btnSubmit.textContent = "Cadastrar Casal";
+                authForm.action = "cadastrar.php"; // Envia para o script de cadastro
+                document.querySelector('.switch-form').innerHTML = `Já tem uma conta? <a id="toggleAuthLink">Fazer Login</a>`;
+                recriarEvento();
             }
         });
+
+        function recriarEvento() {
+            document.getElementById('toggleAuthLink').addEventListener('click', function() {
+                location.reload(); // Maneira mais limpa e infalível de resetar o estado visual sem travar o form
+            });
+        }
     </script>
 </body>
 </html>
