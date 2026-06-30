@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador Mata-Mata - Copa do Mundo 2026</title>
+    <title>Simulador Completo - Copa do Mundo 2026</title>
     <style>
         :root {
             --bg-color: #0c0c0e;
@@ -38,7 +38,6 @@
             margin-bottom: 25px;
         }
 
-        /* Painel de Controle */
         .controls {
             display: flex;
             gap: 15px;
@@ -70,21 +69,34 @@
 
         .btn-primary:hover {
             background-color: #00986a;
-            border-color: #00986a;
         }
 
-        /* Container Principal do Chaveamento */
+        /* Container que agrupa as duas chaves */
+        .bracket-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        .bracket-section-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            border-left: 4px solid var(--accent-color);
+            padding-left: 10px;
+            margin-bottom: -10px;
+        }
+
         .bracket-container {
             display: flex;
-            gap: 50px;
+            gap: 45px;
             overflow-x: auto;
-            padding: 40px 20px;
-            width: 100%;
-            max-width: 1300px;
+            padding: 20px 0;
             box-sizing: border-box;
         }
 
-        /* Colunas de cada fase */
         .round {
             display: flex;
             flex-direction: column;
@@ -94,19 +106,18 @@
         }
 
         .round-header {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .round-title {
             text-align: center;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 1.5px;
         }
 
-        /* Card de Partida (Matchup) */
         .matchup {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -115,27 +126,26 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-            margin: 25px 0;
+            margin: 15px 0;
             position: relative;
         }
 
-        /* Linhas conectoras do chaveamento clássico */
+        /* Linhas conectoras */
         .round:not(:last-child) .matchup::after {
             content: "";
             position: absolute;
-            right: -51px;
+            right: -46px;
             top: 50%;
-            width: 50px;
+            width: 45px;
             height: 2px;
             background-color: var(--border-color);
             z-index: -1;
         }
 
-        /* Linha do Time individual */
         .team {
             display: flex;
             align-items: center;
-            padding: 14px 16px;
+            padding: 12px 16px;
             font-size: 0.95rem;
             cursor: pointer;
             transition: background 0.2s, color 0.2s;
@@ -159,7 +169,6 @@
             text-align: center;
         }
 
-        /* Estados de vencedor e placeholder */
         .team.winner {
             color: var(--accent-color);
             font-weight: 700;
@@ -171,121 +180,216 @@
             cursor: not-allowed;
             background-color: rgba(255, 255, 255, 0.01);
         }
+
+        /* Container de Destaque da Finalíssima */
+        .grand-final-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--card-bg);
+            border: 2px dashed var(--accent-color);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 400px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Simulador do Mata-Mata</h1>
-    <div class="subtitle">Clique nas seleções para avançá-las no torneio</div>
+    <h1>Simulador do Mata-Mata - Copa 2026</h1>
+    <div class="subtitle">Clique nas seleções para avançá-las até a grande final</div>
 
     <div class="controls">
         <button class="btn" onclick="resetBracket()">Zerar Palpites</button>
         <button class="btn btn-primary" onclick="saveBracket()">Salvar Palpites</button>
     </div>
 
-    <div class="bracket-container">
+    <div class="bracket-wrapper">
         
-        <div>
-            <div class="round-header"><div class="round-title">Segunda Rodada</div></div>
-            <div class="round" id="r32">
-                <div class="matchup" data-next-match="of1" data-slot="0">
-                    <div class="team" onclick="advance(this)"><span class="team-flag">🇿🇦</span>África do Sul</div>
-                    <div class="team" onclick="advance(this)"><span class="team-flag">🇨🇦</span>Canadá</div>
+        <!-- ================= CHAVE SUPERIOR ================= -->
+        <div class="bracket-section-title">Chave Superior</div>
+        <div class="bracket-container">
+            <div>
+                <div class="round-header"><div class="round-title">Segunda Rodada</div></div>
+                <div class="round">
+                    <div class="matchup" data-next-match="of1" data-slot="0">
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇿🇦</span>África do Sul</div>
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇨🇦</span>Canadá</div>
+                    </div>
+                    <div class="matchup" data-next-match="of1" data-slot="1">
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇳🇱</span>Países Baixos</div>
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇲🇦</span>Marrocos</div>
+                    </div>
+                    <div class="matchup" data-next-match="of2" data-slot="0">
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇩🇪</span>Alemanha</div>
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇵🇾</span>Paraguai</div>
+                    </div>
+                    <div class="matchup" data-next-match="of2" data-slot="1">
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇫🇷</span>França</div>
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇸🇪</span>Suécia</div>
+                    </div>
                 </div>
-                <div class="matchup" data-next-match="of1" data-slot="1">
-                    <div class="team" onclick="advance(this)"><span class="team-flag">🇳🇱</span>Países Baixos</div>
-                    <div class="team" onclick="advance(this)"><span class="team-flag">🇲🇦</span>Marrocos</div>
+            </div>
+
+            <div>
+                <div class="round-header"><div class="round-title">Oitavas de Final</div></div>
+                <div class="round">
+                    <div class="matchup" id="of1" data-next-match="qf1" data-slot="0">
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                    </div>
+                    <div class="matchup" id="of2" data-next-match="qf1" data-slot="1">
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                    </div>
                 </div>
-                <div class="matchup" data-next-match="of2" data-slot="0">
-                    <div class="team" onclick="advance(this)"><span class="team-flag">🇩🇪</span>Alemanha</div>
-                    <div class="team" onclick="advance(this)"><span class="team-flag">🇵🇾</span>Paraguai</div>
+            </div>
+
+            <div>
+                <div class="round-header"><div class="round-title">Quartas de Final</div></div>
+                <div class="round">
+                    <div class="matchup" id="qf1" data-next-match="sf1" data-slot="0">
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                    </div>
                 </div>
-                <div class="matchup" data-next-match="of2" data-slot="1">
-                    <div class="team" onclick="advance(this)"><span class="team-flag">🇫🇷</span>França</div>
-                    <div class="team" onclick="advance(this)"><span class="team-flag">🇸🇪</span>Suécia</div>
-                </div>
-                <div class="matchup" data-next-match="of3" data-slot="0">
-                    <div class="team" onclick="advance(this)"><span class="team-flag">🇪🇸</span>Espanha</div>
-                    <div class="team" onclick="advance(this)"><span class="team-flag">🇦🇹</span>Áustria</div>
-                </div>
-                <div class="matchup" data-next-match="of3" data-slot="1">
-                    <div class="team" onclick="advance(this)"><span class="team-flag">🇵🇹</span>Portugal</div>
-                    <div class="team" onclick="advance(this)"><span class="team-flag">🇭🇷</span>Croácia</div>
-                </div>
-                <div class="matchup" data-next-match="of4" data-slot="0">
-                    <div class="team" onclick="advance(this)"><span class="team-flag">🇧🇷</span>Brasil</div>
-                    <div class="team" onclick="advance(this)"><span class="team-flag">🇯🇵</span>Japão</div>
-                </div>
-                <div class="matchup" data-next-match="of4" data-slot="1">
-                    <div class="team" onclick="advance(this)"><span class="team-flag">🇨🇮</span>Costa do Marfim</div>
-                    <div class="team" onclick="advance(this)"><span class="team-flag">🇳🇴</span>Noruega</div>
+            </div>
+
+            <div>
+                <div class="round-header"><div class="round-title">Semifinal</div></div>
+                <div class="round">
+                    <div class="matchup" id="sf1" data-next-match="gf-match" data-slot="0">
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div>
-            <div class="round-header"><div class="round-title">Oitavas de Final</div></div>
-            <div class="round" id="r16">
-                <div class="matchup" id="of1" data-next-match="qf1" data-slot="0">
-                    <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
-                    <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+        <!-- ================= CHAVE INFERIOR ================= -->
+        <div class="bracket-section-title">Chave Inferior</div>
+        <div class="bracket-container">
+            <div>
+                <div class="round">
+                    <div class="matchup" data-next-match="of3" data-slot="0">
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇪🇸</span>Espanha</div>
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇦🇹</span>Áustria</div>
+                    </div>
+                    <div class="matchup" data-next-match="of3" data-slot="1">
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇵🇹</span>Portugal</div>
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇭🇷</span>Croácia</div>
+                    </div>
+                    <div class="matchup" data-next-match="of4" data-slot="0">
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇧🇷</span>Brasil</div>
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇯🇵</span>Japão</div>
+                    </div>
+                    <div class="matchup" data-next-match="of4" data-slot="1">
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇨🇮</span>Costa do Marfim</div>
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇳🇴</span>Noruega</div>
+                    </div>
+                    <div class="matchup" data-next-match="of5" data-slot="0">
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇲🇽</span>México</div>
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇪🇨</span>Equador</div>
+                    </div>
+                    <div class="matchup" data-next-match="of5" data-slot="1">
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>Inglaterra</div>
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇨🇩</span>RD Congo</div>
+                    </div>
+                    <div class="matchup" data-next-match="of6" data-slot="0">
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇨🇭</span>Suíça</div>
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇩🇿</span>Argélia</div>
+                    </div>
+                    <div class="matchup" data-next-match="of6" data-slot="1">
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇨🇴</span>Colômbia</div>
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇬🇭</span>Gana</div>
+                    </div>
+                    <div class="matchup" data-next-match="of7" data-slot="0">
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇦🇺</span>Austrália</div>
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇪🇬</span>Egito</div>
+                    </div>
+                    <div class="matchup" data-next-match="of7" data-slot="1">
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇦🇷</span>Argentina</div>
+                        <div class="team" onclick="advance(this)"><span class="team-flag">🇨🇻</span>Cabo Verde</div>
+                    </div>
                 </div>
-                <div class="matchup" id="of2" data-next-match="qf1" data-slot="1">
-                    <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
-                    <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+            </div>
+
+            <div>
+                <div class="round">
+                    <div class="matchup" id="of3" data-next-match="qf2" data-slot="0">
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                    </div>
+                    <div class="matchup" id="of4" data-next-match="qf2" data-slot="1">
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                    </div>
+                    <div class="matchup" id="of5" data-next-match="qf3" data-slot="0">
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                    </div>
+                    <div class="matchup" id="of6" data-next-match="qf3" data-slot="1">
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                    </div>
+                    <div class="matchup" id="of7" data-next-match="qf4" data-slot="0">
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                    </div>
                 </div>
-                <div class="matchup" id="of3" data-next-match="qf2" data-slot="0">
-                    <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
-                    <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+            </div>
+
+            <div>
+                <div class="round">
+                    <div class="matchup" id="qf2" data-next-match="sf2" data-slot="0">
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                    </div>
+                    <div class="matchup" id="qf3" data-next-match="sf2" data-slot="1">
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                    </div>
+                    <div class="matchup" id="qf4" data-next-match="sf3" data-slot="0">
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                    </div>
                 </div>
-                <div class="matchup" id="of4" data-next-match="qf2" data-slot="1">
-                    <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
-                    <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+            </div>
+
+            <div>
+                <div class="round">
+                    <div class="matchup" id="sf2" data-next-match="sf3" data-slot="1">
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                    </div>
+                    <div class="matchup" id="sf3" data-next-match="gf-match" data-slot="1">
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                        <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div>
-            <div class="round-header"><div class="round-title">Quartas de Final</div></div>
-            <div class="round" id="r8">
-                <div class="matchup" id="qf1" data-next-match="sf1" data-slot="0">
-                    <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
-                    <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
-                </div>
-                <div class="matchup" id="qf2" data-next-match="sf1" data-slot="1">
-                    <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
-                    <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
+        <!-- ================= GRANDE FINALISSIMA ================= -->
+        <center>
+            <div class="grand-final-container">
+                <div class="round-title" style="color: var(--accent-color); margin-bottom: 10px;">🏆 Grande Final da Copa 🏆</div>
+                <div class="matchup" id="gf-match" style="width: 260px; margin: 0;">
+                    <div class="team placeholder" onclick="alert('Este é o Campeão da sua Copa!')"><span class="team-flag">🏳️</span>A definir</div>
+                    <div class="team placeholder" onclick="alert('Este é o Campeão da sua Copa!')"><span class="team-flag">🏳️</span>A definir</div>
                 </div>
             </div>
-        </div>
-
-        <div>
-            <div class="round-header"><div class="round-title">Semifinal</div></div>
-            <div class="round" id="r4">
-                <div class="matchup" id="sf1" data-next-match="final" data-slot="0">
-                    <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
-                    <div class="team placeholder"><span class="team-flag">🏳️</span>A definir</div>
-                </div>
-            </div>
-        </div>
-
-        <div>
-            <div class="round-header"><div class="round-title">Finalista Da Chave</div></div>
-            <div class="round" id="r2">
-                <div class="matchup" id="final">
-                    <div class="team placeholder"><span class="team-flag">🏆</span>A definir</div>
-                </div>
-            </div>
-        </div>
+        </center>
 
     </div>
 
     <script>
-        // Carrega dados salvos ao abrir a página
         window.onload = function() {
-            const savedData = localStorage.getItem('worldCup2026Predictions');
+            const savedData = localStorage.getItem('worldCup2026PredictionsComplete');
             if (savedData) {
-                document.querySelector('.bracket-container').innerHTML = savedData;
+                document.querySelector('.bracket-wrapper').innerHTML = savedData;
             }
         };
 
@@ -298,12 +402,10 @@
 
             if (!nextMatchId) return; 
 
-            // Define o vencedor visualmente na rodada atual
             const siblings = matchup.querySelectorAll('.team');
             siblings.forEach(el => el.classList.remove('winner'));
             element.classList.add('winner');
 
-            // Captura HTML interno (mantém bandeira e nome juntos)
             const teamHTML = element.innerHTML;
 
             const nextMatchup = document.getElementById(nextMatchId);
@@ -312,8 +414,6 @@
                 if (targetSlot) {
                     targetSlot.innerHTML = teamHTML;
                     targetSlot.classList.remove('placeholder');
-                    
-                    // Limpa alterações futuras em cascata caso o usuário mude um palpite antigo
                     clearDownstream(nextMatchup, slotIndex);
                 }
             }
@@ -339,18 +439,18 @@
         }
 
         function saveBracket() {
-            const containerStructure = document.querySelector('.bracket-container').innerHTML;
-            localStorage.setItem('worldCup2026Predictions', containerStructure);
-            alert('Seus palpites foram salvos com sucesso! Pode fechar a aba e voltar quando quiser.');
+            const containerStructure = document.querySelector('.bracket-wrapper').innerHTML;
+            localStorage.setItem('worldCup2026PredictionsComplete', containerStructure);
+            alert('Palpites salvos com sucesso!');
         }
 
         function resetBracket() {
-            if (confirm('Tem certeza que deseja apagar todos os palpites do zero?')) {
-                localStorage.removeItem('worldCup2026Predictions');
+            if (confirm('Deseja zerar todos os palpites?')) {
+                localStorage.removeItem('worldCup2026PredictionsComplete');
                 window.location.reload();
             }
         }
     </script>
 </body>
-  </html>
-  
+    </html>
+    
