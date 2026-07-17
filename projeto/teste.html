@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starling - Notícias Otimizado</title>
+    <style>
+        /* Variáveis de Cores para facilitar o Modo Escuro */
+        :root {
+            --bg-principal: #eefdf7;
+            --bg-card: #ffffff;
+            --texto-principal: #1d1d35;
+            --texto-secundario: #444444;
+            --texto-meta: #666666;
+            --cor-primaria: #019774;
+            --cor-botao: #619c87;
+            --cor-botao-hover: #4d8270;
+            --borda-modal: #cbdcd5;
+        }
+
+        [data-theme="dark"] {
+            --bg-principal: #121214;
+            --bg-card: #1a1a1e;
+            --texto-principal: #eefdf7;
+            --texto-secundario: #cdd7d4;
+            --texto-meta: #a0b0aa;
+            --cor-primaria: #017a5e;
+            --cor-botao: #4d8270;
+            --cor-botao-hover: #619c87;
+            --borda-modal: #2a3631;
+        }
+
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-principal);
+            color: var(--texto-principal);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .header {
+            background-color: var(--cor-primaria);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            transition: background-color 0.3s;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1d1d35;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #1d1d35;
+            margin-left: 1rem;
+            font-weight: 500;
+        }
+
+        /* Botão Interruptor do Modo Escuro */
+        .theme-toggle {
+            background: none;
+            border: 2px solid #1d1d35;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #1d1d35;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover {
+            background-color: #1d1d35;
+            color: var(--bg-principal);
+        }
+
+        /* Seção de Filtros/Tags */
+        .filter-container {
+            max-width: 1200px;
+            margin: 2rem auto 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            background-color: var(--bg-card);
+            color: var(--texto-principal);
+            border: 1px solid var(--cor-botao);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background-color: var(--cor-primaria);
+            color: white;
+            border-color: var(--cor-primaria);
+        }
+
+        /* Grid de Notícias */
+        .feed-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s;
+        }
+
+        /* Efeito Hover nos Cards */
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+        }
+
+        .card.hidden {
+            display: none !important;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: var(--texto-principal);
+            font-size: 1.4rem;
+        }
+
+        .card .meta {
+            font-size: 0.85rem;
+            color: var(--texto-meta);
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .card p {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--texto-secundario);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Botão Ler Mais */
+        .read-more {
+            display: inline-block;
+            background-color: var(--cor-botao);
+            color: #1d1d35;
+            padding: 0.6rem 1.2rem;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            font-size: 0.95rem;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .read-more:hover {
+            background-color: var(--cor-botao-hover);
+            color: white;
+        }
+
+        /* Estrutura do Modal */
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        .modal-content {
+            background-color: var(--bg-principal);
+            color: var(--texto-principal);
+            padding: 2.5rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            animation: fadeIn 0.3s ease-out;
+            scroll-behavior: smooth;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--texto-principal);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--cor-primaria);
+        }
+
+        /* Formatação Interna do Modal */
+        .modal-body h1 {
+            font-size: 2.2rem;
+            margin-top: 0;
+            color: var(--texto-principal);
+            padding-right: 2rem;
+        }
+
+        .modal-body .meta-inside {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--texto-meta);
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--borda-modal);
+            padding-bottom: 0.5rem;
+            font-style: italic;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .share-btn {
+            background-color: var(--cor-botao);
+            color: #1d1d35;
+            border: none;
+            padding: 0.3rem 0.7rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        .share-btn:hover {
+            background-color: var(--cor-botao-hover);
+            color: white;
+        }
+
+        .modal-body p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.2rem;
+            text-align: justify;
+            color: var(--texto-secundario);
+        }
+
+        /* Botão Voltar ao Topo Interno */
+        .scroll-top-btn {
+            display: block;
+            margin: 2rem auto 0 auto;
+            background: none;
+            border: 1px solid var(--cor-botao);
+            color: var(--texto-meta);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .scroll-top-btn:hover {
+            color: var(--texto-principal);
+            border-color: var(--texto-principal);
+        }
+
+        /* Rodapé */
+        .footer {
+            background-color: var(--cor-primaria);
+            color: white;
+            text-align: center;
+            padding: 1.5rem 1rem;
+            margin-top: 4rem;
+            transition: background-color 0.3s;
+        }
+
+        .footer p {
+            margin: 0.5rem 0;
+        }
+
+        .social-icons a {
+            color: #1d1d35;
+            text-decoration: none;
+            margin: 0 0.5rem;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                padding: 1.5rem;
+            }
+            .modal-body h1 {
+                font-size: 1.7rem;
+            }
+            .filter-container {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo">Starling</div>
+        <div class="header-actions">
+            <nav class="menu">
+                <a href="#">Home</a>
+            </nav>
+            <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Modo Escuro</button>
+        </div>
+    </header>
+
+    <!-- 4. FILTROS POR CATEGORIA -->
+    <div class="filter-container">
+        <button class="filter-btn active" onclick="filterCategory('todos', this)">Todos</button>
+        <button class="filter-btn" onclick="filterCategory('casamentos', this)">💍 Casamentos</button>
+        <button class="filter-btn" onclick="filterCategory('cinema', this)">🎬 Cinema</button>
+        <button class="filter-btn" onclick="filterCategory('escandalos', this)">📰 Escândalos</button>
+    </div>
+
+    <!-- FEED DE NOTÍCIAS -->
+    <main class="feed-container">
+
+        <!-- Card 1 -->
+        <div class="card" data-category="casamentos">
+            <div>
+                <h3>Evelyn Hugo leiloa vestidos</h3>
+                <div class="meta">
+                    <span>02/03/2017</span>
+                    <!-- 1. INDICADOR TEMPO DE LEITURA -->
+                    <span>⏱️ 3 min</span>
+                </div>
+                <p>A lenda do cinema acaba de anunciar que vai leiloar doze de seus mais memoráveis vestidos na Christie's...</p>
+            </div>
+            <button class="read-more" onclick="openArticle('art1')">Ler Mais</button>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="card" data-category="escandalos">
+            <div>
+                <h3>Morre Evelyn Hugo, musa lendária</h3>
+                <div class="meta">
+                    <span>26/03/2017</span>
+                    <span>⏱️ 2 min</span>
+                </div>
+                <p>Evelyn Hugo morreu aos setenta e nove anos. Relatos afirmam que o caso está sendo tratado como overdose acidental...</p>
+            </div>
+            <button class="read-more" onclick="openArticle('art2')">Ler Mais</button>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="card" data-category="cinema">
+            <div>
+                <h3>Evelyn interpretará Anna Kariênina</h3>
+                <div class="meta">
+                    <span>02/10/1961</span>
+                    <span>⏱️ 1 min</span>
+                </div>
+                <p>Evelyn Hugo acabou de assinar contrato para interpretar a protagonista do épico da Fox, Anna Kariênina...</p>
+            </div>
+            <button class="read-more" onclick="openArticle('art3')">Ler Mais</button>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="card" data-category="escandalos">
+            <div>
+                <h3>Divórcio de Evelyn Hugo e Max Girard</h3>
+                <div class="meta">
+                    <span>01/07/1988</span>
+                    <span>⏱️ 2 min</span>
+                </div>
+                <p>Evelyn Hugo está prestes a comparecer à vara de família mais uma vez. Max Girard promete briga na justiça...</p>
+            </div>
+            <button class="read-more" onclick="openArticle('art4')">Ler Mais</button>
+        </div>
+
+    </main>
+
+    <!-- JANELA MODAL (ABRE A MATÉRIA COMPLETA) -->
+    <div id="articleModal" class="modal" onclick="closeArticleOutside(event)">
+        <div class="modal-content" id="modalContent">
+            <span class="close-btn" onclick="closeArticle()">&times;</span>
+            <div id="modalBody" class="modal-body">
+                <!-- Conteúdo injetado dinamicamente -->
+            </div>
+            <!-- 3. BOTÃO INTERNO VOLTAR AO TOPO -->
+            <button class="scroll-top-btn" onclick="scrollToModalTop()">▲ Voltar ao Topo</button>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>Todos os direitos reservados &copy; Copyright 2026</p>
+        <p>Desenvolvido por Melyssa Souza Araújo</p>
+        <div class="social-icons">
+            <a href="https://www.instagram.com/melyssa.melmel?igsh=NHBjYm5menc2anJx" target="_blank">Instagram</a>
+            <a href="https://x.com/melyssamelmel?t=dnBj-D-6-WCyVD5lY4SFnw&s=09" target="_blank">X</a>
+        </div>
+    </footer>
+
+    <script>
+        // Banco de Dados das Matérias Completas
+        const articlesDB = {
+            art1: {
+                title: "Evelyn Hugo leiloa vestidos",
+                author: "Por Priya Amrit, 2 de março de 2017",
+                content: `
+                    <p>A lenda do cinema e sensação dos anos 1960 Evelyn Hugo acaba de anunciar que vai leiloar doze de seus mais memoráveis vestidos na Christie's a fim de arrecadar fundos para pesquisas de combate ao câncer de mama.</p>
+                    <p>Aos setenta e nove anos, Hugo é considerada há décadas uma personificação do glamour e da elegância. Conhecida pelo estilo ao mesmo tempo sensual e recatado, muitos de seus looks mais famosos são vistos como ícones da moda e da história de Hollywood.</p>
+                    <p>Os interessados em adquirir uma parte da história de Hugo têm como atrativo não apenas os vestidos em si, mas também o contexto em que foram usados.</p>
+                    <p>Entre as peças leiloadas estão o Miranda La Conda verde-esmeralda que Hugo usou na cerimônia do Oscar de 1959, o vestido suflê em organdi com gola canoa com que compareceu à estreia de Anna Kariênina em 1962, e o Michael Maddax em seda azul-marinho que ela vestia em 1982 quando ganhou o prêmio da Academia por sua atuação em Tudo por nós.</p>
+                    <p>Hugo se notabilizou por seus escândalos em Hollywood, entre eles seus sete casamentos, nos quais se inclui um relacionamento de longa data com o produtor cinematográfico Harry Cameron. O célebre casal hollywoodiano tinha uma filha, Connor Cameron, que sem dúvida é a maior influência por trás da iniciativa do leilão. A srta. Cameron faleceu no ano passado, vítima de câncer de mama, pouco depois de completar quarenta e um anos.</p>
+                    <p>Evelyn Elena Herrera nasceu em 1938, filha de imigrantes cubanos, e foi criada no distrito de Hell's Kitchen, em Nova York. Em 1955, foi para Hollywood, tingiu os cabelos de loiro e adotou o nome artístico Evelyn Hugo.</p>
+                    <p>Quase da noite para o dia, tornou-se membro da elite da indústria cinematográfica. Hugo permaneceu sob os hotofotes por mais de três décadas, até se aposentar, no final dos anos 1980, e se casar com o executivo do mercado financeiro Robert Jamison, irmão mais velho da atriz Celia St. James, ganhadora de três Oscars. Hoje viúva do sétimo marido, Hugo vive in Manhattan.</p>
+                    <p>Dona de uma beleza quase sobrenatural e sinônimo de glamour e sensualidade, Hugo é uma figura histórica do cinema, que desperta fascínio em cinéfilos do mundo inteiro. Espera-se que o valor de arrecadação do leilão ultrapasse os 2 milhões de dólares.</p>
+                `
+            },
+            art2: {
+                title: "Morre Evelyn Hugo, musa lendária do cinema",
+                author: "Por Priya Amrit, 26 de março de 2017",
+                content: `
+                    <p>Evelyn Hugo morreu aos setenta e nove anos. Os primeiros relatos oficiais não confirmam a causa da morte, mas fontes diversas afirmam que o caso está sendo tratado como uma overdose acidental, já que vários medicamentos que não podem ser ingeridos de forma simultânea foram encontrados no organismo da atriz.</p>
+                    <p>A estrela de Hollywood será enterrada no cemitério Forest Lawn, em Los Angeles.</p>
+                    <p>Ícone do estilo da década de 1950 que se tornou símbolo sexual nos anos 1960 e 70 e vencedora do Oscar nos anos 1980, Hugo ganhou fama por sua silhueta voluptuosa, seus filmes ousados e sua vida amorosa tumultuada. Ela foi casada sete vezes, e sobreviveu a todos os maridos.</p>
+                    <p>Depois de se aposentar da carreira de atriz, Hugo dedicou boa parte de seu tempo e de sua fortuna a organizações que abrigam mulheres vítimas de abuso, à comunidade LGBTQ+ e à pesquisa de combate ao câncer.</p>
+                `
+            },
+            art3: {
+                title: "Evelyn Hugo interpretará Anna Kariênina",
+                author: "Por Hollywood Digest, 2 de outubro de 1961",
+                content: `
+                    <p>Evelyn Hugo, a sensação do momento, acabou de assinar contrato para interpretar a protagonista do épico da Fox Anna Kariênina. Ela também assumiu o papel de coprodutora do filme, junto com Harry Cameron, ex-Sunset Studios.</p>
+                    <p>A srta. Hugo e o sr. Cameron trabalharam juntos no Sunset em sucessos como Pai e filha e Mulherzinhas. Essa será a primeira parceria dos dois fora do Sunset.</p>
+                `
+            },
+            art4: {
+                title: "Divórcio de Evelyn Hugo e Max Girard vira briga",
+                author: "Por Now This, 1 de julho de 1988",
+                content: `
+                    <p>Evelyn Hugo está prestes a comparecer à vara de família mais uma vez. Ela deu entrada nos papéis de divórcio esta semana, alegando "diferenças irreconciliáveis".</p>
+                    <p>Fontes dizem que Max Girard vai pedir pensão alimentícia, e segundo relatos, o diretor estaria falando mal de Hugo por toda a cidade.</p>
+                `
+            }
+        };
+
+        // 6. GERENCIAMENTO DO MODO ESCURO
+        function toggleTheme() {
+            const body = document.documentElement;
+            const btn = document.getElementById('themeBtn');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                btn.innerHTML = "🌙 Modo Escuro";
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                btn.innerHTML = "☀️ Modo Claro";
+            }
+        }
+
+        // 4. SISTEMA DE FILTRO DE CATEGORIAS
+        function filterCategory(category, buttonElement) {
+            // Atualiza botões ativos
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            buttonElement.classList.add('active');
+
+            // Filtra os cards
+            document.querySelectorAll('.card').forEach(card => {
+                if (category === 'todos' || card.getAttribute('data-category') === category) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        // ABERTURA DO MODAL DINÂMICO
+        function openArticle(id) {
+            const modal = document.getElementById('articleModal');
+            const modalBody = document.getElementById('modalBody');
+            const data = articlesDB[id];
+            
+            if (data) {
+                // 5. BOTÃO DE COMPARTILHAR EMBUTIDO NO TITULO
+                mod
