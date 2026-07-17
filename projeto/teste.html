@@ -512,4 +512,56 @@
             
             if (data) {
                 // 5. BOTÃO DE COMPARTILHAR EMBUTIDO NO TITULO
-                mod
+                modalBody.innerHTML = `
+                    <h1>${data.title}</h1>
+                    <div class="meta-inside">
+                        <span>${data.author}</span>
+                        <button class="share-btn" onclick="shareArticle('${data.title}')">🔗 Compartilhar</button>
+                    </div>
+                    ${data.content}
+                `;
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                document.getElementById('modalContent').scrollTop = 0;
+            }
+        }
+
+        function closeArticle() {
+            document.getElementById('articleModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function closeArticleOutside(event) {
+            if (event.target === document.getElementById('articleModal')) {
+                closeArticle();
+            }
+        }
+
+        // 3. FECHAR COM A TECLA ESC
+        window.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeArticle();
+            }
+        });
+
+        // 3. FUNÇÃO VOLTAR AO TOPO INTERNO DO MODAL
+        function scrollToModalTop() {
+            document.getElementById('modalContent').scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 5. FUNÇÃO COMPARTILHAR (API NATIVA)
+        function shareArticle(title) {
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    text: `Confira essa matéria incrível: "${title}"`,
+                    url: window.location.href
+                }).catch(console.error);
+            } else {
+                // Caso o navegador antigo não tenha suporte
+                alert(`Link copiado para compartilhamento: "${title}"`);
+            }
+        }
+    </script>
+</body>
+</html>
