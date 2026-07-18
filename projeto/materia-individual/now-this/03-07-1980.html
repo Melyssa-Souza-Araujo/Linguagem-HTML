@@ -3,21 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Starling</title>
+    <title>Now This - Celia St. James e Joan Marker, melhores amigas</title>
     <style>
-        body {
-            font-family: sans-serif;
+        /* --- RESET E GERAIS --- */
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            background-color: #eefdf7; 
-    }
+        }
 
+        body {
+            font-family: sans-serif;
+            background-color: #eefdf7; 
+            color: #1d1d35;
+            line-height: 1.6;
+        }
+
+        /* --- HEADER E NAVEGAÇÃO --- */
         .header {
             background-color: #019774; 
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem;
+            padding: 1rem 2rem;
         }
 
         .logo {
@@ -29,89 +37,81 @@
         .menu a {
             text-decoration: none;
             color: #1d1d35;
-            margin-left: 1rem;
+            margin-left: 1.5rem;
+            font-weight: 500;
+            transition: color 0.3s;
         }
 
-        .content {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding: 2rem;
+        .menu a:hover {
+            color: white;
         }
 
-        .image-container {
-            flex: 1 1 300px; 
-            max-width: 400px;
-            margin-right: 2rem;
-        }
-
-        .image-container img {
-            width: 100%;
-            height: auto;
-            border: 1px solid #eefdf7; 
-        }
-
-        .text-container {
-            flex: 1 1 400px; 
-            max-width: 600px;
-            align-content: center;
-            
-        }
-
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: #1d1d35;
-        }
-
-        p {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-            color: #1d1d35;
-        }
-
-        .read-more {
-            align-items: center;
-            display: inline-block;
-            background-color: #619c87; 
-            color: #1d1d35;
-            padding: 0.8rem 1.5rem;
-            text-decoration: none;
-            border-radius: 5px;
-            align-content: center;
+        /* --- CONTEÚDO DO ARTIGO --- */
+        .content-art {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
         }
 
         .article {
-            max-width: 800px;
-            margin: 0 auto;
-            line-height: 1.6;
+            background-color: #fff;
+            padding: 2.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
         .article h1 {
             font-size: 2.5rem;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
+            color: #1d1d35;
         }
 
-        .article p {
+        .author {
+            font-style: italic;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+            font-size: 1rem;
+        }
+
+        .text-body p {
+            font-size: 1.1rem;
             margin-bottom: 1.5rem;
-        }
-
-        .text-column {
-            flex: 1; 
-            padding-right: 2rem;
             text-align: justify;
         }
 
+        /* --- BOTÃO VOLTAR --- */
+        .back-container {
+            margin-top: 2.5rem;
+            text-align: center;
+        }
+
+        .read-more {
+            display: inline-block;
+            background-color: #619c87; 
+            color: #1d1d35;
+            padding: 0.8rem 2rem;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .read-more:hover {
+            background-color: #4e806e;
+            color: #fff;
+        }
+
+        /* --- FOOTER --- */
         .footer {
             background-color: #019774;
             color: white;
             text-align: center;
-            padding: 1rem;
+            padding: 2rem 1rem;
+            margin-top: 4rem;
         }
 
         .footer p {
-            margin: 0.5rem 0;
+            margin: 0.3rem 0;
         }
 
         .social-icons {
@@ -121,61 +121,65 @@
         .social-icons a {
             color: #1d1d35;
             text-decoration: none;
-            margin: 0 0.5rem;
+            margin: 0 0.7rem;
+            font-weight: bold;
         }
 
-        @media (max-width: 768px) {
-            .content {
-                flex-direction: column;
-                align-items: center;
-            }
+        .social-icons a:hover {
+            color: white;
+        }
 
-            .footer {
-                padding: 1rem 0.5rem; 
-            }
-            .content-art {
+        /* --- RESPONSIVIDADE --- */
+        @media (max-width: 768px) {
+            .header {
                 padding: 1rem;
             }
+            
+            .article {
+                padding: 1.5rem;
+            }
+
             .article h1 {
                 font-size: 2rem;
             }
-            }
+        }
     </style>
 </head>
 <body>
+
     <header class="header">
         <div class="logo">Starling</div>
         <nav class="menu">
             <a href="../../index.html">Home</a>
-            <a href="../../personagem.html">Personagens</a>
-            <a href="../../materia.html">Matérias</a>
+            <a href="../../index.html#personagens">Personagens</a>
+            <a href="../../index.html#materias">Matérias</a>
         </nav>
     </header>
 
     <main class="content-art">
         <article class="article">
-            <div class="text-column">
-                <h1>Celia St. James e Joan Marker, melhores amigas</h1>
-                <p class="author">Por Now This, 3 de julho de 1980</p>
-            </div>
-            <div class="text-column">
-                <p>Celia St. James e a recém-chegada a Hollywood Joan Marker se tornaram o assunto do momento na cidade! Marker, mais conhecida pelo papel que a transformou numa estrela no ano passado em Prometa-me, está caminhando a passos largos para ser a sensação da temporada. E quem melhor do que a Queridinha da América para mostrar como se faz? Elas foram vistas juntas fazendo compras em Santa Monica e almoçando em Beverly Hills, e pelo jeito andam inseparáveis.</p>
+            <h1>Celia St. James e Joan Marker, melhores amigas</h1>
+            <p class="author">Por Now This, 3 de julho de 1980</p>
+            
+            <div class="text-body">
+                <p>Celia St. James e a recém-chegada a Hollywood Joan Marker se tornaram o assunto do momento na cidade! Marker, mais conhecida pelo papel que a transformou numa estrela no ano passado em <em>Prometa-me</em>, está caminhando a passos largos para ser a sensação da temporada. E quem melhor do que a Queridinha da América para mostrar como se faz? Elas foram vistas juntas fazendo compras em Santa Monica e almoçando em Beverly Hills, e pelo jeito andam inseparáveis.</p>
                 <p>Estamos torcendo para que as duas tenham um plano de estrelar um filme juntas, porque seria uma combinação de talentos formidáveis!</p>
             </div>
-        </article>
-    </main>
 
-    <main class="content">
-        <a href="../../materia.html" class="read-more">Voltar</a>
+            <div class="back-container">
+                <a href="../../index.html#materias" class="read-more">Voltar</a>
+            </div>
+        </article>
     </main>
 
     <footer class="footer">
         <p>Todos os direitos reservados © Copyright 2025</p>
         <p>Desenvolvido por Melyssa Souza Araújo</p>
         <div class="social-icons">
-            <a href="https://www.instagram.com/melyssa.melmel?igsh=NHBjYm5menc2anJx" target="_blank" class="instagram">Instagram</a>
-            <a href="https://x.com/melyssamelmel?t=dnBj-D-6-WCyVD5lY4SFnw&s=09" target="_blank" class="x">X</a>
+            <a href="https://www.instagram.com/melyssa.melmel?igsh=NHBjYm5menc2anJx" target="_blank">Instagram</a>
+            <a href="https://x.com/melyssamelmel?t=dnBj-D-6-WCyVD5lY4SFnw&s=09" target="_blank">X</a>
         </div>
     </footer>
+
 </body>
 </html>
