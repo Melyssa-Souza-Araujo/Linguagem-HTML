@@ -3,21 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Starling</title>
+    <title>Starling - Evelyn Hugo</title>
     <style>
-        body {
-            font-family: sans-serif;
+        /* --- RESET E GERAIS --- */
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            background-color: #eefdf7; 
-    }
+        }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: sans-serif;
+            background-color: #eefdf7;
+            color: #1d1d35;
+            line-height: 1.6;
+        }
+
+        /* --- HEADER E NAVEGAÇÃO --- */
         .header {
-            background-color: #019774; 
+            background-color: #019774;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem;
+            padding: 1rem 2rem;
+            position: relative;
         }
 
         .logo {
@@ -29,111 +42,270 @@
         .menu a {
             text-decoration: none;
             color: #1d1d35;
-            margin-left: 1rem;
+            margin-left: 1.5rem;
+            font-weight: 500;
+            transition: color 0.3s;
         }
 
-        .content {
+        .menu a:hover {
+            color: white;
+        }
+
+        .mobile-menu-button {
+            display: none;
+            background: none;
+            color: #1d1d35;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+
+        .mobile-menu {
+            display: none;
+            flex-direction: column;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #019774;
+            width: 100%;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .mobile-menu.mobile-open {
+            display: flex;
+        }
+
+        .mobile-menu a {
+            text-decoration: none;
+            color: #1d1d35;
+            padding: 0.7rem 1rem;
+            display: block;
+            width: 100%;
+        }
+
+        /* --- CONTEÚDO PRINCIPAL (MAIN) --- */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Destaque Superior (Livro) */
+        .hero-section {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 4rem;
+            background: #fff;
             padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
         .image-container {
-            flex: 1 1 300px; 
+            flex: 1 1 300px;
             max-width: 400px;
-            margin-right: 2rem;
         }
 
         .image-container img {
             width: 100%;
             height: auto;
-            border: 1px solid #eefdf7; 
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         .text-container {
-            flex: 1 1 400px; 
+            flex: 1 1 400px;
             max-width: 600px;
-            align-content: center;
-            
         }
 
-        h1 {
-            font-size: 2rem;
+        .text-container h1 {
+            font-size: 2.2rem;
             margin-bottom: 1rem;
-            color: #1d1d35;
         }
 
-        p {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-            color: #1d1d35;
-        }
-
+        /* Botão Padrão */
         .read-more {
-            align-items: center;
             display: inline-block;
-            background-color: #619c87; 
+            background-color: #619c87;
             color: #1d1d35;
             padding: 0.8rem 1.5rem;
             text-decoration: none;
             border-radius: 5px;
-            align-content: center;
+            font-weight: bold;
+            margin-top: 1rem;
+            transition: background 0.3s, color 0.3s;
         }
 
-        .article {
-            max-width: 800px;
-            margin: 0 auto;
-            line-height: 1.6;
+        .read-more:hover {
+            background-color: #4e806e;
+            color: #fff;
         }
 
-        .article h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .article .author {
-            font-style: italic;
-            color: #1d1d35;
-            margin-bottom: 1.5rem;
-        }
-
-        .article p {
-            margin-bottom: 1.5rem;
-        }
-        .content-art {
+        /* Seção do Artigo Principal */
+        .main-article {
+            margin-bottom: 4rem;
+            background: #fff;
             padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
-        .text-column {
-            flex: 1; 
-            padding-right: 2rem;
+        .article-meta h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .article-meta .author {
+            font-style: italic;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+
+        .article-block {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-top: 2rem;
+            align-items: center;
+        }
+
+        .article-block .text-column {
+            flex: 1 1 450px;
             text-align: justify;
         }
 
-        .image-column {
-            flex: 1; 
+        .article-block .image-column {
+            flex: 1 1 300px;
+            text-align: center;
         }
 
-        .image-with-stars {
-            text-align: center; 
-        }
-
-        .image-with-stars img {
-            max-width: 100%; 
+        .article-block .image-column img {
+            max-width: 100%;
             height: auto;
+            border-radius: 5px;
         }
 
+        /* Seção de Personagens (Layout em Grid) */
+        .characters-section {
+            margin-top: 4rem;
+            margin-bottom: 4rem;
+        }
+
+        .characters-section h2 {
+            font-size: 2rem;
+            border-bottom: 2px solid #019774;
+            padding-bottom: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .character-card {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .character-info h3 {
+            font-size: 1.6rem;
+            color: #019774;
+            margin-bottom: 0.8rem;
+        }
+
+        .character-info p {
+            text-align: justify;
+            font-size: 1.05rem;
+        }
+
+        .quote-column {
+            background-color: #619c87;
+            padding: 1.5rem;
+            border-radius: 5px;
+            height: fit-content;
+        }
+
+        .quote {
+            font-style: italic;
+            color: #1d1d35;
+        }
+
+        .quote cite {
+            display: block;
+            text-align: right;
+            margin-top: 1rem;
+            font-style: normal;
+            font-weight: bold;
+        }
+
+        /* Seção de Matérias de Jornais/Revistas (Grid) */
+        .media-section {
+            margin-top: 4rem;
+        }
+
+        .media-section h2 {
+            font-size: 2rem;
+            border-bottom: 2px solid #019774;
+            padding-bottom: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .journal-group {
+            margin-bottom: 3rem;
+        }
+
+        .journal-group h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #019774;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background-color: #fff;
+            padding: 1.5rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card h4 {
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .card p {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+
+        /* --- FOOTER --- */
         .footer {
             background-color: #019774;
             color: white;
             text-align: center;
-            padding: 1rem;
+            padding: 2rem 1rem;
+            margin-top: 4rem;
         }
 
         .footer p {
-            margin: 0.5rem 0;
+            margin: 0.3rem 0;
         }
 
         .social-icons {
@@ -143,166 +315,461 @@
         .social-icons a {
             color: #1d1d35;
             text-decoration: none;
-            margin: 0 0.5rem;
+            margin: 0 0.7rem;
+            font-weight: bold;
         }
 
-        .mobile-menu {
-            display: none !important; 
-            flex-direction: column;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background-color: #019774;
-            width: 100%;
-            align-items: flex-start;
-            padding: 1rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            z-index: 10;
+        .social-icons a:hover {
+            color: white;
         }
 
-        .mobile-menu.mobile-open {
-            display: flex !important; 
-        }
+        /* --- RESPONSIVIDADE --- */
+        @media (max-width: 768px) {
+            .menu {
+                display: none;
+            }
 
-        .mobile-menu a {
-            margin: 0.5rem 0;
-            padding: 0.7rem 1rem;
-            display: block;
-            width: 100%;
-            text-align: left;
-        }
+            .mobile-menu-button {
+                display: block;
+            }
 
-        .mobile-menu-button {
-            background: none;
-            color: #1d1d35;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0;
-        }
-
-        @media (max-width: 769px) {
-            .content {
+            .hero-section {
                 flex-direction: column;
-                align-items: center;
             }
 
-            .image-container {
-                margin-right: 0;
-                margin-bottom: 1rem;
+            .character-card {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
             }
 
-            .footer {
-                padding: 1rem 0.5rem; 
-            }
-            .content-art {
-                padding: 1rem;
-            }
-            .article h1 {
+            .article-meta h1 {
                 font-size: 2rem;
-            }
-            .image-with-stars {
-                flex-direction: column;
-                align-items: center;
-            }
-            .image-with-stars img {
-                max-width: 80%;
-                margin-bottom: 1rem;
             }
         }
     </style>
 </head>
 <body>
+
     <header class="header">
         <div class="logo">Starling</div>
+        <!-- Menu Desktop -->
         <nav class="menu">
             <a href="#">Home</a>
-            <a href="personagem.html">Personagens</a>
-            <a href="materia.html">Matérias</a>
+            <a href="#personagens">Personagens</a>
+            <a href="#materias">Matérias</a>
+        </nav>
+        <!-- Botão Menu Mobile -->
+        <button class="mobile-menu-button" id="menuBtn">☰</button>
+        <!-- Menu Mobile Dropdown -->
+        <nav class="mobile-menu" id="mobileMenu">
+            <a href="#">Home</a>
+            <a href="#personagens">Personagens</a>
+            <a href="#materias">Matérias</a>
         </nav>
     </header>
 
-    <main class="content">
-        <div class="image-container">
-            <img src="img/capa-livro.png" alt="Os Sete Maridos de Evelyn Hugo">
-        </div>
-        <div class="text-container">
-            <div class="text-column">
-                <h1>Evelyn Hugo leiloa vestidos</h1>
-                <p>A lenda do cinema dos anos 1960 vai leiloar seus mais memoráveis vestidos a fim de arrecadar fundos para pesquisas de combate ao câncer de mama.</p>
+    <main>
+        <!-- Seção Hero (Capa do Livro e Destaque) -->
+        <section class="hero-section">
+            <div class="image-container">
+                <img src="img/capa-livro.png" alt="Os Sete Maridos de Evelyn Hugo">
             </div>
-            <a href="materia-individual/new-york-tribune/02-03-2017.html" class="read-more">Leia Mais</a>
-        </div>
-    </main>
+            <div class="text-container">
+                <h1>Evelyn e eu</h1>
+                <p>Evelyn era uma mulher de uma complexidade tremenda, e o tempo que passei com ela foi tão complicado quanto sua imagem, sua vida e a lenda que se construiu ao redor de sua figura.</p>
+                <a href="materia-individual/vivant/06-2017.html" class="read-more">Leia Mais</a>
+            </div>
+        </section>
 
-    <main class="content-art">
-        <article class="article">
-            <div class="text-column">
+        <!-- Seção Artigo Completo (Análise da Obra) -->
+        <section class="main-article">
+            <div class="article-meta">
                 <h1>"Os Sete Maridos de Evelyn Hugo": Uma Jornada de Glamour, Sacrifício e Verdades Escondidas</h1>
                 <p class="author">Por Melyssa Souza Araújo, em 28 de março de 2025</p>
-            </div>
-            <div class="text-column">
-                <p>Em um universo onde a notoriedade se configura tanto como um sagrado quanto como um cativeiro, Os Sete Maridos de Evelyn Hugo (2017), da escritora estadunidense Taylor Jenkins Reid, se destaca como um romance que transcende o simples entretenimento ao investigar a complexidade humana por trás dos brilhos dos holofotes.</p>
+                <p>Em um universo onde a notoriedade se configura tanto como um sagrado quanto como um cativeiro, Os Sete Maridos de Evelyn Hugo (2017), da escritora estadunidense Taylor Jenkins Reid, se destaca como um romance que transcende o simple entretenimento ao investigar a complexidade humana por trás dos brilhos dos holofotes.</p>
                 <p>Com mais de 50 mil cópias comercializadas no Brasil e reconhecimento mundial impulsionado pelo BookTok, a obra não apenas alcançou o prestígio de best-seller como se prepara para ser adaptada para as telas da Netflix, prometendo reavivar o fascínio por sua icônica protagonista.</p>
             </div>
-        </article>
 
-        <article class="article">
-            <div class="text-column">
-                <h1>Evelyn Hugo: Uma Diva Feita de Luz e Sombras</h1>
-            </div>
-            <div class="article-content">
+            <!-- Bloco 1 -->
+            <div class="article-block">
                 <div class="text-column">
+                    <h2>Evelyn Hugo: Uma Diva Feita de Luz e Sombras</h2>
                     <p>Aos 79 anos, a fictícia ícone de Hollywood opta por desvendar sua trajetória à jornalista Monique Grant, uma decisão aparentemente incompreensível que oculta vínculos profundos entre o passado e o presente. Evelyn, caracterizada como uma combinação de Marilyn Monroe, Elizabeth Taylor e Rita Hayworth, não é meramente uma figura de glamour: é uma sobrevivente. Nascida Evelyn Herrera, filha de uma imigrante cubana, ela reinventa-se ao suprimir suas origens, tingir os cabelos de louro e adotar um sobrenome "francês" para ascender em uma Hollywood dominada por machismo e preconceito.</p>
                 </div>
                 <div class="image-column">
-                    <div class="image-with-stars">
-                        <img src="img/evelyn.png" alt="Evelyn Hugo">
-                    </div>
+                    <img src="img/evelyn.png" alt="Evelyn Hugo">
                 </div>
             </div>
-        </article>
 
-        <article class="article">
-            <div class="text-column">
-                <h1>Sete Casamentos, Uma Vida de Segredos</h1>
-            </div>
-            <div class="article-content">
+            <!-- Bloco 2 -->
+            <div class="article-block">
                 <div class="text-column">
-                    <p>A narrativa se organiza em torno dos sete casamentos de Evelyn, cada um simbolizando uma etapa de sua ascensão e queda. Desde uniões estratégicas até relacionamentos abusivos, como o com Don Adler, que a subjuga à violência doméstica, os casamentos são véus para resguardar seu maior segredo: o amor por Celia St. James, atriz e companheira de vida que desafia as convenções heteronormativas da década de 1950. Esse romance, tão intenso quanto tragicamente silenciado, torna-se o núcleo da trama, questionando o custo da autencidade em um mundo que exige disfarces.</p>
+                    <h2>Sete Casamentos, Uma Vida de Segredos</h2>
+                    <p>A narrativa se organiza em torno dos sete casamentos de Evelyn, cada um simbolizando uma etapa de sua ascensão e queda. Desde uniões estratégicas até relacionamentos abusivos, como o com Don Adler, que a subjuga à violência doméstica, os casamentos são véus para resguardar seu maior segredo: o amor por Celia St. James, atriz e companheira de vida que desafia as convenções heteronormativas da década de 1950. Esse romance, tão intenso quanto tragicamente silenciado, torna-se o núcleo da trama, questionando o custo da autenticidade em um mundo que exige disfarces.</p>
                 </div>
                 <div class="image-column">
-                    <div class="image-with-stars">
-                        <img src="img/evelyn-e-celia.png" alt="Evelyn Hugo e Celia St. James">
-                    </div>
+                    <img src="img/evelyn-e-celia.png" alt="Evelyn Hugo e Celia St. James">
                 </div>
             </div>
-        </article>
 
-        <article class="article">
-            <div class="text-column">
-                <h1>Mais que Fofocas de Hollywood: Um Retrato Social</h1>
-            </div>
-            <div class="text-column">
-                <p>Além dos escânsalos e trajes deslumbrantes, Reid articula críticas incisivas ao sexismo, à homofobia e à exploração na indústria cinematográfica. Evelyn, por exemplo, é sexualizada desde a adolescência, compelida a posar como sweater girl para promover sua imagem, enquanto Celia enfrenta a invisibilidade de sua orientação sexual. A obra também revela a dualidade do jornalismo, por meio de Monique, que renuncia à frieza da imparcialidade para se aprofundar na narrativa repleta de humanidade e culpa.</p>
-            </div>
-        </article>
-
-        <article class="article">
-            <div class="text-column">
-                <h1>Sobre a Autora</h1>
-            </div>
-            <div class="article-content">
+            <!-- Bloco 3 -->
+            <div class="article-block">
                 <div class="text-column">
-                    <p>Taylor nasceu em Acton, no estado de Massachusetts, em 1983.Iniciou sua trajetótia literária durante sua ocupação em uma escola de educação segundária, até obter um contrato de publicação. Atuou na produção cinematográfica, dedicando-se à seleção de elencos por 3 anos, até concluir seus estudos universitários e assegurar outra posição profissional.</p>
+                    <h2>Mais que Fofocas de Hollywood: Um Retrato Social</h2>
+                    <p>Além dos escândalos e trajes deslumbrantes, Reid articula críticas incisivas ao sexismo, à homofobia e à exploração na indústria cinematográfica. Evelyn, por exemplo, é sexualizada desde a adolescência, compelida a posar como sweater girl para promover sua imagem, enquanto Celia enfrenta a invisibilidade de sua orientação sexual. A obra também revela a dualidade do jornalismo, por meio de Monique, que renuncia à frieza da imparcialidade para se aprofundar na narrativa repleta de humanidade e culpa.</p>
+                </div>
+            </div>
+
+            <!-- Bloco 4 -->
+            <div class="article-block">
+                <div class="text-column">
+                    <h2>Sobre a Autora</h2>
+                    <p>Taylor nasceu em Acton, no estado de Massachusetts, em 1983. Iniciou sua trajetória literária durante sua ocupação em uma escola de educação secundária, até obter um contrato de publicação. Atuou na produção cinematográfica, dedicando-se à seleção de elencos por 3 anos, até concluir seus estudos universitários e assegurar outra posição profissional.</p>
                 </div>
                 <div class="image-column">
-                    <div class="image-with-stars">
-                        <img src="img/autora.png" alt="Taylor Jenkins Reid">
+                    <img src="img/autora.png" alt="Taylor Jenkins Reid">
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção de Personagens -->
+        <section class="characters-section" id="personagens">
+            <h2>Personagens</h2>
+
+            <!-- Monique Grant -->
+            <div class="character-card">
+                <div class="character-info">
+                    <h3>Monique Grant</h3>
+                    <p>Monique Grant é uma jornalista de nível inferior que tem a responsabilidade de entrevistar Evelyn Hugo, embora, inicialmente, ela não compreenda o motivo pelo qual Evelyn a convocou especificamente. Ao longo dos diversos dias de entrevistas, Monique constata que possui várias semelhanças com Evelyn, e à medida que as entrevistas avançam, Monique manifesta sua habilidade em reivindicar o que deseja, tanto de Evelyn quanto de seu superior, Frankie, e começa a admirar Evelyn por exibir essa mesma competência ao longo de sua trajetória.</p>
+                </div>
+                <div class="quote-column">
+                    <blockquote class="quote">
+                        <p>"Desligo o telefone e solto o ar com força. Eu dou conta dessa porra toda."</p>
+                        <cite>- página 34</cite>
+                    </blockquote>
+                </div>
+            </div>
+
+            <!-- Evelyn Hugo -->
+            <div class="character-card">
+                <div class="character-info">
+                    <h3>Evelyn Hugo</h3>
+                    <p>Evelyn Hugo é a protagonista da narrativa e o foco das entrevistas da repórter Monique Grant. Aos 79 anos, Evelyn, uma das maiores celebridades da Antiga Hollywood, persuade Monique a redigir sua biografia, no entanto, sem explicar os motivos de sua escolha. Esse comportamento manipulador e enigmático é representativo de Evelyn, que sacrificou seu nome, identidade e ética para conquistar notoriedade e êxito. Seus sete matrimônios ocorreram em busca de uma probabilidade amplificada de fama e sucesso.</p>
+                </div>
+                <div class="quote-column">
+                    <blockquote class="quote">
+                        <p>"Porque eles são só maridos. A Evelyn Hugo sou eu."</p>
+                        <cite>- página 352</cite>
+                    </blockquote>
+                </div>
+            </div>
+
+            <!-- Celia St James -->
+            <div class="character-card">
+                <div class="character-info">
+                    <h3>Celia St. James</h3>
+                    <p>Celia St. James é uma atriz e o amor da vida de Evelyn. Celia impressiona Evelyn com seu talento na atuação durante os ensaios para "Mulherzinhas", mas as duas iniciam uma relação vantajosa quando Celia oferece a Evelyn orientações em atuação em troca de sua colaboração em aparições públicas. Com o tempo, Celia e Evelyn se envolvem romanticamente, revelando Celia como ingênua e idealista frente ao realismo pragmático de Evelyn (Celia nasceu em uma família rica e nunca precisou enfrentar dificuldades financeiras, enquanto Evelyn surgiu de origens humildes).</p>
+                </div>
+                <div class="quote-column">
+                    <blockquote class="quote">
+                        <p>"E, para quem se sentir tentado a dar um beijo na tela da tevê, por favor cuidado para não lascar o dente."</p>
+                        <cite>- página 279</cite>
+                    </blockquote>
+                </div>
+            </div>
+
+            <!-- Ernie Diaz -->
+            <div class="character-card">
+                <div class="character-info">
+                    <h3>O pobre, Ernie Diaz</h3>
+                    <p>Ernie Diaz é o primeiro cônjuge de Evelyn. Embora sua união com Evelyn possibilite que ela vá para Hollywood e inicie sua trajetória como atriz, ele demonstra escassa consideração pelos anseios dela e anseia que ela atue como uma esposa convencional da década de 1950. Quando Evelyn o abandona a pedido dos responsáveis pelo Sunset Studio, Ernie fica devastado, revelando que estava totalmente ignorante sobre o fato de Evelyn estar se beneficiando dele.</p>
+                </div>
+                <div class="quote-column">
+                    <blockquote class="quote">
+                        <p>"Fui para casa e avisei Ernie que ia pedir a separação. Ele chorou por seis horas seguidas."</p>
+                        <cite>- página 52</cite>
+                    </blockquote>
+                </div>
+            </div>
+
+            <!-- Don Adler -->
+            <div class="character-card">
+                <div class="character-info">
+                    <h3>O maldito, Don Adler</h3>
+                    <p>Don Adler é o segundo cônjuge de Evelyn. Nascido em uma família de atores, Don experimenta uma imensa pressão para também se transformar em uma grande celebridade cinematográfica, resultando em sua elevada sensibilidade diante de críticas desfavoráveis. Apesar de Evelyn nutrir amor por ele e considerar sua ligação autêntica, Don inicia a agredi-la fisicamente logo após o casamento. Sua propensão a violentar e empurrar Evelyn manifesta-se em períodos de tensão.</p>
+                </div>
+                <div class="quote-column">
+                    <blockquote class="quote">
+                        <p>“Nós não somos iguais, querida. E sinto muito se tratei você bem demais a ponto de se esquecer disso.”</p>
+                        <cite>- página 77</cite>
+                    </blockquote>
+                </div>
+            </div>
+
+            <!-- Mick Riva -->
+            <div class="character-card">
+                <div class="character-info">
+                    <h3>O insaciável, Mick Riva</h3>
+                    <p>Mick Riva é uma celebridade pop e o terceiro cônjuge de Evelyn. Mick divulga sua admiração por Evelyn ao manifestar seu anseio de unir-se a ela durante entrevistas, insinuando que ele é um homem extremamente autoconfiante que consegue visualizar Evelyn correspondendo a seu interesse. Quando Evelyn opta por fugir com Mick para atrair a atenção da imprensa, ela compreende que ele é um homem egocêntrico que busca constantemente manter a vantagem.</p>
+                </div>
+                <div class="quote-column">
+                    <blockquote class="quote">
+                        <p>“Ele gosta de rejeitar pessoas. Gosta de ser condescendente desse jeito.”</p>
+                        <cite>- página 170</cite>
+                    </blockquote>
+                </div>
+            </div>
+
+            <!-- Rex North -->
+            <div class="character-card">
+                <div class="character-info">
+                    <h3>O esperto, Rex North</h3>
+                    <p>Rex North é o quarto cônjuge de Evelyn. As semelhanças que ele compartilha com Evelyn, ou seja, seu pragmatismo, que inclui a alteração de seu nome para alcançar êxito como uma estrela de cinema, assim como Evelyn fez, o tornam querido para ela e estabelecem os alicerces para um matrimônio mutuamente vantajoso (embora quase inteiramente desprovido de amor).</p>
+                </div>
+                <div class="quote-column">
+                    <blockquote class="quote">
+                        <p>“E acho que sempre vou amar Rex North, um pouquinho que seja, por causa disso.”</p>
+                        <cite>- página 185</cite>
+                    </blockquote>
+                </div>
+            </div>
+
+            <!-- Harry Cameron -->
+            <div class="character-card">
+                <div class="character-info">
+                    <h3>O brilhante, generoso e sofrido, Harry Cameron</h3>
+                    <p>Harry Cameron é um produtor cinematográfico que se torna o melhor amigo de Evelyn ao chegar a Hollywood; eles se casam e têm uma filha (Connor) juntos. Embora Harry procure manter certa distância de Evelyn, com o objetivo de resguardar sua identidade secreta como um homem homossexual, ele acaba reunindo coragem para revelar a ela sobre seu envolvimento com o esposo de Celia, John Braverman. O casamento com Evelyn possibilita que Harry mantenha discretamente sua relação com John (enquanto Evelyn e Celia prosseguem com seu próprio vínculo clandestino).</p>
+                </div>
+                <div class="quote-column">
+                    <blockquote class="quote">
+                        <p>"Tudo bem se você desabar, eu te seguro. Então eu desabei. E Harry me segurou."</p>
+                        <cite>- página 179</cite>
+                    </blockquote>
+                </div>
+            </div>
+
+            <!-- Max Girard -->
+            <div class="character-card">
+                <div class="character-info">
+                    <h3>O decepcionante, Max Girard</h3>
+                    <p>Max Girard é um cineasta francês e o sexto esposo de Evelyn. Após conhecê-la, ele a seleciona para seus filmes Boute-en-Train e Three A. M. , sob a condição de que ela aceite filmar cenas de nudez. O vínculo entre Max e Evelyn se torna sexual e romântico após o lançamento de seu filme, All for Us, que concede a ambos um Oscar. No entanto, ela rapidamente se dá conta de que ele está mais interessado nela como figura pública do que como indivíduo, e que prefere utilizá-la para promover sua imagem pública.</p>
+                </div>
+                <div class="quote-column">
+                    <blockquote class="quote">
+                        <p>"Eu não me incomodo com uma infidelidade ou outra, minha cara. Se a coisa for com respeito. Sem deixar nenhuma prova."</p>
+                        <cite>- página 284</cite>
+                    </blockquote>
+                </div>
+            </div>
+
+            <!-- Robert Jamison -->
+            <div class="character-card">
+                <div class="character-info">
+                    <h3>O pacato, Robert Jamison</h3>
+                    <p>Robert Jamison é irmão de Celia e o sétimo e último esposo de Evelyn. Ele aceita se mudar para a Espanha com Celia, Evelyn e Connor. Apesar de Evelyn permitir que ele tenha quantos relacionamentos amorosos desejar, ele se vincula a Connor e torna-se uma figura paterna e mentor para ela.</p>
+                </div>
+                <div class="quote-column">
+                    <blockquote class="quote">
+                        <p>"Robert sempre disse que casou comigo porque faria qualquer coisa por Celia. Mas acho que ele fez isso porque era sua chance de ter uma família."</p>
+                        <cite>- página 319</cite>
+                    </blockquote>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção do Mural de Matérias -->
+        <section class="media-section" id="materias">
+            <h2>Mural de Matérias Históricas</h2>
+
+            <!-- Vivant -->
+            <div class="journal-group">
+                <h3>Vivant</h3>
+                <div class="grid-container">
+                    <div class="card">
+                        <h4>Evelyn e eu</h4>
+                        <p>Evelyn era uma mulher de uma complexidade tremenda, e o tempo que passei com ela foi tão complicado quanto sua imagem, sua vida e a lenda que se construiu ao redor de sua figura.</p>
+                        <a href="materia-individual/vivant/06-2017.html" class="read-more">Leia Mais</a>
                     </div>
                 </div>
             </div>
-        </article>
+
+            <!-- New York Tribune -->
+            <div class="journal-group">
+                <h3>New York Tribune</h3>
+                <div class="grid-container">
+                    <div class="card">
+                        <h4>Evelyn Hugo leiloa vestidos</h4>
+                        <p>A lenda do cinema dos anos 1960 vai leiloar seus mais memoráveis vestidos a fim de arrecadar fundos para pesquisas de combate ao câncer de mama.</p>
+                        <a href="materia-individual/new-york-tribune/02-03-2017.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Morre musa do cinema</h4>
+                        <p>Os primeiros relatos não confirmam a causa da morte, mas fontes diversas afirmam que o caso está sendo tratado como overdose acidental.</p>
+                        <a href="materia-individual/new-york-tribune/26-03-2017.html" class="read-more">Leia Mais</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thespill.com -->
+            <div class="journal-group">
+                <h3>Thespill.com</h3>
+                <div class="grid-container">
+                    <div class="card">
+                        <h4>Evelyn Hugo pronta para abrir o jogo</h4>
+                        <p>Evelyn Hugo, a musa loira mais linda do mundo, vai leiloar vestidos e dar uma entrevista, coisa que não faz há décadas.</p>
+                        <a href="materia-individual/thespill.com/04-03-2017.html" class="read-more">Leia Mais</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub Rosa -->
+            <div class="journal-group">
+                <h3>Sub Rosa</h3>
+                <div class="grid-container">
+                    <div class="card">
+                        <h4>Don e Ev, e para sempre</h4>
+                        <p>O mais cobiçado dos solteiros escolheu ninguém menos que a loiraça do momento para ser sua noiva.</p>
+                        <a href="materia-individual/sub-rosa/04-03-1957.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>A frieza de Evelyn</h4>
+                        <p>Por que um casal de gente bonita com uma casa de cinco quartos não iria querer encher o lugar de crianças?</p>
+                        <a href="materia-individual/sub-rosa/22-06-1959.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Rezem por Don e Evelyn</h4>
+                        <p>À primeira vista Evelyn estava negando a Don a possibilidade de ter filhos, mas a natureza não está ajudando.</p>
+                        <a href="materia-individual/sub-rosa/29-06-1959.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Fim de Adler e Hugo</h4>
+                        <p>Don Adler, de novo o solteiro mais cobiçado de Hollywood? Don e Evelyn decidiram pôr um ponto-final na relação!</p>
+                        <a href="materia-individual/sub-rosa/30-12-1959.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Don Adler e Ruby Reilly, noivos?</h4>
+                        <p>Don e Ruby ficaram mais próximos depois que Don se divorciou da bombástica Evelyn Hugo.</p>
+                        <a href="materia-individual/sub-rosa/23-10-1961.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Festas do pijama de Evelyn e Celia</h4>
+                        <p>Quando a proximidade deixa de ser natural? Pessoas próximas confirmam que elas parecem... um casalzinho.</p>
+                        <a href="materia-individual/sub-rosa/01-11-1961.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>O coração partido de Evelyn Hugo</h4>
+                        <p>A pobre Evelyn está tendo muita dificuldade para encontrar o amor.</p>
+                        <a href="materia-individual/sub-rosa/12-12-1961.html" class="read-more">Leia Mais</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PhotoMoment -->
+            <div class="journal-group">
+                <h3>PhotoMoment</h3>
+                <div class="grid-container">
+                    <div class="card">
+                        <h4>Vida de Festeira</h4>
+                        <p>Celia St. James está ganhando fama na cidade! A jovem dama da Geórgia sabe como fazer amizade com as pessoas certas.</p>
+                        <a href="materia-individual/photomoment/02-11-1959.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Evelyn, verde não lhe cai bem</h4>
+                        <p>Evelyn Hugo apareceu na Audience Appreciation Awards com um vestido de seda verde. A marca registrada está começando a virar sinônimo de tédio.</p>
+                        <a href="materia-individual/photomoment/01-02-1960.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Mick Riva gamado em Evelyn</h4>
+                        <p>Depois de se apresentar no Trocadero, Mick Riva revelou que passaria uma noite com Evelyn Hugo.</p>
+                        <a href="materia-individual/photomoment/15-09-1961.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Riva e Hugo perdem a cabeça</h4>
+                        <p>Já ouviu falar em casamento às pressas? E em separação relâmpago?</p>
+                        <a href="materia-individual/photomoment/04-12-1961.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Evelyn Hugo e Rex North casados!</h4>
+                        <p>Os dois se conheceram durante as gravações do longa Anna Kariênina e se apaixonaram logo de cara. Os dois pombinhos vão lotar os cinemas nas próximas semanas.</p>
+                        <a href="materia-individual/photomoment/26-11-1962.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Celia St. James comprometida com John Braverman</h4>
+                        <p>A superestrela já vinha em uma sequência de sucessos no cinema, e agora ela tem ainda mais a celebrar, porque encontrou seu amor.</p>
+                        <a href="materia-individual/photomoment/10-12-1962.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Evelyn Hugo casa com Harry Cameron</h4>
+                        <p>Seria o cinco o número da sorte? Harry e Evelyn trabalham juntos desde os anos 50, eles admitiram estar tendo um caso no ano passado.</p>
+                        <a href="materia-individual/photomoment/14-08-1967.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Evelyn e Harry têm uma menininha!</h4>
+                        <p>Evelyn enfim virou mãe! Connor Margot Cameron nasceu na última quinta-feira, dizem que o papai Harry Cameron está "nas nuvens".</p>
+                        <a href="materia-individual/photomoment/23-05-1975.html" class="read-more">Leia Mais</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hollywood Digest -->
+            <div class="journal-group">
+                <h3>Hollywood Digest</h3>
+                <div class="grid-container">
+                    <div class="card">
+                        <h4>Evelyn Hugo interpretará Anna Kariênina</h4>
+                        <p>Todos estavam curiosos para saber qual seria o projeto seguinte da srta. Hugo. Anna Kariênina é uma escolha interessante.</p>
+                        <a href="materia-individual/hollywood-digest/02-10-1961.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Anna Kariênina fatura alto na bilheteria</h4>
+                        <p>O aguardadíssimo longa Anna Kariênina lotou os cinemas na última sexta-feira e no fim de semana. Já tem gente dizendo que estatuetas do Oscar podem estar a caminho.</p>
+                        <a href="materia-individual/hollywood-digest/17-12-1962.html" class="read-more">Leia Mais</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Now This -->
+            <div class="journal-group">
+                <h3>Now This</h3>
+                <div class="grid-container">
+                    <div class="card">
+                        <h4>Celia St. James e Joan Marker, melhores amigas</h4>
+                        <p>Celia e a recém-chegada a Hollywood são o momento da cidade. Estamos torcendo para que as duas tenham um plano de estrelar um filme juntas.</p>
+                        <a href="materia-individual/now-this/03-07-1980.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Evelyn se divorcia de Harry para casar com Max Girard</h4>
+                        <p>Segundo fontes próximas, Evelyn e Harry estavam separados fazia algum tempo. O casamento tinha evoluído para uma relação de amizade nos últimos anos.</p>
+                        <a href="materia-individual/now-this/11-06-1982.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Divórcio de Evelyn e Max vira briga com relatos de traição</h4>
+                        <p>"Ele tá tão furioso que está falando de tudo para atingi-la", afirma uma pessoa do convívio do antigo casal.</p>
+                        <a href="materia-individual/now-this/01-07-1988.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Morre o produtor Harry Cameron</h4>
+                        <p>Produtor e ex-marido de Evelyn Hugo, morreu neste fim de semana aos cinquenta e oito anos.</p>
+                        <a href="materia-individual/now-this/28-02-1989.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Criança rebelde</h4>
+                        <p>Aos catorze anos, a filha de uma atriz deixou de frequentar o prestigioso colégio onde estuda e costuma ser vista em casas noturnas em Nova York.</p>
+                        <a href="materia-individual/now-this/04-09-1989.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Evelyn casada pela sétima vez</h4>
+                        <p>Evelyn Hugo se casou no último sábado com Robert Jamison. Os dois se conheceram numa festa e se apaixonaram loucamente.</p>
+                        <a href="materia-individual/now-this/08-01-1990.html" class="read-more">Leia Mais</a>
+                    </div>
+                    <div class="card">
+                        <h4>Morre a rainha das telas Celia St. James</h4>
+                        <p>Vencedora de três Oscars, a atriz morreu na última semana com sessenta e um anos.</p>
+                        <a href="materia-individual/now-this/05-07-2000.html" class="read-more">Leia Mais</a>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <footer class="footer">
@@ -313,5 +780,22 @@
             <a href="https://x.com/melyssamelmel?t=dnBj-D-6-WCyVD5lY4SFnw&s=09" target="_blank" class="x">X</a>
         </div>
     </footer>
+
+    <!-- Script para o funcionamento do Menu Mobile -->
+    <script>
+        const menuBtn = document.getElementById('menuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('mobile-open');
+        });
+
+        // Fecha o menu ao clicar em algum link no mobile
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('mobile-open');
+            });
+        });
+    </script>
 </body>
 </html>
