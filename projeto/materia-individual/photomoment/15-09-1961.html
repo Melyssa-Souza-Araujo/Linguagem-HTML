@@ -3,21 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Starling</title>
+    <title>PhotoMoment - Cantor Mick Riva gamado em Evelyn Hugo</title>
     <style>
-        body {
-            font-family: sans-serif;
+        /* --- RESET E ESTILOS GERAIS --- */
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            background-color: #eefdf7; 
-    }
+        }
 
+        body {
+            font-family: sans-serif;
+            background-color: #eefdf7; 
+            color: #1d1d35;
+            line-height: 1.6;
+        }
+
+        /* --- HEADER E NAVEGAÇÃO --- */
         .header {
             background-color: #019774; 
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem;
+            padding: 1rem 2rem;
         }
 
         .logo {
@@ -29,89 +37,81 @@
         .menu a {
             text-decoration: none;
             color: #1d1d35;
-            margin-left: 1rem;
+            margin-left: 1.5rem;
+            font-weight: 500;
+            transition: color 0.3s;
         }
 
-        .content {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding: 2rem;
+        .menu a:hover {
+            color: white;
         }
 
-        .image-container {
-            flex: 1 1 300px; 
-            max-width: 400px;
-            margin-right: 2rem;
-        }
-
-        .image-container img {
-            width: 100%;
-            height: auto;
-            border: 1px solid #eefdf7; 
-        }
-
-        .text-container {
-            flex: 1 1 400px; 
-            max-width: 600px;
-            align-content: center;
-            
-        }
-
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: #1d1d35;
-        }
-
-        p {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-            color: #1d1d35;
-        }
-
-        .read-more {
-            align-items: center;
-            display: inline-block;
-            background-color: #619c87; 
-            color: #1d1d35;
-            padding: 0.8rem 1.5rem;
-            text-decoration: none;
-            border-radius: 5px;
-            align-content: center;
+        /* --- CONTEÚDO DO ARTIGO --- */
+        .content-art {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
         }
 
         .article {
-            max-width: 800px;
-            margin: 0 auto;
-            line-height: 1.6;
+            background-color: #fff;
+            padding: 2.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
         .article h1 {
             font-size: 2.5rem;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
+            color: #1d1d35;
         }
 
-        .article p {
+        .author {
+            font-style: italic;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+            font-size: 1rem;
+        }
+
+        .text-body p {
+            font-size: 1.1rem;
             margin-bottom: 1.5rem;
-        }
-
-        .text-column {
-            flex: 1; 
-            padding-right: 2rem;
             text-align: justify;
         }
 
+        /* --- BOTÃO VOLTAR --- */
+        .back-container {
+            margin-top: 2.5rem;
+            text-align: center;
+        }
+
+        .read-more {
+            display: inline-block;
+            background-color: #619c87; 
+            color: #1d1d35;
+            padding: 0.8rem 2rem;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .read-more:hover {
+            background-color: #4e806e;
+            color: #fff;
+        }
+
+        /* --- FOOTER --- */
         .footer {
             background-color: #019774;
             color: white;
             text-align: center;
-            padding: 1rem;
+            padding: 2rem 1rem;
+            margin-top: 4rem;
         }
 
         .footer p {
-            margin: 0.5rem 0;
+            margin: 0.3rem 0;
         }
 
         .social-icons {
@@ -121,67 +121,71 @@
         .social-icons a {
             color: #1d1d35;
             text-decoration: none;
-            margin: 0 0.5rem;
+            margin: 0 0.7rem;
+            font-weight: bold;
         }
 
-        @media (max-width: 768px) {
-            .content {
-                flex-direction: column;
-                align-items: center;
-            }
+        .social-icons a:hover {
+            color: white;
+        }
 
-            .footer {
-                padding: 1rem 0.5rem; 
-            }
-            .content-art {
+        /* --- RESPONSIVIDADE --- */
+        @media (max-width: 768px) {
+            .header {
                 padding: 1rem;
             }
+            
+            .article {
+                padding: 1.5rem;
+            }
+
             .article h1 {
                 font-size: 2rem;
             }
-            }
+        }
     </style>
 </head>
 <body>
+
     <header class="header">
         <div class="logo">Starling</div>
         <nav class="menu">
             <a href="../../index.html">Home</a>
-            <a href="../../personagem.html">Personagens</a>
-            <a href="../../materia.html">Matérias</a>
+            <a href="../../index.html#personagens">Personagens</a>
+            <a href="../../index.html#materias">Matérias</a>
         </nav>
     </header>
 
     <main class="content-art">
         <article class="article">
-            <div class="text-column">
-                <h1>Cantor Mick Riva gamado em Evelyn Hugo</h1>
-                <p class="author">Por PhotoMoment, 15 de setembro de 1961</p>
-            </div>
-            <div class="text-column">
-                <p>Depois de se apresentar na noite passada no Trocadero, Mick Riva tirou alguns minutos para ouvir nossas perguntas. Com um drinque na mão que não parecia ser o primeiro, Mick foi extremamente franco...</p>
+            <h1>Cantor Mick Riva gamado em Evelyn Hugo</h1>
+            <p class="author">Por PhotoMoment, 15 de setembro de 1961</p>
+            
+            <div class="text-body">
+                <p>Depois de se apresentar na noite passada no <em>Trocadero</em>, Mick Riva tirou alguns minutos para ouvir nossas perguntas. Com um drinque na mão que não parecia ser o primeiro, Mick foi extremamente franco...</p>
                 <p>Ele revelou que está feliz por ter se divorciado da sereia Veronica Lowe porque, segundo suas palavras: “Eu não merecia uma mulher como aquela, e ela não merecia um cara como eu”.</p>
                 <p>Quando foi sondado a respeito de uma nova eleita, ele admitiu estar de olho em umas quantas possibilidades, mas que abriria mão de todas para passar uma noite com Evelyn Hugo.</p>
-                <p>A antiga sra. Don Adler vem se mostrando um artigo muito cobiçado ultimamente. Sua aparição no filme mais recente do diretor francês Max Girard, Boute-en-Train, passou a temporada de verão lotando cinemas em toda a Europa, e agora está tomando os Estados Unidos de assalto.</p>
-                <p>“Já vi Boute-en-Train três vezes”, contou-nos Mick. “E vou ver a quarta. Simplesmente não me canso de vê-la sair daquele lago.”</p>
+                <p>A antiga sra. Don Adler vem se mostrando um artigo muito cobiçado ultimamente. Sua aparição no filme mais recente do diretor francês Max Girard, <em>Boute-en-Train</em>, passou a temporada de verão lotando cinemas em toda a Europa, e agora está tomando os Estados Unidos de assalto.</p>
+                <p>“Já vi <em>Boute-en-Train</em> três vezes”, contou-nos Mick. “E vou ver a quarta. Simplesmente não me canso de vê-la sair daquele lago.”</p>
                 <p>Então ele gostaria de sair com Evelyn um dia desses?</p>
                 <p>“Eu queria casar com ela, isso sim.”</p>
                 <p>Ouviu isso, Evelyn?</p>
             </div>
-        </article>
-    </main>
 
-    <main class="content">
-        <a href="../../materia.html" class="read-more">Voltar</a>
+            <div class="back-container">
+                <a href="../../index.html#materias" class="read-more">Voltar</a>
+            </div>
+        </article>
     </main>
 
     <footer class="footer">
         <p>Todos os direitos reservados © Copyright 2025</p>
         <p>Desenvolvido por Melyssa Souza Araújo</p>
         <div class="social-icons">
-            <a href="https://www.instagram.com/melyssa.melmel?igsh=NHBjYm5menc2anJx" target="_blank" class="instagram">Instagram</a>
-            <a href="https://x.com/melyssamelmel?t=dnBj-D-6-WCyVD5lY4SFnw&s=09" target="_blank" class="x">X</a>
+            <a href="https://www.instagram.com/melyssa.melmel?igsh=NHBjYm5menc2anJx" target="_blank">Instagram</a>
+            <a href="https://x.com/melyssamelmel?t=dnBj-D-6-WCyVD5lY4SFnw&s=09" target="_blank">X</a>
         </div>
     </footer>
+
 </body>
 </html>
