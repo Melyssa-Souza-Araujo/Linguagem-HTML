@@ -121,11 +121,8 @@ function gerarTextoExplicativo($dados) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório Completo - VNL</title>
-    <!-- Bibliotecas Necessárias -->
+    <!-- Chart.js para renderização dos gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
         :root {
@@ -145,8 +142,6 @@ function gerarTextoExplicativo($dados) {
         
         .header-top { display: flex; justify-content: space-between; align-items: center; max-width: 1000px; margin: 0 auto 20px auto; flex-wrap: wrap; gap: 10px; }
         .btn-acao { background: var(--btn-bg); color: var(--btn-txt); border: none; padding: 8px 16px; font-weight: bold; border-radius: 20px; cursor: pointer; text-decoration: none; font-size: 13px; }
-        .btn-excel { background: #10b981; color: white; }
-        .btn-pdf { background: #ef4444; color: white; }
 
         .container-relatorio { max-width: 1000px; margin: 0 auto; background: var(--bg-body); padding: 10px; }
         
@@ -162,29 +157,16 @@ function gerarTextoExplicativo($dados) {
 
         .box-explicativa { background: var(--bg-card); padding: 15px 20px; border-radius: 8px; border-left: 4px solid var(--accent-blue); margin-bottom: 35px; border-top: 1px solid var(--border-line); border-right: 1px solid var(--border-line); border-bottom: 1px solid var(--border-line); }
         .analise-texto p { margin: 8px 0; font-size: 14px; line-height: 1.5; }
-
-        @media print {
-            .header-top, .btn-acao { display: none !important; }
-            body { background: white !important; color: black !important; }
-            .card-grafico, table, .box-explicativa { border: 1px solid #ccc !important; background: white !important; color: black !important; }
-            th { background: #eee !important; color: black !important; }
-            h1, h2, h3 { color: black !important; }
-        }
     </style>
 </head>
 <body>
 
     <div class="header-top">
-        <a href="index.php" class="btn-acao">← Voltar para Inicio</a>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button class="btn-acao btn-excel" onclick="exportarExcel()">📊 Exportar Gráficos (Excel)</button>
-            <button class="btn-acao btn-pdf" onclick="exportarPDF()">📄 Exportar Relatório (PDF)</button>
-            <button class="btn-acao" onclick="toggleTheme()" id="btnTema">☀️ Modo Claro</button>
-        </div>
+        <a href="index.php" class="btn-acao">← Voltar para Início</a>
+        <button class="btn-acao" onclick="toggleTheme()" id="btnTema">☀️ Modo Claro</button>
     </div>
 
-    <!-- ÁREA CAPTURADA PELO PDF -->
-    <div class="container-relatorio" id="conteudo-relatorio">
+    <div class="container-relatorio">
         <h1>📊 Relatório Geral de Desempenho VNL</h1>
 
         <!-- SEÇÃO DE GRÁFICOS -->
@@ -203,7 +185,7 @@ function gerarTextoExplicativo($dados) {
         <!-- FEMININO: TABELA + ANÁLISE ESCRITA -->
         <h2>Desempenho Detalhado - Feminino</h2>
         <div class="table-responsive">
-            <table id="tabela-feminino">
+            <table>
                 <thead>
                     <tr>
                         <th>Pos</th>
@@ -248,7 +230,7 @@ function gerarTextoExplicativo($dados) {
         <!-- MASCULINO: TABELA + ANÁLISE ESCRITA -->
         <h2>Desempenho Detalhado - Masculino</h2>
         <div class="table-responsive">
-            <table id="tabela-masculino">
+            <table>
                 <thead>
                     <tr>
                         <th>Pos</th>
@@ -323,54 +305,6 @@ function gerarTextoExplicativo($dados) {
         data: { labels: labelsM, datasets: [{ label: 'Pontos', data: dataM, backgroundColor: '#3b82f6' }] },
         options: { responsive: true, plugins: { legend: { display: false } } }
     });
-
-    // EXPORTAÇÃO EXCEL (Apenas Gráficos / Dados Numéricos)
-    function exportarExcel() {
-        const wb = XLSX.utils.book_new();
-
-        // Dados Gráfico Feminino
-        const dadosF = [["País", "Pontuação"]];
-        labelsF.forEach((nome, i) => dadosF.push([nome, dataF[i]]));
-        const wsF = XLSX.utils.aoa_to_sheet(dadosF);
-        XLSX.utils.book_append_sheet(wb, wsF, "Grafico_Feminino");
-
-        // Dados Gráfico Masculino
-        const dadosM = [["País", "Pontuação"]];
-        labelsM.forEach((nome, i) => dadosM.push([nome, dataM[i]]));
-        const wsM = XLSX.utils.aoa_to_sheet(dadosM);
-        XLSX.utils.book_append_sheet(wb, wsM, "Grafico_Masculino");
-
-        XLSX.writeFile(wb, "Graficos_Desempenho_VNL.xlsx");
-    }
-
-    // EXPORTAÇÃO PDF (Completo: Gráficos, Tabelas e Textos)
-    function exportarPDF() {
-        const element = document.getElementById('conteudo-relatorio');
-        
-        html2canvas(element, { scale: 2 }).then(canvas => {
-            const imgData = canvas.toDataURL('image/png');
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            
-            const imgWidth = 210; 
-            const pageHeight = 295;  
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            let heightLeft = imgHeight;
-            let position = 0;
-
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-
-            while (heightLeft >= 0) {
-                position = heightLeft - imgHeight;
-                pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-            }
-            
-            pdf.save("Relatorio_Completo_VNL.pdf");
-        });
-    }
     </script>
 </body>
 </html>
