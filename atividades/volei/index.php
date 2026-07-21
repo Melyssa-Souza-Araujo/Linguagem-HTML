@@ -106,9 +106,7 @@ function calcularBadgeStreak($historico) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VNL - Classificação e Histórico</title>
     <style>
-        /* DEFINIÇÃO DAS NOVAS PALETAS DE CORES AZUIS */
         :root {
-            /* Modo Escuro (Baseado em Azul Escuro) */
             --bg-body: #0b132b; 
             --txt-main: #f1f5f9; 
             --txt-heading: #48cae4;
@@ -120,7 +118,6 @@ function calcularBadgeStreak($historico) {
             --accent-blue: #00b4d8;
         }
         [data-theme="light"] {
-            /* Modo Claro (Baseado em Azul Claro) */
             --bg-body: #e0f2fe; 
             --txt-main: #0f172a; 
             --txt-heading: #0369a1;
@@ -190,9 +187,10 @@ function calcularBadgeStreak($historico) {
 
     <div class="header-top">
         <div>Olá, <strong><?=htmlspecialchars($_SESSION['usuario_login'])?></strong> (<span style="text-transform: uppercase; font-size: 11px; color: var(--accent-blue); font-weight: bold;"><?=$_SESSION['usuario_nivel']?></span>)</div>
-        <div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <a href="relatorio.php" class="btn-logout" style="background:var(--accent-blue); color:#fff;">📊 Ver Relatórios</a>
             <button class="theme-toggle" onclick="toggleTheme()" id="btnTema">☀️ Modo Claro</button>
-            <a href="logout.php" class="btn-logout" style="background:#ef4444; color:#fff; margin-left: 10px;">🚪 Sair</a>
+            <a href="logout.php" class="btn-logout" style="background:#ef4444; color:#fff;">🚪 Sair</a>
         </div>
     </div>
 
@@ -203,6 +201,7 @@ function calcularBadgeStreak($historico) {
     <?php endif; ?>
 
     <div class="tabelas-container">
+        <!-- CLASSIFICAÇÃO FEMININA -->
         <div class="tabela-bloco">
             <h2>Classificação Geral Feminina</h2>
             <div class="table-responsive">
@@ -229,6 +228,7 @@ function calcularBadgeStreak($historico) {
             </div>
         </div>
 
+        <!-- CLASSIFICAÇÃO MASCULINA -->
         <div class="tabela-bloco">
             <h2>Classificação Geral Masculina</h2>
             <div class="table-responsive">
@@ -315,7 +315,7 @@ function calcularBadgeStreak($historico) {
                     </div>
 
                     <div class="texto-grafico">
-                        <span>📊 Grafico →</span>
+                        <span>📊 Gráfico →</span>
                     </div>
                 </div>
             </a>
