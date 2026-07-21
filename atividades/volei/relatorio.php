@@ -43,13 +43,11 @@ foreach ($partidas as $partida) {
 
     if (!isset($ref[$casa])) continue;
 
-    // Registra que ambos os times jogaram
     $ref[$casa]['jogou'] = true; $ref[$fora]['jogou'] = true;
     $ref[$casa]['jogos']++; $ref[$fora]['jogos']++;
     $ref[$casa]['sets_pro'] += $p_casa; $ref[$casa]['sets_contra'] += $p_fora;
     $ref[$fora]['sets_pro'] += $p_fora; $ref[$fora]['sets_contra'] += $p_casa;
 
-    // Distribuição de Pontos da Regra FIVB
     if ($p_casa > $p_fora) {
         $ref[$casa]['vitorias']++; $ref[$fora]['derrotas']++;
         if ($p_casa == 3 && ($p_fora == 0 || $p_fora == 1)) $ref[$casa]['pontos'] += 3;
@@ -63,11 +61,9 @@ foreach ($partidas as $partida) {
     if ($genero == 'F') { $stats_F = $ref; } else { $stats_M = $ref; }
 }
 
-// Filtra apenas times que jogaram
 $stats_F = array_filter($stats_F, function($item) { return $item['jogou']; });
 $stats_M = array_filter($stats_M, function($item) { return $item['jogou']; });
 
-// Ordena por Pontos > Vitórias > Saldo de Sets
 $ordenar = function($a, $b) {
     if ($a['pontos'] != $b['pontos']) return $b['pontos'] <=> $a['pontos'];
     if ($a['vitorias'] != $b['vitorias']) return $b['vitorias'] <=> $a['vitorias'];
@@ -79,7 +75,7 @@ $ordenar = function($a, $b) {
 uasort($stats_F, $ordenar);
 uasort($stats_M, $ordenar);
 
-// Preparação de dados para o gráfico Chart.js (Top 5 de cada gênero)
+// Dados Top 5 para gráficos
 $top5_F_nomes = []; $top5_F_pontos = [];
 foreach (array_slice($stats_F, 0, 5) as $t) {
     $top5_F_nomes[] = $t['nome'];
@@ -91,15 +87,46 @@ foreach (array_slice($stats_M, 0, 5) as $t) {
     $top5_M_nomes[] = $t['nome'];
     $top5_M_pontos[] = $t['pontos'];
 }
+
+// Função auxiliar para gerar texto descritivo por time
+function gerarTextoExplicativo($dados) {
+    if (empty($dados)) return "<p>Sem dados suficientes cadastrados para este gênero.</p>";
+    
+    $html = "<div class='analise-texto'>";
+    $pos = 1;
+    foreach ($dados as $t) {
+        $aprov = $t['jogos'] > 0 ? number_format(($t['vitorias'] / $t['jogos']) * 100, 1) : 0;
+        $saldo = $t['sets_pro'] - $t['sets_contra'];
+        
+        $html .= "<p><strong>{$pos}º {$t['nome']}:</strong> ";
+        if ($pos == 1) {
+            $html .= "Lidera a competição com <strong>{$t['pontos']} pontos</strong> e aproveitamento de <strong>{$aprov}%</strong>. Apresenta o melhor desempenho geral com {$t['vitorias']} vitória(s) em {$t['jogos']} jogo(s).";
+        } elseif ($aprov >= 60) {
+            $html .= "Desempenho sólido na parte de cima da tabela. Possui {$t['vitorias']} vitória(s) e saldo de sets positivo de " . ($saldo > 0 ? "+$saldo" : $saldo) . ".";
+        } elseif ($aprov >= 40) {
+            $html .= "Campanha mediana com aproveitamento de {$aprov}%. Mantém oscilação entre vitórias ({$t['vitorias']}) e derrotas ({$t['derrotas']}).";
+        } else {
+            $html .= "Apresenta dificuldades no torneio. Registra aproveitamento de apenas {$aprov}% e saldo de sets em " . ($saldo > 0 ? "+$saldo" : $saldo) . ". Necessita de ajustes táticos.";
+        }
+        $html .= "</p>";
+        $pos++;
+    }
+    $html .= "</div>";
+    return $html;
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório de Desempenho - VNL</title>
-    <!-- Chart.js para os gráficos -->
+    <title>Relatório Completo - VNL</title>
+    <!-- Bibliotecas Necessárias -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
         :root {
             --bg-body: #0b132b; --txt-main: #f1f5f9; --txt-heading: #48cae4;
@@ -116,30 +143,32 @@ foreach (array_slice($stats_M, 0, 5) as $t) {
         body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: var(--bg-body); color: var(--txt-main); }
         h1, h2, h3 { text-align: center; color: var(--txt-heading); }
         
-        .header-top { display: flex; justify-content: space-between; align-items: center; max-width: 1000px; margin: 0 auto 20px auto; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; max-width: 1000px; margin: 0 auto 20px auto; flex-wrap: wrap; gap: 10px; }
         .btn-acao { background: var(--btn-bg); color: var(--btn-txt); border: none; padding: 8px 16px; font-weight: bold; border-radius: 20px; cursor: pointer; text-decoration: none; font-size: 13px; }
+        .btn-excel { background: #10b981; color: white; }
+        .btn-pdf { background: #ef4444; color: white; }
 
-        .container-relatorio { max-width: 1000px; margin: 0 auto; }
+        .container-relatorio { max-width: 1000px; margin: 0 auto; background: var(--bg-body); padding: 10px; }
         
-        /* Gráficos em grade */
         .grid-graficos { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px; }
         .card-grafico { flex: 1; min-width: 300px; background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border-line); }
 
-        /* Tabelas */
-        .table-responsive { border-radius: 8px; border: 1px solid var(--border-line); overflow: hidden; margin-bottom: 40px; }
+        .table-responsive { border-radius: 8px; border: 1px solid var(--border-line); overflow: hidden; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; background: var(--bg-card); text-align: center; }
         th, td { padding: 10px; border-bottom: 1px solid var(--border-line); font-size: 13px; }
         th { background: var(--border-line); color: var(--txt-main); font-weight: bold; }
 
         .flag { width: 20px; height: 14px; object-fit: cover; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
 
-        /* Estilo exclusivo para Impressão / Salvar PDF */
+        .box-explicativa { background: var(--bg-card); padding: 15px 20px; border-radius: 8px; border-left: 4px solid var(--accent-blue); margin-bottom: 35px; border-top: 1px solid var(--border-line); border-right: 1px solid var(--border-line); border-bottom: 1px solid var(--border-line); }
+        .analise-texto p { margin: 8px 0; font-size: 14px; line-height: 1.5; }
+
         @media print {
             .header-top, .btn-acao { display: none !important; }
             body { background: white !important; color: black !important; }
-            .card-grafico, table { border: 1px solid #ccc !important; background: white !important; color: black !important; }
+            .card-grafico, table, .box-explicativa { border: 1px solid #ccc !important; background: white !important; color: black !important; }
             th { background: #eee !important; color: black !important; }
-            h1, h2 { color: black !important; }
+            h1, h2, h3 { color: black !important; }
         }
     </style>
 </head>
@@ -147,13 +176,15 @@ foreach (array_slice($stats_M, 0, 5) as $t) {
 
     <div class="header-top">
         <a href="index.php" class="btn-acao">← Voltar para Inicio</a>
-        <div>
-            <button class="btn-acao" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn-acao btn-excel" onclick="exportarExcel()">📊 Exportar Gráficos (Excel)</button>
+            <button class="btn-acao btn-pdf" onclick="exportarPDF()">📄 Exportar Relatório (PDF)</button>
             <button class="btn-acao" onclick="toggleTheme()" id="btnTema">☀️ Modo Claro</button>
         </div>
     </div>
 
-    <div class="container-relatorio">
+    <!-- ÁREA CAPTURADA PELO PDF -->
+    <div class="container-relatorio" id="conteudo-relatorio">
         <h1>📊 Relatório Geral de Desempenho VNL</h1>
 
         <!-- SEÇÃO DE GRÁFICOS -->
@@ -169,10 +200,10 @@ foreach (array_slice($stats_M, 0, 5) as $t) {
             </div>
         </div>
 
-        <!-- TABELA DESEMPENHO FEMININO -->
+        <!-- FEMININO: TABELA + ANÁLISE ESCRITA -->
         <h2>Desempenho Detalhado - Feminino</h2>
         <div class="table-responsive">
-            <table>
+            <table id="tabela-feminino">
                 <thead>
                     <tr>
                         <th>Pos</th>
@@ -209,10 +240,15 @@ foreach (array_slice($stats_M, 0, 5) as $t) {
             </table>
         </div>
 
-        <!-- TABELA DESEMPENHO MASCULINO -->
+        <h3>📝 Análise Técnica do Desempenho Feminino</h3>
+        <div class="box-explicativa">
+            <?=gerarTextoExplicativo($stats_F)?>
+        </div>
+
+        <!-- MASCULINO: TABELA + ANÁLISE ESCRITA -->
         <h2>Desempenho Detalhado - Masculino</h2>
         <div class="table-responsive">
-            <table>
+            <table id="tabela-masculino">
                 <thead>
                     <tr>
                         <th>Pos</th>
@@ -248,10 +284,15 @@ foreach (array_slice($stats_M, 0, 5) as $t) {
                 </tbody>
             </table>
         </div>
+
+        <h3>📝 Análise Técnica do Desempenho Masculino</h3>
+        <div class="box-explicativa">
+            <?=gerarTextoExplicativo($stats_M)?>
+        </div>
     </div>
 
     <script>
-    // Configurações do Tema
+    // Gerenciamento de Temas
     function applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         const btn = document.getElementById('btnTema');
@@ -265,40 +306,71 @@ foreach (array_slice($stats_M, 0, 5) as $t) {
     }
     applyTheme(localStorage.getItem('vnl-theme') || 'dark');
 
-    // Inicialização dos Gráficos com dados fornecidos pelo PHP
+    // Chart.js
     const labelsF = <?=json_encode($top5_F_nomes)?>;
     const dataF = <?=json_encode($top5_F_pontos)?>;
-    
     const labelsM = <?=json_encode($top5_M_nomes)?>;
     const dataM = <?=json_encode($top5_M_pontos)?>;
 
-    // Gráfico Feminino
     new Chart(document.getElementById('chartFeminino'), {
         type: 'bar',
-        data: {
-            labels: labelsF,
-            datasets: [{
-                label: 'Pontos Total',
-                data: dataF,
-                backgroundColor: '#ec4899'
-            }]
-        },
+        data: { labels: labelsF, datasets: [{ label: 'Pontos', data: dataF, backgroundColor: '#ec4899' }] },
         options: { responsive: true, plugins: { legend: { display: false } } }
     });
 
-    // Gráfico Masculino
     new Chart(document.getElementById('chartMasculino'), {
         type: 'bar',
-        data: {
-            labels: labelsM,
-            datasets: [{
-                label: 'Pontos Total',
-                data: dataM,
-                backgroundColor: '#3b82f6'
-            }]
-        },
+        data: { labels: labelsM, datasets: [{ label: 'Pontos', data: dataM, backgroundColor: '#3b82f6' }] },
         options: { responsive: true, plugins: { legend: { display: false } } }
     });
+
+    // EXPORTAÇÃO EXCEL (Apenas Gráficos / Dados Numéricos)
+    function exportarExcel() {
+        const wb = XLSX.utils.book_new();
+
+        // Dados Gráfico Feminino
+        const dadosF = [["País", "Pontuação"]];
+        labelsF.forEach((nome, i) => dadosF.push([nome, dataF[i]]));
+        const wsF = XLSX.utils.aoa_to_sheet(dadosF);
+        XLSX.utils.book_append_sheet(wb, wsF, "Grafico_Feminino");
+
+        // Dados Gráfico Masculino
+        const dadosM = [["País", "Pontuação"]];
+        labelsM.forEach((nome, i) => dadosM.push([nome, dataM[i]]));
+        const wsM = XLSX.utils.aoa_to_sheet(dadosM);
+        XLSX.utils.book_append_sheet(wb, wsM, "Grafico_Masculino");
+
+        XLSX.writeFile(wb, "Graficos_Desempenho_VNL.xlsx");
+    }
+
+    // EXPORTAÇÃO PDF (Completo: Gráficos, Tabelas e Textos)
+    function exportarPDF() {
+        const element = document.getElementById('conteudo-relatorio');
+        
+        html2canvas(element, { scale: 2 }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const imgWidth = 210; 
+            const pageHeight = 295;  
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+            
+            pdf.save("Relatorio_Completo_VNL.pdf");
+        });
+    }
     </script>
 </body>
 </html>
