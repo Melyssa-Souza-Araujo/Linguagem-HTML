@@ -21,9 +21,11 @@ if (isset($_POST['alterar_senha'])) {
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($user) {
-                // Atualiza a senha (mantenha a consistência com o padrão do seu banco)
+                // Criptografa a nova senha antes de salvar
+                $novaSenhaHash = password_hash($nova_senha, PASSWORD_DEFAULT);
+
                 $stmt_update = $pdo->prepare("UPDATE usuarios SET senha = ? WHERE id = ?");
-                $stmt_update->execute([$nova_senha, $user['id']]);
+                $stmt_update->execute([$novaSenhaHash, $user['id']]);
                 
                 $mensagem_sucesso = "Senha alterada com sucesso! Redirecionando...";
                 header("Refresh: 2; url=login.php");
