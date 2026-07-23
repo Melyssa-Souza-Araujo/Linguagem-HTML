@@ -14,7 +14,8 @@ if (isset($_POST['efetuar_login'])) {
         $stmt->execute([$usuario]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($user && $user['senha'] === $senha) {
+        // Suporta hash seguro E fallback temporário para senhas antigas em texto puro
+        if ($user && (password_verify($senha, $user['senha']) || $user['senha'] === $senha)) {
             $_SESSION['logado'] = true;
             $_SESSION['usuario_id'] = $user['id'];
             $_SESSION['usuario_login'] = $user['login'];
