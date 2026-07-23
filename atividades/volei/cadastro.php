@@ -12,7 +12,19 @@ if (!isset($_SESSION['logado']) || $_SESSION['usuario_nivel'] !== 'admin') {
 $msg_sucesso = "";
 $msg_erro = "";
 
-// 1. Cadastro de Países
+// EXCLUSÃO DE PARTIDA
+if (isset($_GET['excluir_partida'])) {
+    $id_excluir = (int)$_GET['excluir_partida'];
+    try {
+        $stmt = $pdo->prepare("DELETE FROM partidas WHERE id = ?");
+        $stmt->execute([$id_excluir]);
+        $msg_sucesso = "Partida excluída com sucesso!";
+    } catch (PDOException $e) {
+        $msg_erro = "Erro ao excluir partida: " . $e->getMessage();
+    }
+}
+
+// 1. CADASTRAR PAÍS
 if (isset($_POST['cadastrar_pais'])) {
     $nome = trim($_POST['nome_pais']);
     $sigla = strtolower(trim($_POST['sigla_pais']));
@@ -28,30 +40,89 @@ if (isset($_POST['cadastrar_pais'])) {
     }
 }
 
-// 2. Cadastro de Partidas com Seleção de Fase
+// 2. CADASTRAR PARTIDA COM PONTOS DOS SETS
 if (isset($_POST['cadastrar_partida'])) {
     $id_casa = (int)$_POST['id_casa'];
     $id_fora = (int)$_POST['id_fora'];
-    $pts_casa = (int)$_POST['pts_casa'];
-    $pts_fora = (int)$_POST['pts_fora'];
     $genero = $_POST['genero'];
-    $fase = $_POST['fase']; // Captura a fase escolhida
+    $fase = $_POST['fase'];
     $data_partida = $_POST['data_partida'];
 
-    if ($id_casa !== $id_fora && ($pts_casa == 3 || $pts_fora == 3)) {
-        try {
-            $stmt = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, genero, fase, data_partida) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$id_casa, $id_fora, $pts_casa, $pts_fora, $genero, $fase, $data_partida]);
-            $msg_sucesso = "Partida cadastrada com sucesso!";
-        } catch (PDOException $e) {
-            $msg_erro = "Erro ao cadastrar partida: " . $e->getMessage();
+    $set1_casa = isset($_POST['set1_casa']) ? (int)$_POST['set1_casa'] : 0;
+    $set1_fora = isset($_POST['set1_fora']) ? (int)$_POST['set1_fora'] : 0;
+    $set2_casa = isset($_POST['set2_casa']) ? (int)$_POST['set2_casa'] : 0;
+    $set2_fora = isset($_POST['set2_fora']) ? (int)$_POST['set2_fora'] : 0;
+    $set3_casa = isset($_POST['set3_casa']) ? (int)$_POST['set3_casa'] : 0;
+    $set3_fora = isset($_POST['set3_fora']) ? (int)$_POST['set3_fora'] : 0;
+    $set4_casa = isset($_POST['set4_casa']) ? (int)$_POST['set4_casa'] : 0;
+    $set4_fora = isset($_POST['set4_fora']) ? (int)$_POST['set4_fora'] : 0;
+    $set5_casa = isset($_POST['set5_casa']) ? (int)$_POST['set5_casa'] : 0;
+    $set5_fora = isset($_POST['set5_fora']) ? (int)$_POST['set5_fora'] : 0;
+
+    if ($id_casa !== $id_fora) {
+        $sets = [
+            1 => ['casa' => $set1_casa, 'fora' => $set1_fora],
+            2 => ['casa' => $set2_casa, 'fora' => $set2_fora],
+            3 => ['casa' => $set3_casa, 'fora' => $set3_fora],
+            4 => ['casa' => $set4_casa, 'fora' => $set4_fora],
+            5 => ['casa' => $set5_casa, 'fora' => $set5_fora]
+        ];
+
+        $sets_vencidos_casa = 0;
+        $sets_vencidos_fora = 0;
+        $sets_validos = [];
+
+        foreach ($sets as $num => $p) {
+            if ($p['casa'] > 0 || $p['fora'] > 0) {
+                if ($p['casa'] > $p['fora']) {
+                    $sets_vencidos_casa++;
+                } else if ($p['fora'] > $p['casa']) {
+                    $sets_vencidos_fora++;
+                }
+                $sets_validos[$num] = $p;
+            }
+        }
+
+        if ($sets_vencidos_casa == 3 || $sets_vencidos_fora == 3) {
+            try {
+                $pdo->beginTransaction();
+
+                $stmt = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, genero, fase, data_partida) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$id_casa, $id_fora, $sets_vencidos_casa, $sets_vencidos_fora, $genero, $fase, $data_partida]);
+                $id_partida = $pdo->lastInsertId();
+
+                $stmt_set = $pdo->prepare("INSERT INTO detalhes_sets (id_partida, numero_set, pontos_casa, pontos_fora) VALUES (?, ?, ?, ?)");
+                foreach ($sets_validos as $num => $p) {
+                    $stmt_set->execute([$id_partida, $num, $p['casa'], $p['fora']]);
+                }
+
+                $pdo->commit();
+                $msg_sucesso = "Partida e sets cadastrados com sucesso!";
+            } catch (PDOException $e) {
+                $pdo->rollBack();
+                $msg_erro = "Erro ao cadastrar partida: " . $e->getMessage();
+            }
+        } else {
+            $msg_erro = "Erro: Uma equipe precisa vencer exatamente 3 sets para encerrar a partida!";
         }
     } else {
-        $msg_erro = "Selecione times diferentes e certifique-se de que o vencedor obteve 3 sets!";
+        $msg_erro = "Erro: Selecione seleções diferentes!";
     }
 }
 
+// Carrega dados para os selects e tabela
 $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::FETCH_ASSOC);
+
+$sql_partidas = "
+    SELECT p.*, 
+           c.nome AS nome_casa, c.sigla AS sigla_casa,
+           f.nome AS nome_fora, f.sigla AS sigla_fora
+    FROM partidas p
+    JOIN paises c ON p.id_casa = c.id
+    JOIN paises f ON p.id_fora = f.id
+    ORDER BY p.id DESC
+";
+$partidas_cadastradas = $pdo->query($sql_partidas)->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -72,17 +143,29 @@ $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::F
         }
 
         body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: var(--bg-body); color: var(--txt-main); }
-        .container { max-width: 800px; margin: 0 auto; }
+        .container { max-width: 900px; margin: 0 auto; }
         .card { background: var(--bg-card); border: 1px solid var(--border-line); border-radius: 8px; padding: 20px; margin-bottom: 25px; }
-        h1, h2 { color: var(--txt-heading); }
-        label { display: block; margin-top: 10px; font-weight: bold; font-size: 14px; }
+        h1, h2, h3 { color: var(--txt-heading); }
+        label { display: block; margin-top: 10px; font-weight: bold; font-size: 13px; }
         input, select { width: 100%; padding: 10px; margin-top: 5px; background: var(--input-bg); border: 1px solid var(--border-line); color: var(--txt-main); border-radius: 4px; box-sizing: border-box; }
         button { background: var(--btn-bg); color: var(--btn-txt); border: none; padding: 12px 20px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 15px; width: 100%; }
+        
         .flex-row { display: flex; gap: 15px; flex-wrap: wrap; }
-        .flex-col { flex: 1; min-width: 200px; }
+        .flex-col { flex: 1; min-width: 180px; }
+        
         .alert-success { background: #10b981; color: white; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
         .alert-error { background: #ef4444; color: white; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
         .btn-top { display: inline-block; background: var(--border-line); color: var(--txt-main); padding: 8px 16px; border-radius: 20px; text-decoration: none; margin-bottom: 20px; font-weight: bold; font-size: 13px; }
+        
+        .sets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 15px; background: var(--bg-body); padding: 15px; border-radius: 6px; border: 1px solid var(--border-line); }
+        .set-box { text-align: center; }
+        .set-box input { text-align: center; font-weight: bold; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 15px; }
+        th, td { padding: 10px; border-bottom: 1px solid var(--border-line); text-align: center; }
+        th { background: var(--border-line); color: var(--txt-main); }
+        .flag { width: 20px; height: 14px; object-fit: cover; vertical-align: middle; border-radius: 2px; }
+        .btn-action { display: inline-block; padding: 4px 8px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: bold; color: white; margin: 2px; }
     </style>
 </head>
 <body>
@@ -94,7 +177,7 @@ $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::F
     <?php if(!empty($msg_sucesso)): ?><div class="alert-success"><?=$msg_sucesso?></div><?php endif; ?>
     <?php if(!empty($msg_erro)): ?><div class="alert-error"><?=$msg_erro?></div><?php endif; ?>
 
-    <!-- CADASTRAR PAÍS -->
+    <!-- 1. CADASTRAR PAÍS -->
     <div class="card">
         <h2>🏳️ Cadastrar Nova Seleção</h2>
         <form method="POST">
@@ -104,7 +187,7 @@ $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::F
                     <input type="text" name="nome_pais" placeholder="Ex: Brasil" required>
                 </div>
                 <div class="flex-col">
-                    <label>Sigla (código ISO 2 letras para bandeira):</label>
+                    <label>Sigla (ISO 2 letras para bandeira):</label>
                     <input type="text" name="sigla_pais" placeholder="Ex: br" maxlength="2" required>
                 </div>
             </div>
@@ -112,9 +195,9 @@ $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::F
         </form>
     </div>
 
-    <!-- CADASTRAR PARTIDA -->
+    <!-- 2. CADASTRAR PARTIDA COM PONTOS DOS SETS -->
     <div class="card">
-        <h2>🏐 Cadastrar Partida</h2>
+        <h2>🏐 Cadastrar Partida e Sets</h2>
         <form method="POST">
             <div class="flex-row">
                 <div class="flex-col">
@@ -125,13 +208,11 @@ $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::F
                     </select>
                 </div>
                 <div class="flex-col">
-                    <!-- ITEM 2: SELETOR DE FASE DO TORNEIO -->
                     <label>Fase do Torneio:</label>
                     <select name="fase" required>
-                        <option value="Fase de Grupos">Fase de Grupos (Soma na Classificação)</option>
-                        <option value="Quartas de Final">Quartas de Final (Playoffs / Mata-Mata)</option>
-                        <option value="Semifinal">Semifinal (Playoffs / Mata-Mata)</option>
-                        <option value="3º Lugar / Bronze">3º Lugar / Bronze</option>
+                        <option value="Fase de Grupos">Fase de Grupos (Conta Pontos)</option>
+                        <option value="Quartas de Final">Quartas de Final</option>
+                        <option value="Semifinal">Semifinal</option>
                         <option value="Final">Grande Final 🏆</option>
                     </select>
                 </div>
@@ -141,7 +222,7 @@ $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::F
                 </div>
             </div>
 
-            <div class="flex-row" style="margin-top:10px;">
+            <div class="flex-row" style="margin-top:15px;">
                 <div class="flex-col">
                     <label>Mandante / Casa:</label>
                     <select name="id_casa" required>
@@ -150,14 +231,6 @@ $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::F
                             <option value="<?=$p['id']?>"><?=$p['nome']?></option>
                         <?php endforeach; ?>
                     </select>
-                </div>
-                <div class="flex-col">
-                    <label>Sets Mandante:</label>
-                    <input type="number" name="pts_casa" min="0" max="3" value="3" required>
-                </div>
-                <div class="flex-col">
-                    <label>Sets Visitante:</label>
-                    <input type="number" name="pts_fora" min="0" max="3" value="0" required>
                 </div>
                 <div class="flex-col">
                     <label>Visitante / Fora:</label>
@@ -170,8 +243,81 @@ $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::F
                 </div>
             </div>
 
-            <button type="submit" name="cadastrar_partida">Cadastrar Partida</button>
+            <h3>📊 Pontuação por Set</h3>
+            <div class="sets-grid">
+                <div class="set-box">
+                    <label>1º Set</label>
+                    <input type="number" name="set1_casa" placeholder="Casa" min="0">
+                    <input type="number" name="set1_fora" placeholder="Fora" min="0" style="margin-top:5px;">
+                </div>
+                <div class="set-box">
+                    <label>2º Set</label>
+                    <input type="number" name="set2_casa" placeholder="Casa" min="0">
+                    <input type="number" name="set2_fora" placeholder="Fora" min="0" style="margin-top:5px;">
+                </div>
+                <div class="set-box">
+                    <label>3º Set</label>
+                    <input type="number" name="set3_casa" placeholder="Casa" min="0">
+                    <input type="number" name="set3_fora" placeholder="Fora" min="0" style="margin-top:5px;">
+                </div>
+                <div class="set-box">
+                    <label>4º Set (Op.)</label>
+                    <input type="number" name="set4_casa" placeholder="Casa" min="0">
+                    <input type="number" name="set4_fora" placeholder="Fora" min="0" style="margin-top:5px;">
+                </div>
+                <div class="set-box">
+                    <label>5º Set (Tie)</label>
+                    <input type="number" name="set5_casa" placeholder="Casa" min="0">
+                    <input type="number" name="set5_fora" placeholder="Fora" min="0" style="margin-top:5px;">
+                </div>
+            </div>
+
+            <button type="submit" name="cadastrar_partida">Cadastrar Partida e Sets</button>
         </form>
+    </div>
+
+    <!-- 3. HISTÓRICO DE PARTIDAS COM OPÇÕES DE EDIÇÃO -->
+    <div class="card">
+        <h2>📋 Partidas Cadastradas</h2>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Data</th>
+                        <th>Fase</th>
+                        <th>Gênero</th>
+                        <th>Confronto</th>
+                        <th>Placar</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($partidas_cadastradas)): ?>
+                        <tr><td colspan="7">Nenhuma partida registrada.</td></tr>
+                    <?php else: ?>
+                        <?php foreach ($partidas_cadastradas as $partida): ?>
+                            <tr>
+                                <td>#<?=$partida['id']?></td>
+                                <td><?=date('d/m/Y', strtotime($partida['data_partida']))?></td>
+                                <td><?=$partida['fase']?></td>
+                                <td><?=$partida['genero'] == 'F' ? 'Fem' : 'Masc'?></td>
+                                <td style="text-align: left;">
+                                    <img src="https://flagcdn.com/w40/<?=strtolower($partida['sigla_casa'])?>.png" class="flag"> <?=$partida['nome_casa']?>
+                                    x
+                                    <img src="https://flagcdn.com/w40/<?=strtolower($partida['sigla_fora'])?>.png" class="flag"> <?=$partida['nome_fora']?>
+                                </td>
+                                <td><strong><?=$partida['pontos_casa']?> - <?=$partida['pontos_fora']?></strong></td>
+                                <td>
+                                    <a href="editar_partida.php?id=<?=$partida['id']?>" class="btn-action" style="background:#0284c7;">✏️ Editar</a>
+                                    <a href="cadastro.php?excluir_partida=<?=$partida['id']?>" class="btn-action" style="background:#ef4444;" onclick="return confirm('Deseja realmente excluir esta partida e todos os seus sets?');">🗑️ Excluir</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
