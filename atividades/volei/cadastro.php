@@ -12,6 +12,66 @@ if (!isset($_SESSION['logado']) || $_SESSION['usuario_nivel'] !== 'admin') {
 $msg_sucesso = "";
 $msg_erro = "";
 
+// ====================================================================
+// ITEM 4: LÓGICA DE AVANÇO AUTOMÁTICO (QUARTAS -> SEMI -> FINAL)
+// ====================================================================
+function checarEAvancarMataMata($pdo, $genero) {
+    // 1. AVANÇO DAS QUARTAS PARA AS SEMIFINAIS
+    $stmt_q = $pdo->prepare("SELECT * FROM partidas WHERE fase = 'Quartas de Final' AND genero = ? ORDER BY id ASC");
+    $stmt_q->execute([$genero]);
+    $quartas = $stmt_q->fetchAll(PDO::FETCH_ASSOC);
+
+    if (count($quartas) == 4) {
+        $vencedores_q = [];
+        foreach ($quartas as $q) {
+            if ($q['pontos_casa'] == 3) { $vencedores_q[] = $q['id_casa']; }
+            elseif ($q['pontos_fora'] == 3) { $vencedores_q[] = $q['id_fora']; }
+        }
+
+        // Se todos os 4 jogos das Quartas foram concluídos
+        if (count($vencedores_q) == 4) {
+            $stmt_check_s = $pdo->prepare("SELECT COUNT(*) FROM partidas WHERE fase = 'Semifinal' AND genero = ?");
+            $stmt_check_s->execute([$genero]);
+            if ($stmt_check_s->fetchColumn() == 0) {
+                // Cria as duas Semifinais automaticamente
+                $data_hoje = date('Y-m-d');
+                $stmt_ins = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, genero, fase, data_partida) VALUES (?, ?, 0, 0, ?, 'Semifinal', ?)");
+                
+                // Semifinal 1: Vencedor Q1 (1x8) vs Vencedor Q2 (4x5)
+                $stmt_ins->execute([$vencedores_q[0], $vencedores_q[1], $genero, $data_hoje]);
+                
+                // Semifinal 2: Vencedor Q3 (2x7) vs Vencedor Q4 (3x6)
+                $stmt_ins->execute([$vencedores_q[2], $vencedores_q[3], $genero, $data_hoje]);
+            }
+        }
+    }
+
+    // 2. AVANÇO DAS SEMIFINAIS PARA A GRANDE FINAL
+    $stmt_s = $pdo->prepare("SELECT * FROM partidas WHERE fase = 'Semifinal' AND genero = ? ORDER BY id ASC");
+    $stmt_s->execute([$genero]);
+    $semis = $stmt_s->fetchAll(PDO::FETCH_ASSOC);
+
+    if (count($semis) == 2) {
+        $vencedores_s = [];
+        foreach ($semis as $s) {
+            if ($s['pontos_casa'] == 3) { $vencedores_s[] = $s['id_casa']; }
+            elseif ($s['pontos_fora'] == 3) { $vencedores_s[] = $s['id_fora']; }
+        }
+
+        // Se os 2 jogos de Semifinal foram concluídos
+        if (count($vencedores_s) == 2) {
+            $stmt_check_f = $pdo->prepare("SELECT COUNT(*) FROM partidas WHERE fase = 'Final' AND genero = ?");
+            $stmt_check_f->execute([$genero]);
+            if ($stmt_check_f->fetchColumn() == 0) {
+                // Cria a Grande Final automaticamente
+                $data_hoje = date('Y-m-d');
+                $stmt_ins = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, genero, fase, data_partida) VALUES (?, ?, 0, 0, ?, 'Final', ?)");
+                $stmt_ins->execute([$vencedores_s[0], $vencedores_s[1], $genero, $data_hoje]);
+            }
+        }
+    }
+}
+
 // EXCLUSÃO DE PARTIDA
 if (isset($_GET['excluir_partida'])) {
     $id_excluir = (int)$_GET['excluir_partida'];
@@ -97,6 +157,7 @@ if (isset($_POST['cadastrar_partida'])) {
                 }
 
                 $pdo->commit();
+                checarEAvancarMataMata($pdo, $genero); // Executa verificação e criação automática das fases seguintes
                 $msg_sucesso = "Partida e sets cadastrados com sucesso!";
             } catch (PDOException $e) {
                 $pdo->rollBack();
@@ -172,6 +233,7 @@ $partidas_cadastradas = $pdo->query($sql_partidas)->fetchAll(PDO::FETCH_ASSOC);
 
 <div class="container">
     <a href="index.php" class="btn-top">← Voltar para Classificação</a>
+    <a href="mata_mata.php" class="btn-top">🏆 Ver Mata-Mata</a>
     <h1>⚙️ Painel de Administração - VNL</h1>
 
     <?php if(!empty($msg_sucesso)): ?><div class="alert-success"><?=$msg_sucesso?></div><?php endif; ?>
