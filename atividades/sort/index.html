@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visualizador Bubble Sort 2D</title>
+  <style>
+    body {
+      background-color: #0d1117;
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 10px;
+      margin: 0;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      letter-spacing: 2px;
+    }
+
+    /* Painel de Controles */
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      background-color: #161b22;
+      padding: 15px 20px;
+      border-radius: 8px;
+      border: 1px solid #30363d;
+    }
+
+    input[type="number"] {
+      width: 70px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #30363d;
+      background-color: #0d1117;
+      color: white;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    button {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      background-color: #238636;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #2ea043;
+    }
+
+    button:disabled {
+      background-color: #343942;
+      cursor: not-allowed;
+    }
+
+    /* Status do Algoritmo */
+    .status-text {
+      height: 24px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #ff9800;
+      margin-bottom: 15px;
+    }
+
+    /* Container do Array */
+    .array-container {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 8px;
+      height: 220px;
+      width: 100%;
+      max-width: 800px;
+      background-color: #161b22;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #30363d;
+      box-sizing: border-box;
+    }
+
+    /* As Barras */
+    .bar {
+      background-color: #2b3a4e;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.85rem;
+      border-radius: 4px;
+      transition: height 0.3s ease, background-color 0.3s ease;
+      min-width: 20px;
+    }
+
+    /* Cores de Estado */
+    .active { background-color: #ff9800 !important; } /* Laranja: Comparando */
+    .sorted { background-color: #4caf50 !important; } /* Verde: Ordenado */
+  </style>
+</head>
+<body>
+
+  <h1>BUBBLE SORT (2D)</h1>
+
+  <div class="controls">
+    <label for="arraySize">Nº de Colunas:</label>
+    <input type="number" id="arraySize" value="10" min="3" max="30">
+    <button id="btnGenerate" onclick="generateArray()">Gerar</button>
+    <button id="btnSort" onclick="startSort()">Ordenar</button>
+  </div>
+
+  <div class="status-text" id="status">Aguardando início...</div>
+
+  <div class="array-container" id="container"></div>
+
+  <script>
+    let values = [];
+    let isSorting = false;
+
+    const container = document.getElementById('container');
+    const statusText = document.getElementById('status');
+    const inputSize = document.getElementById('arraySize');
+    const btnGenerate = document.getElementById('btnGenerate');
+    const btnSort = document.getElementById('btnSort');
+
+    // Função para gerar números aleatórios bagunçados
+    function generateArray() {
+      if (isSorting) return;
+
+      const size = parseInt(inputSize.value) || 10;
+      values = [];
+
+      // Cria um array com números aleatórios entre 1 e 100
+      for (let i = 0; i < size; i++) {
+        values.push(Math.floor(Math.random() * 90) + 10);
+      }
+
+      statusText.innerText = "Novo array gerado! Clique em Ordenar.";
+      render();
+    }
+
+    // Desenha as barras na tela com base no array 'values'
+    function render() {
+      container.innerHTML = '';
+      
+      // Ajusta a largura das barras dinamicamente dependendo da quantidade
+      const barWidth = Math.max(15, Math.floor(600 / values.length) - 8);
+
+      values.forEach(val => {
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.height = `${val * 2}px`; // Escala a altura
+        bar.style.width = `${barWidth}px`;
+        
+        // Só exibe o número se a barra for larga o suficiente
+        if (barWidth >= 25) {
+          bar.innerText = val;
+        }
+        
+        container.appendChild(bar);
+      });
+    }
+
+    // Função utilitária para dar uma pausa (tempo de espera da animação)
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    // Executa a ordenação Bubble Sort
+    async function startSort() {
+      if (isSorting || values.length === 0) return;
+
+      isSorting = true;
+      toggleButtons(true); // Desativa botões durante a animação
+
+      const bars = document.querySelectorAll('.bar');
+      let n = values.length;
+
+      for (let p = 0; p < n - 1; p++) {
+        for (let i = 0; i < n - 1 - p; i++) {
+          statusText.innerText = `Comparando a[${i}] e a[${i + 1}]`;
+
+          // Destaca os elementos sendo comparados
+          bars[i].classList.add('active');
+          bars[i + 1].classList.add('active');
+          await sleep(250);
+
+          if (values[i] > values[i + 1]) {
+            statusText.innerText = `Trocando a[${i}] com a[${i + 1}]`;
+
+            // Troca no Array lógico
+            [values[i], values[i + 1]] = [values[i + 1], values[i]];
+
+            // Atualiza o DOM (visual)
+            bars[i].style.height = `${values[i] * 2}px`;
+            bars[i + 1].style.height = `${values[i + 1] * 2}px`;
+
+            if (bars[i].style.width >= '25px') {
+              bars[i].innerText = values[i];
+              bars[i + 1].innerText = values[i + 1];
+            }
+
+            await sleep(250);
+          }
+
+          bars[i].classList.remove('active');
+          bars[i + 1].classList.remove('active');
+        }
+        // Marca o elemento já fixado/ordenado
+        bars[n - 1 - p].classList.add('sorted');
+      }
+
+      // Marca o primeiro elemento como ordenado no final
+      bars[0].classList.add('sorted');
+      statusText.innerText = "¡Ordenado!";
+
+      isSorting = false;
+      toggleButtons(false);
+    }
+
+    // Trava/Destrava os botões
+    function toggleButtons(disabled) {
+      btnGenerate.disabled = disabled;
+      btnSort.disabled = disabled;
+      inputSize.disabled = disabled;
+    }
+
+    // Gera o array inicial assim que carrega a página
+    generateArray();
+  </script>
+</body>
+</html>
