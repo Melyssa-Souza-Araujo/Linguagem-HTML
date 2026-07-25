@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Torre de Hanói 3D - Three.js</title>
+  
+  <!-- Importando Three.js e OrbitControls via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #000000;
+      --card-bg: #11151c;
+      --border-color: #30363d;
+      --primary: #58a6ff;
+      --accent: #ff9800;
+      --success: #3fb950;
+      --code-bg: #011627;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: #c9d1d9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    h1 { color: #f0f6fc; margin-bottom: 5px; letter-spacing: 2px; }
+
+    /* Painel de Controles */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      align-items: center;
+      background-color: var(--card-bg);
+      padding: 15px 25px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 15px;
+      max-width: 700px;
+      width: 100%;
+      box-sizing: border-box;
+      z-index: 10;
+    }
+
+    .control-group { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+
+    input[type="number"], input[type="range"] {
+      background-color: #0d1117;
+      color: white;
+      border: 1px solid var(--border-color);
+      padding: 6px 10px;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    button {
+      padding: 8px 18px;
+      border-radius: 6px;
+      border: none;
+      background-color: #238636;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover { background-color: #2ea043; }
+    button:disabled { background-color: #343942; cursor: not-allowed; opacity: 0.6; }
+
+    .status-panel {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #ffffff;
+      margin-bottom: 15px;
+    }
+
+    /* Container do Canvas 3D */
+    #canvas-container {
+      width: 100%;
+      max-width: 700px;
+      height: 320px;
+      background-color: #05070a;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    #canvas-container canvas {
+      width: 100% !important;
+      height: 100% !important;
+      outline: none;
+    }
+
+    .hint {
+      position: absolute;
+      bottom: 8px;
+      right: 12px;
+      font-size: 0.75rem;
+      color: #8b949e;
+      pointer-events: none;
+    }
+
+    /* Bloco do Código */
+    .code-container {
+      width: 100%;
+      max-width: 700px;
+      background-color: var(--code-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 15px;
+      font-family: monospace;
+      box-sizing: border-box;
+    }
+
+    .code-line { padding: 3px 8px; border-radius: 4px; white-space: pre; color: #d6deeb; }
+    .code-line.active {
+      background-color: rgba(255, 152, 0, 0.25);
+      border-left: 4px solid var(--accent);
+      color: #ffffff;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>TOWER OF HANOI 3D</h1>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>Discos (N):</label>
+      <input type="number" id="diskCount" value="5" min="3" max="7">
+    </div>
+
+    <div class="control-group">
+      <label>Velocidade:</label>
+      <input type="range" id="speedRange" min="50" max="600" value="250" style="direction: rtl">
+    </div>
+
+    <div class="control-group">
+      <label><input type="checkbox" id="soundToggle" checked> Som</label>
+    </div>
+
+    <button id="btnReset" onclick="resetGame()">Reiniciar</button>
+    <button id="btnSolve" onclick="startSolving()">Resolver</button>
+  </div>
+
+  <div class="status-panel" id="moveCounter">Move 0 / 31</div>
+
+  <div id="canvas-container">
+    <div class="hint">🖱️ Arraste para girar | Scroll para zoom</div>
+  </div>
+
+  <div class="code-container" id="code-block"></div>
+
+  <script>
+    const PYTHON_CODE = [
+      "def solve(n, from_peg, to_peg, via_peg):",
+      "    if n == 0:",
+      "        return",
+      "    solve(n - 1, from_peg, via_peg, to_peg)",
+      "    move(from_peg, to_peg)",
+      "    solve(n - 1, via_peg, to_peg, from_peg)"
+    ];
+
+    let nDisks = 5;
+    let movesCount = 0;
+    let totalMoves = 0;
+    let isRunning = false;
+    let audioCtx = null;
+
+    // Três Hastes (Posições X no ambiente 3D)
+    const PEG_X = { A: -6, B: 0, C: 6 };
+    const stacks = { A: [], B: [], C: [] };
+
+    // Elementos do Three.js
+    let scene, camera, renderer, controls;
+    let diskMeshes = {}; // Guarda as malhas 3D de cada disco
+
+    const speedRange = document.getElementById('speedRange');
+    const diskInput = document.getElementById('diskCount');
+    const moveCounter = document.getElementById('moveCounter');
+    const btnSolve = document.getElementById('btnSolve');
+    const btnReset = document.getElementById('btnReset');
+
+    function initCode() {
+      const codeBlock = document.getElementById('code-block');
+      codeBlock.innerHTML = '';
+      PYTHON_CODE.forEach((line, index) => {
+        const div = document.createElement('div');
+        div.className = 'code-line';
+        div.id = `line-${index + 1}`;
+        div.innerText = line;
+        codeBlock.appendChild(div);
+      });
+    }
+
+    function highlightCodeLine(lineNum) {
+      document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+      if (lineNum) {
+        const line = document.getElementById(`line-${lineNum}`);
+        if (line) line.classList.add('active');
+      }
+    }
+
+    function playNote(freq) {
+      if (!document.getElementById('soundToggle').checked) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.12);
+      } catch (e) {}
+    }
+
+    // --- SETUP DO THREE.JS (CENA, LUZES E CÂMERA) ---
+    function initThree() {
+      const container = document.getElementById('canvas-container');
+      
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x05070a);
+
+      camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+      camera.position.set(0, 12, 22);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.maxPolarAngle = Math.PI / 2 - 0.05; // Impede a câmera de ir abaixo do chão
+
+      // Luzes
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+      scene.add(ambientLight);
+
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      dirLight.position.set(10, 20, 15);
+      dirLight.castShadow = true;
+      dirLight.shadow.mapSize.width = 1024;
+      dirLight.shadow.mapSize.height = 1024;
+      scene.add(dirLight);
+
+      // Base Principal (Plataforma azul escuro estilo Instagram)
+      const baseGeo = new THREE.BoxGeometry(19, 0.8, 7);
+      const baseMat = new THREE.MeshStandardMaterial({ color: 0x2b3a4e, roughness: 0.4 });
+      const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+      baseMesh.position.y = -0.4;
+      baseMesh.receiveShadow = true;
+      scene.add(baseMesh);
+
+      // Criar as 3 Hastes Verticais
+      ['A', 'B', 'C'].forEach(peg => {
+        const pegGeo = new THREE.CylinderGeometry(0.2, 0.2, 6, 32);
+        const pegMat = new THREE.MeshStandardMaterial({ color: 0x11161d, metalness: 0.8, roughness: 0.2 });
+        const pegMesh = new THREE.Mesh(pegGeo, pegMat);
+        pegMesh.position.set(PEG_X[peg], 3, 0);
+        pegMesh.castShadow = true;
+        scene.add(pegMesh);
+      });
+
+      // Loop de Animação
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    function onWindowResize() {
+      const container = document.getElementById('canvas-container');
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    }
+
+    // --- LÓGICA DA TORRE DE HANÓI 3D ---
+    function resetGame() {
+      if (isRunning) return;
+      nDisks = parseInt(diskInput.value) || 5;
+      totalMoves = Math.pow(2, nDisks) - 1;
+      movesCount = 0;
+
+      // Limpa discos anteriores da cena
+      Object.values(diskMeshes).forEach(mesh => scene.remove(mesh));
+      diskMeshes = {};
+
+      stacks.A = [];
+      stacks.B = [];
+      stacks.C = [];
+
+      const diskHeight = 0.6;
+
+      // Recria os discos em 3D
+      for (let i = nDisks; i >= 1; i--) {
+        stacks.A.push(i);
+
+        const radius = 0.8 + (i / nDisks) * 1.4;
+        const diskGeo = new THREE.CylinderGeometry(radius, radius, diskHeight, 32);
+        
+        // Cor azul metálico escura para os discos
+        const diskMat = new THREE.MeshStandardMaterial({ 
+          color: 0x1d2d44, 
+          roughness: 0.3,
+          metalness: 0.2 
+        });
+
+        const diskMesh = new THREE.Mesh(diskGeo, diskMat);
+        diskMesh.castShadow = true;
+        diskMesh.receiveShadow = true;
+
+        const stackIndex = stacks.A.length - 1;
+        diskMesh.position.set(PEG_X.A, stackIndex * diskHeight + diskHeight / 2, 0);
+
+        scene.add(diskMesh);
+        diskMeshes[i] = diskMesh;
+      }
+
+      moveCounter.innerText = `Move 0 / ${totalMoves}`;
+      highlightCodeLine(null);
+    }
+
+    const sleep = () => new Promise(resolve => setTimeout(resolve, parseInt(speedRange.value)));
+
+    // Animação Suave 3D do Movimento
+    async function moveDisk3D(from, to) {
+      movesCount++;
+      moveCounter.innerText = `Move ${movesCount} / ${totalMoves}`;
+      highlightCodeLine(5);
+
+      const diskSize = stacks[from].pop();
+      const mesh = diskMeshes[diskSize];
+
+      const startX = PEG_X[from];
+      const endX = PEG_X[to];
+      const targetY = stacks[to].length * 0.6 + 0.3;
+      const liftY = 7.5; // Altura para passar por cima das hastes
+
+      // Cor de Destaque Amarela ao Mover (Igual à imagem)
+      mesh.material.color.setHex(0xffeb3b);
+
+      playNote(180 + diskSize * 60);
+
+      // PASSO 1: Levanta o disco acima da haste
+      await animatePosition(mesh, startX, liftY, 0);
+
+      // PASSO 2: Move horizontalmente até a haste de destino
+      await animatePosition(mesh, endX, liftY, 0);
+
+      // PASSO 3: Desce o disco na pilha de destino
+      await animatePosition(mesh, endX, targetY, 0);
+
+      stacks[to].push(diskSize);
+
+      // Se a torre toda estiver completa na haste C, pinta de verde
+      if (to === 'C' && stacks.C.length === nDisks) {
+        mesh.material.color.setHex(0x3fb950);
+      } else {
+        mesh.material.color.setHex(0x1d2d44);
+      }
+
+      await sleep();
+    }
+
+    // Interpolação suave para animar no espaço 3D
+    function animatePosition(mesh, targetX, targetY, targetZ) {
+      return new Promise(resolve => {
+        const startX = mesh.position.x;
+        const startY = mesh.position.y;
+        const startZ = mesh.position.z;
+        const steps = 12;
+        let step = 0;
+
+        const interval = setInterval(() => {
+          step++;
+          const t = step / steps;
+          mesh.position.x = startX + (targetX - startX) * t;
+          mesh.position.y = startY + (targetY - startY) * t;
+          mesh.position.z = startZ + (targetZ - startZ) * t;
+
+          if (step >= steps) {
+            clearInterval(interval);
+            resolve();
+          }
+        }, 15);
+      });
+    }
+
+    // Solução Recursiva
+    async function solveHanoi(n, from, to, via) {
+      if (n === 0) {
+        highlightCodeLine(2);
+        return;
+      }
+
+      highlightCodeLine(4);
+      await solveHanoi(n - 1, from, via, to);
+
+      await moveDisk3D(from, to);
+
+      highlightCodeLine(6);
+      await solveHanoi(n - 1, via, to, from);
+    }
+
+    async function startSolving() {
+      if (isRunning) return;
+      isRunning = true;
+      toggleButtons(true);
+
+      if (movesCount > 0) resetGame();
+
+      highlightCodeLine(1);
+      await sleep();
+
+      await solveHanoi(nDisks, 'A', 'C', 'B');
+
+      highlightCodeLine(null);
+
+      // Pinta todos os discos de verde no final
+      Object.values(diskMeshes).forEach(mesh => mesh.material.color.setHex(0x3fb950));
+
+      isRunning = false;
+      toggleButtons(false);
+    }
+
+    function toggleButtons(disabled) {
+      btnSolve.disabled = disabled;
+      btnReset.disabled = disabled;
+      diskInput.disabled = disabled;
+    }
+
+    // Inicialização
+    initCode();
+    initThree();
+    resetGame();
+  </script>
+</body>
+</html>
