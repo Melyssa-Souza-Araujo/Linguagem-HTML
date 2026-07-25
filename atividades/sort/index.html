@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Visualizador de Algoritmos 2D Pro</title>
-  
   <style>
     :root {
       --bg-color: #0d1117;
@@ -28,9 +27,17 @@
       overflow-x: hidden;
     }
 
-    h1 { color: #f0f6fc; margin-bottom: 5px; }
+    h1 { 
+      color: #f0f6fc; 
+      margin-bottom: 5px; 
+    }
 
-    .badges { display: flex; gap: 10px; margin-bottom: 20px; }
+    .badges { 
+      display: flex; 
+      gap: 10px; 
+      margin-bottom: 20px; 
+    }
+
     .badge {
       font-size: 0.85rem;
       padding: 4px 10px;
@@ -39,8 +46,15 @@
       border: 1px solid var(--border-color);
       background: var(--card-bg);
     }
-    .badge.time { color: var(--primary); border-color: var(--primary); }
-    .badge.space { color: var(--success); border-color: var(--success); }
+    .badge.time { 
+      color: var(--primary); 
+      border-color: var(--primary); 
+    }
+
+    .badge.space { 
+      color: var(--success); 
+      border-color: var(--success); 
+    }
 
     .controls {
       display: flex;
@@ -58,7 +72,12 @@
       box-sizing: border-box;
     }
 
-    .control-group { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+    .control-group { 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      font-size: 0.9rem; 
+    }
 
     select, input[type="number"], input[type="range"] {
       background-color: var(--bg-color);
@@ -80,11 +99,27 @@
       transition: 0.2s;
     }
 
-    button:hover { background-color: #2ea043; }
-    button:disabled { background-color: #343942; cursor: not-allowed; opacity: 0.6; }
+    button:hover { 
+      background-color: #2ea043; 
+    }
 
-    .stats-panel { display: flex; gap: 20px; margin-bottom: 15px; font-size: 0.95rem; }
-    .stat-item span { color: var(--primary); font-weight: bold; }
+    button:disabled { 
+      background-color: #343942; 
+      cursor: not-allowed; 
+      opacity: 0.6; 
+    }
+
+    .stats-panel { 
+      display: flex; 
+      gap: 20px; 
+      margin-bottom: 15px; 
+      font-size: 0.95rem; 
+    }
+
+    .stat-item span { 
+      color: var(--primary); 
+      font-weight: bold; 
+    }
 
     .status-text {
       height: 24px;
@@ -142,7 +177,13 @@
       box-sizing: border-box;
     }
 
-    .code-line { padding: 2px 8px; border-radius: 4px; white-space: pre; color: #d6deeb; }
+    .code-line { 
+      padding: 2px 8px; 
+      border-radius: 4px; 
+      white-space: pre; 
+      color: #d6deeb; 
+    }
+
     .code-line.active {
       background-color: rgba(255, 152, 0, 0.25);
       border-left: 4px solid var(--accent);
@@ -150,7 +191,6 @@
       font-weight: bold;
     }
 
-    /* Canvas para confete nativo */
     #confetti-canvas {
       position: fixed;
       top: 0;
@@ -163,16 +203,14 @@
   </style>
 </head>
 <body>
-
   <canvas id="confetti-canvas"></canvas>
-
   <h1 id="algo-title">BUBBLE SORT</h1>
   
   <div class="badges">
     <div class="badge time" id="time-complexity">TIME: O(n²)</div>
     <div class="badge space" id="space-complexity">SPACE: O(1)</div>
   </div>
-
+  
   <div class="controls">
     <div class="control-group">
       <label>Algoritmo:</label>
@@ -182,37 +220,35 @@
         <option value="insertion">Insertion Sort</option>
       </select>
     </div>
-
+    
     <div class="control-group">
       <label>Colunas:</label>
       <input type="number" id="arraySize" value="10" min="5" max="30">
     </div>
-
+    
     <div class="control-group">
       <label>Velocidade:</label>
       <input type="range" id="speedRange" min="10" max="500" value="200" style="direction: rtl">
     </div>
-
+    
     <div class="control-group">
       <label><input type="checkbox" id="soundToggle" checked> Som</label>
     </div>
-
+    
     <button id="btnGenerate" onclick="generateArray()">Gerar</button>
     <button id="btnSort" onclick="startSort()">Ordenar</button>
   </div>
-
+  
   <div class="stats-panel">
     <div class="stat-item">Comparações: <span id="stat-comp">0</span></div>
     <div class="stat-item">Trocas: <span id="stat-swaps">0</span></div>
     <div class="stat-item">Tempo: <span id="stat-time">0.0s</span></div>
   </div>
-
+  
   <div class="status-text" id="status">Aguardando início...</div>
-
   <div class="array-container" id="container"></div>
-
   <div class="code-container" id="code-block"></div>
-
+  
   <script>
     const ALGORITHMS = {
       bubble: {
@@ -486,7 +522,6 @@
       document.getElementById('algoSelect').disabled = disabled;
     }
 
-    // --- Confete Nativo em Canvas ---
     function launchConfetti() {
       const canvas = document.getElementById('confetti-canvas');
       const ctx = canvas.getContext('2d');
@@ -528,7 +563,6 @@
       animate();
     }
 
-    // Inicialização
     changeAlgorithm();
     generateArray();
   </script>
