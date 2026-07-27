@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Xadrez Pro com IA & Análise</title>
+
+  <!-- CSS das Bibliotecas -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css"/>
+  
+  <style>
+    :root {
+      --bg-color: #1e1e2e;
+      --panel-bg: #313244;
+      --panel-box: #181825;
+      --accent: #89b4fa;
+      --text: #cdd6f4;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      margin: 0;
+    }
+
+    h1 { margin-bottom: 15px; }
+
+    .main-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      max-width: 1000px;
+      width: 100%;
+    }
+
+    .board-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #board {
+      width: 440px;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    .clock-display {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      font-size: 18px;
+      font-weight: bold;
+      background: var(--panel-bg);
+      padding: 10px 15px;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    .panel {
+      background: var(--panel-bg);
+      padding: 20px;
+      border-radius: 8px;
+      flex: 1;
+      min-width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    label { font-size: 13px; font-weight: bold; color: var(--accent); }
+
+    select, button {
+      padding: 8px 12px;
+      border-radius: 5px;
+      border: none;
+      background: #45475a;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    select:hover, button:hover { background: #585b70; }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-group button { flex: 1; }
+
+    .status-box {
+      background: var(--panel-box);
+      padding: 12px;
+      border-radius: 5px;
+      font-size: 13px;
+    }
+
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      margin: 4px 0;
+    }
+
+    #pgn {
+      width: 100%;
+      height: 80px;
+      background: var(--panel-box);
+      color: #a6adc8;
+      border: 1px solid #45475a;
+      border-radius: 5px;
+      padding: 8px;
+      font-family: monospace;
+      font-size: 12px;
+      resize: none;
+      box-sizing: border-box;
+    }
+
+    /* Destaques visuais no Tabuleiro */
+    .highlight-last { background-color: rgba(255, 255, 0, 0.4) !important; }
+    .highlight-hint { background-color: rgba(0, 255, 255, 0.5) !important; }
+    .highlight-dest { position: relative; }
+    .highlight-dest::after {
+      content: '';
+      position: absolute;
+      top: 35%; left: 35%;
+      width: 30%; height: 30%;
+      background: rgba(0, 255, 0, 0.5);
+      border-radius: 50%;
+    }
+
+    /* Temas de Tabuleiro */
+    .theme-classic .white-1e1d3 { background-color: #f0d9b5; }
+    .theme-classic .black-3c85d { background-color: #b58863; }
+    
+    .theme-wood .white-1e1d3 { background-color: #e2d6b5; }
+    .theme-wood .black-3c85d { background-color: #8a5a36; }
+
+    .theme-ocean .white-1e1d3 { background-color: #dee3e6; }
+    .theme-ocean .black-3c85d { background-color: #8ca2ad; }
+  </style>
+</head>
+<body>
+
+  <h1>Xadrez Pro com IA</h1>
+
+  <div class="main-container">
+    <div class="board-container">
+      <div class="clock-display">
+        <span>🤖 IA: <span id="timer-ai">10:00</span></span>
+        <span>👤 Você: <span id="timer-user">10:00</span></span>
+      </div>
+
+      <div id="board" class="theme-classic"></div>
+
+      <div class="btn-group" style="width: 100%;">
+        <button onclick="undoMove()">↩ Desfazer</button>
+        <button onclick="getHint()">💡 Dica</button>
+        <button onclick="resetGame()">🔄 Novo Jogo</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="control-group">
+        <label for="userColor">Sua Cor:</label>
+        <select id="userColor" onchange="resetGame()">
+          <option value="w">Brancas</option>
+          <option value="b">Pretas</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="difficulty">Dificuldade da IA:</label>
+        <select id="difficulty" onchange="updateAIDifficulty()">
+          <option value="1">Iniciante (Elo 800)</option>
+          <option value="5" selected>Intermediário (Elo 1500)</option>
+          <option value="12">Avançado (Elo 2000)</option>
+          <option value="20">Mestre (Elo 2500+)</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="playerMode">Modo de Jogo:</label>
+        <select id="playerMode" onchange="checkAutoPlay()">
+          <option value="human">Jogador vs IA</option>
+          <option value="ai">IA vs IA (Automático)</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="timeControl">Tempo de Jogo:</label>
+        <select id="timeControl" onchange="resetGame()">
+          <option value="0">Sem Tempo</option>
+          <option value="180">Blitz (3 min)</option>
+          <option value="600" selected>Rápido (10 min)</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="boardTheme">Tema do Tabuleiro:</label>
+        <select id="boardTheme" onchange="changeTheme(this.value)">
+          <option value="theme-classic">Clássico (Verde/Madeira)</option>
+          <option value="theme-wood">Madeira Escura</option>
+          <option value="theme-ocean">Oceano (Azul/Cinza)</option>
+        </select>
+      </div>
+
+      <div class="status-box">
+        <div class="stat"><span>Vantagem Material:</span><strong id="score">0</strong></div>
+        <div class="stat"><span>Lances Brancas:</span><strong id="movesW">0</strong></div>
+        <div class="stat"><span>Lances Pretas:</span><strong id="movesB">0</strong></div>
+        <div class="stat"><span>Estado:</span><strong id="status">Em andamento</strong></div>
+      </div>
+
+      <div class="control-group">
+        <label>Histórico de Movimentos (PGN):</label>
+        <textarea id="pgn" readonly></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS das Bibliotecas -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+
+  <script>
+    let board = null;
+    let game = new Chess();
+    let stockfish = null;
+    let moveCountW = 0, moveCountB = 0;
+    let timerW = 600, timerB = 600, timerInterval = null;
+    let selectedSquare = null;
+
+    // --- SINTETIZADOR DE SOM NATIVO (Web Audio API) ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'move') {
+        osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+      } else if (type === 'capture') {
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+      } else if (type === 'check') {
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+      }
+    }
+
+    // --- INICIALIZAÇÃO DA ENGINE STOCKFISH ---
+    function initStockfish() {
+      // Carrega Stockfish via Web Worker mantido publicamente
+      const blob = new Blob([`importScripts('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js');`], {type: 'application/javascript'});
+      stockfish = new Worker(URL.createObjectURL(blob));
+      
+      stockfish.onmessage = function(e) {
+        if (e.data.startsWith('bestmove')) {
+          const move = e.data.split(' ')[1];
+          if (move) {
+            makeMoveFromSAN({ from: move.substring(0, 2), to: move.substring(2, 4), promotion: move[4] || 'q' });
+          }
+        }
+      };
+      updateAIDifficulty();
+    }
+
+    function updateAIDifficulty() {
+      if (!stockfish) return;
+      const depth = $('#difficulty').val();
+      stockfish.postMessage(`setoption name Skill Level value ${depth}`);
+    }
+
+    function triggerAIMove() {
+      if (game.game_over()) return;
+      stockfish.postMessage(`position fen ${game.fen()}`);
+      stockfish.postMessage(`go depth ${$('#difficulty').val()}`);
+    }
+
+    // --- LÓGICA DE MOVIMENTOS E INTERFAZ ---
+    function removeHighlights() {
+      $('#board .square-55d63').removeClass('highlight-dest highlight-hint');
+    }
+
+    function highlightLastMove(from, to) {
+      $('#board .square-55d63').removeClass('highlight-last');
+      $(`#board .square-${from}`).addClass('highlight-last');
+      $(`#board .square-${to}`).addClass('highlight-last');
+    }
+
+    function onSquareClick(square) {
+      if ($('#playerMode').val() === 'ai' || game.game_over()) return;
+
+      const userColor = $('#userColor').val();
+      if (game.turn() !== userColor) return;
+
+      // Tenta fazer o movimento
+      if (selectedSquare) {
+        const move = makeMoveFromSAN({ from: selectedSquare, to: square, promotion: 'q' });
+        selectedSquare = null;
+        removeHighlights();
+        if (move) return;
+      }
+
+      // Se clicar na sua própria peça, mostra movimentos válidos
+      const piece = game.get(square);
+      if (piece && piece.color === userColor) {
+        selectedSquare = square;
+        removeHighlights();
+        const moves = game.moves({ square: square, verbose: true });
+        moves.forEach(m => $(`#board .square-${m.to}`).addClass('highlight-dest'));
+      }
+    }
+
+    function makeMoveFromSAN(moveObj) {
+      const move = game.move(moveObj);
+      if (move === null) return null;
+
+      // Sons e Destaques
+      if (game.in_check()) playSound('check');
+      else if (move.captured) playSound('capture');
+      else playSound('move');
+
+      highlightLastMove(move.from, move.to);
+      board.position(game.fen());
+      
+      updateUI();
+
+      if (!checkGameStatus()) {
+        const userColor = $('#userColor').val();
+        if (game.turn() !== userColor || $('#playerMode').val() === 'ai') {
+          setTimeout(triggerAIMove, 300);
+        }
+      }
+      return move;
+    }
+
+    function onDragStart(source, piece) {
+      if (game.game_over() || $('#playerMode').val() === 'ai') return false;
+      const userColor = $('#userColor').val();
+      if ((userColor === 'w' && piece.search(/^b/) !== -1) ||
+          (userColor === 'b' && piece.search(/^w/) !== -1)) {
+        return false;
+      }
+    }
+
+    function onDrop(source, target) {
+      removeHighlights();
+      const move = makeMoveFromSAN({ from: source, to: target, promotion: 'q' });
+      if (move === null) return 'snapback';
+    }
+
+    // --- RECURSOS EXTRAS (Undo, Hint, Clocks) ---
+    function undoMove() {
+      game.undo(); // Desfaz jogada da IA
+      game.undo(); // Desfaz jogada do Humano
+      board.position(game.fen());
+      removeHighlights();
+      updateUI();
+    }
+
+    function getHint() {
+      if (game.game_over()) return;
+      stockfish.onmessage = function(e) {
+        if (e.data.startsWith('bestmove')) {
+          const move = e.data.split(' ')[1];
+          removeHighlights();
+          $(`#board .square-${move.substring(0,2)}`).addClass('highlight-hint');
+          $(`#board .square-${move.substring(2,4)}`).addClass('highlight-hint');
+          initStockfish(); // Restaura manipulador padrão
+        }
+      };
+      stockfish.postMessage(`position fen ${game.fen()}`);
+      stockfish.postMessage(`go depth 10`);
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      const timeLimit = parseInt($('#timeControl').val());
+      if (timeLimit === 0) {
+        $('#timer-user').text('--:--');
+        $('#timer-ai').text('--:--');
+        return;
+      }
+
+      timerW = timeLimit; timerB = timeLimit;
+      timerInterval = setInterval(() => {
+        if (game.game_over()) return;
+        if (game.turn() === 'w') timerW--;
+        else timerB--;
+
+        formatTimer('timer-user', $('#userColor').val() === 'w' ? timerW : timerB);
+        formatTimer('timer-ai', $('#userColor').val() === 'w' ? timerB : timerW);
+
+        if (timerW <= 0 || timerB <= 0) {
+          clearInterval(timerInterval);
+          $('#status').text('Tempo esgotado! Fim de jogo.');
+        }
+      }, 1000);
+    }
+
+    function formatTimer(elementId, seconds) {
+      const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const s = (seconds % 60).toString().padStart(2, '0');
+      $(`#${elementId}`).text(`${m}:${s}`);
+    }
+
+    function changeTheme(themeClass) {
+      $('#board').removeClass('theme-classic theme-wood theme-ocean').addClass(themeClass);
+    }
+
+    // --- ATUALIZAÇÕES GERAIS ---
+    function updateUI() {
+      const history = game.history();
+      moveCountW = Math.ceil(history.length / 2);
+      moveCountB = Math.floor(history.length / 2);
+
+      $('#movesW').text(moveCountW);
+      $('#movesB').text(moveCountB);
+      $('#pgn').val(game.pgn());
+
+      // Contagem de Vantagem Material
+      const vals = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
+      let score = 0;
+      game.board().forEach(row => row.forEach(cell => {
+        if (cell) score += cell.color === 'w' ? vals[cell.type] : -vals[cell.type];
+      }));
+      const userColor = $('#userColor').val();
+      const displayScore = userColor === 'w' ? score : -score;
+      $('#score').text(displayScore > 0 ? `+${displayScore}` : displayScore);
+    }
+
+    function checkGameStatus() {
+      let isOver = false;
+      if (game.in_checkmate()) {
+        $('#status').text(`Xeque-Mate! Vencedor: ${game.turn() === 'w' ? 'Pretas' : 'Brancas'}`);
+        isOver = true;
+      } else if (game.in_draw()) {
+        $('#status').text('Empate!');
+        isOver = true;
+      } else if (game.in_check()) {
+        $('#status').text('Em Xeque!');
+      } else {
+        $('#status').text('Em andamento');
+      }
+      return isOver;
+    }
+
+    function checkAutoPlay() {
+      if ($('#playerMode').val() === 'ai' && !game.game_over()) {
+        triggerAIMove();
+      }
+    }
+
+    function resetGame() {
+      game.reset();
+      removeHighlights();
+      const userColor = $('#userColor').val();
+      board.orientation(userColor === 'w' ? 'white' : 'black');
+      board.start();
+      updateUI();
+      startTimer();
+
+      if (userColor === 'b' || $('#playerMode').val() === 'ai') {
+        setTimeout(triggerAIMove, 500);
+      }
+    }
+
+    // --- CONFIGURAÇÃO INICIAL ---
+    board = Chessboard('board', {
+      draggable: true,
+      position: 'start',
+      onDragStart: onDragStart,
+      onDrop: onDrop,
+      onSnapEnd: () => board.position(game.fen()),
+      pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+    });
+
+    $('#board').on('click', '.square-55d63', function() {
+      onSquareClick($(this).data('square'));
+    });
+
+    initStockfish();
+    resetGame();
+  </script>
+</body>
+  </html>
+  
