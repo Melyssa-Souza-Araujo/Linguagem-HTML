@@ -13,11 +13,11 @@ $msg_sucesso = "";
 $msg_erro = "";
 
 // ====================================================================
-// ITEM 4: LÓGICA DE AVANÇO AUTOMÁTICO (QUARTAS -> SEMI -> FINAL)
+// LÓGICA DE AVANÇO AUTOMÁTICO (QUARTAS -> SEMI -> FINAL E 3º LUGAR)
 // ====================================================================
 function checarEAvancarMataMata($pdo, $genero) {
     // 1. AVANÇO DAS QUARTAS PARA AS SEMIFINAIS
-    $stmt_q = $pdo->prepare("SELECT * FROM partidas WHERE fase = 'Quartas de Final' AND genero = ? ORDER BY id ASC");
+    $stmt_q = $pdo->prepare("SELECT * FROM partidas WHERE fase = 'Quartas de Final' AND genero = ? AND (pontos_casa = 3 OR pontos_fora = 3) ORDER BY id ASC");
     $stmt_q->execute([$genero]);
     $quartas = $stmt_q->fetchAll(PDO::FETCH_ASSOC);
 
@@ -28,45 +28,59 @@ function checarEAvancarMataMata($pdo, $genero) {
             elseif ($q['pontos_fora'] == 3) { $vencedores_q[] = $q['id_fora']; }
         }
 
-        // Se todos os 4 jogos das Quartas foram concluídos
         if (count($vencedores_q) == 4) {
             $stmt_check_s = $pdo->prepare("SELECT COUNT(*) FROM partidas WHERE fase = 'Semifinal' AND genero = ?");
             $stmt_check_s->execute([$genero]);
             if ($stmt_check_s->fetchColumn() == 0) {
-                // Cria as duas Semifinais automaticamente
                 $data_hoje = date('Y-m-d');
                 $stmt_ins = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, genero, fase, data_partida) VALUES (?, ?, 0, 0, ?, 'Semifinal', ?)");
                 
-                // Semifinal 1: Vencedor Q1 (1x8) vs Vencedor Q2 (4x5)
+                // Semifinal 1: Vencedor Q1 vs Vencedor Q2
                 $stmt_ins->execute([$vencedores_q[0], $vencedores_q[1], $genero, $data_hoje]);
-                
-                // Semifinal 2: Vencedor Q3 (2x7) vs Vencedor Q4 (3x6)
+                // Semifinal 2: Vencedor Q3 vs Vencedor Q4
                 $stmt_ins->execute([$vencedores_q[2], $vencedores_q[3], $genero, $data_hoje]);
             }
         }
     }
 
-    // 2. AVANÇO DAS SEMIFINAIS PARA A GRANDE FINAL
-    $stmt_s = $pdo->prepare("SELECT * FROM partidas WHERE fase = 'Semifinal' AND genero = ? ORDER BY id ASC");
+    // 2. AVANÇO DAS SEMIFINAIS PARA A FINAL E DISPUTA DE 3º LUGAR
+    $stmt_s = $pdo->prepare("SELECT * FROM partidas WHERE fase = 'Semifinal' AND genero = ? AND (pontos_casa = 3 OR pontos_fora = 3) ORDER BY id ASC");
     $stmt_s->execute([$genero]);
     $semis = $stmt_s->fetchAll(PDO::FETCH_ASSOC);
 
     if (count($semis) == 2) {
         $vencedores_s = [];
+        $perdedores_s = [];
+
         foreach ($semis as $s) {
-            if ($s['pontos_casa'] == 3) { $vencedores_s[] = $s['id_casa']; }
-            elseif ($s['pontos_fora'] == 3) { $vencedores_s[] = $s['id_fora']; }
+            if ($s['pontos_casa'] == 3) { 
+                $vencedores_s[] = $s['id_casa']; 
+                $perdedores_s[] = $s['id_fora'];
+            } elseif ($s['pontos_fora'] == 3) { 
+                $vencedores_s[] = $s['id_fora']; 
+                $perdedores_s[] = $s['id_casa'];
+            }
         }
 
-        // Se os 2 jogos de Semifinal foram concluídos
+        // Cria Grande Final (Vencedores)
         if (count($vencedores_s) == 2) {
             $stmt_check_f = $pdo->prepare("SELECT COUNT(*) FROM partidas WHERE fase = 'Final' AND genero = ?");
             $stmt_check_f->execute([$genero]);
             if ($stmt_check_f->fetchColumn() == 0) {
-                // Cria a Grande Final automaticamente
                 $data_hoje = date('Y-m-d');
                 $stmt_ins = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, genero, fase, data_partida) VALUES (?, ?, 0, 0, ?, 'Final', ?)");
                 $stmt_ins->execute([$vencedores_s[0], $vencedores_s[1], $genero, $data_hoje]);
+            }
+        }
+
+        // Cria Disputa de 3º Lugar (Perdedores)
+        if (count($perdedores_s) == 2) {
+            $stmt_check_3 = $pdo->prepare("SELECT COUNT(*) FROM partidas WHERE fase = '3º Lugar / Bronze' AND genero = ?");
+            $stmt_check_3->execute([$genero]);
+            if ($stmt_check_3->fetchColumn() == 0) {
+                $data_hoje = date('Y-m-d');
+                $stmt_ins = $pdo->prepare("INSERT INTO partidas (id_casa, id_fora, pontos_casa, pontos_fora, genero, fase, data_partida) VALUES (?, ?, 0, 0, ?, '3º Lugar / Bronze', ?)");
+                $stmt_ins->execute([$perdedores_s[0], $perdedores_s[1], $genero, $data_hoje]);
             }
         }
     }
@@ -84,7 +98,7 @@ if (isset($_GET['excluir_partida'])) {
     }
 }
 
-// 1. CADASTRAR PAÍS
+// CADASTRAR PAÍS
 if (isset($_POST['cadastrar_pais'])) {
     $nome = trim($_POST['nome_pais']);
     $sigla = strtolower(trim($_POST['sigla_pais']));
@@ -100,7 +114,7 @@ if (isset($_POST['cadastrar_pais'])) {
     }
 }
 
-// 2. CADASTRAR PARTIDA COM PONTOS DOS SETS
+// CADASTRAR PARTIDA E SETS
 if (isset($_POST['cadastrar_partida'])) {
     $id_casa = (int)$_POST['id_casa'];
     $id_fora = (int)$_POST['id_fora'];
@@ -134,11 +148,8 @@ if (isset($_POST['cadastrar_partida'])) {
 
         foreach ($sets as $num => $p) {
             if ($p['casa'] > 0 || $p['fora'] > 0) {
-                if ($p['casa'] > $p['fora']) {
-                    $sets_vencidos_casa++;
-                } else if ($p['fora'] > $p['casa']) {
-                    $sets_vencidos_fora++;
-                }
+                if ($p['casa'] > $p['fora']) { $sets_vencidos_casa++; } 
+                else if ($p['fora'] > $p['casa']) { $sets_vencidos_fora++; }
                 $sets_validos[$num] = $p;
             }
         }
@@ -157,7 +168,10 @@ if (isset($_POST['cadastrar_partida'])) {
                 }
 
                 $pdo->commit();
-                checarEAvancarMataMata($pdo, $genero); // Executa verificação e criação automática das fases seguintes
+                
+                // Dispara o avanço dinâmico
+                checarEAvancarMataMata($pdo, $genero);
+                
                 $msg_sucesso = "Partida e sets cadastrados com sucesso!";
             } catch (PDOException $e) {
                 $pdo->rollBack();
@@ -171,7 +185,7 @@ if (isset($_POST['cadastrar_partida'])) {
     }
 }
 
-// Carrega dados para os selects e tabela
+// Dados para selects
 $paises = $pdo->query("SELECT * FROM paises ORDER BY nome ASC")->fetchAll(PDO::FETCH_ASSOC);
 
 $sql_partidas = "
@@ -195,14 +209,8 @@ $partidas_cadastradas = $pdo->query($sql_partidas)->fetchAll(PDO::FETCH_ASSOC);
         :root {
             --bg-body: #0b132b; --txt-main: #f1f5f9; --txt-heading: #48cae4;
             --bg-card: #1c2541; --border-line: #3a506b; --btn-bg: #48cae4; 
-            --btn-txt: #0b132b; --accent-blue: #00b4d8; --input-bg: #0b132b;
+            --btn-txt: #0b132b; --input-bg: #0b132b;
         }
-        [data-theme="light"] {
-            --bg-body: #e0f2fe; --txt-main: #0f172a; --txt-heading: #0369a1;
-            --bg-card: #ffffff; --border-line: #bae6fd; --btn-bg: #0284c7; 
-            --btn-txt: #ffffff; --accent-blue: #0284c7; --input-bg: #f8fafc;
-        }
-
         body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: var(--bg-body); color: var(--txt-main); }
         .container { max-width: 900px; margin: 0 auto; }
         .card { background: var(--bg-card); border: 1px solid var(--border-line); border-radius: 8px; padding: 20px; margin-bottom: 25px; }
@@ -210,18 +218,14 @@ $partidas_cadastradas = $pdo->query($sql_partidas)->fetchAll(PDO::FETCH_ASSOC);
         label { display: block; margin-top: 10px; font-weight: bold; font-size: 13px; }
         input, select { width: 100%; padding: 10px; margin-top: 5px; background: var(--input-bg); border: 1px solid var(--border-line); color: var(--txt-main); border-radius: 4px; box-sizing: border-box; }
         button { background: var(--btn-bg); color: var(--btn-txt); border: none; padding: 12px 20px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 15px; width: 100%; }
-        
         .flex-row { display: flex; gap: 15px; flex-wrap: wrap; }
         .flex-col { flex: 1; min-width: 180px; }
-        
         .alert-success { background: #10b981; color: white; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
         .alert-error { background: #ef4444; color: white; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
         .btn-top { display: inline-block; background: var(--border-line); color: var(--txt-main); padding: 8px 16px; border-radius: 20px; text-decoration: none; margin-bottom: 20px; font-weight: bold; font-size: 13px; }
-        
         .sets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 15px; background: var(--bg-body); padding: 15px; border-radius: 6px; border: 1px solid var(--border-line); }
         .set-box { text-align: center; }
         .set-box input { text-align: center; font-weight: bold; }
-        
         table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 15px; }
         th, td { padding: 10px; border-bottom: 1px solid var(--border-line); text-align: center; }
         th { background: var(--border-line); color: var(--txt-main); }
@@ -239,7 +243,7 @@ $partidas_cadastradas = $pdo->query($sql_partidas)->fetchAll(PDO::FETCH_ASSOC);
     <?php if(!empty($msg_sucesso)): ?><div class="alert-success"><?=$msg_sucesso?></div><?php endif; ?>
     <?php if(!empty($msg_erro)): ?><div class="alert-error"><?=$msg_erro?></div><?php endif; ?>
 
-    <!-- 1. CADASTRAR PAÍS -->
+    <!-- CADASTRAR SELEÇÃO -->
     <div class="card">
         <h2>🏳️ Cadastrar Nova Seleção</h2>
         <form method="POST">
@@ -257,7 +261,7 @@ $partidas_cadastradas = $pdo->query($sql_partidas)->fetchAll(PDO::FETCH_ASSOC);
         </form>
     </div>
 
-    <!-- 2. CADASTRAR PARTIDA COM PONTOS DOS SETS -->
+    <!-- CADASTRAR PARTIDA -->
     <div class="card">
         <h2>🏐 Cadastrar Partida e Sets</h2>
         <form method="POST">
@@ -275,6 +279,7 @@ $partidas_cadastradas = $pdo->query($sql_partidas)->fetchAll(PDO::FETCH_ASSOC);
                         <option value="Fase de Grupos">Fase de Grupos (Conta Pontos)</option>
                         <option value="Quartas de Final">Quartas de Final</option>
                         <option value="Semifinal">Semifinal</option>
+                        <option value="3º Lugar / Bronze">3º Lugar / Bronze 🥉</option>
                         <option value="Final">Grande Final 🏆</option>
                     </select>
                 </div>
@@ -338,7 +343,7 @@ $partidas_cadastradas = $pdo->query($sql_partidas)->fetchAll(PDO::FETCH_ASSOC);
         </form>
     </div>
 
-    <!-- 3. HISTÓRICO DE PARTIDAS COM OPÇÕES DE EDIÇÃO -->
+    <!-- HISTÓRICO DE PARTIDAS -->
     <div class="card">
         <h2>📋 Partidas Cadastradas</h2>
         <div style="overflow-x: auto;">
