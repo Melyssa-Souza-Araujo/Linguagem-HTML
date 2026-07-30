@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Studio Ultimate</title>
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --text-color: #0f172a;
+      --text-muted: #64748b;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --radius: 12px;
+    }
+
+    body.dark-theme {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text-color: #f8fafc;
+      --text-muted: #94a3b8;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      transition: background-color 0.25s, color 0.25s, border-color 0.25s;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    /* Notificação Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+      z-index: 1000;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+    }
+
+    body.dark-theme .toast {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    header {
+      max-width: 1100px;
+      margin: 0 auto 24px auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .brand h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    button {
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      box-shadow: var(--shadow);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .primary-btn {
+      background-color: var(--accent);
+      color: #ffffff;
+      border: none;
+    }
+
+    .primary-btn:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* Painel Principal de Controles */
+    .mode-panel {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .control-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    select, input[type="color"], input[type="text"] {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--card-border);
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-size: 0.85rem;
+    }
+
+    input[type="color"] {
+      padding: 2px;
+      width: 38px;
+      height: 36px;
+      cursor: pointer;
+    }
+
+    /* Grade da Paleta */
+    .palette-wrapper {
+      position: relative;
+    }
+
+    .palette-container {
+      display: flex;
+      gap: 12px;
+      height: 360px;
+      margin-bottom: 24px;
+    }
+
+    .color-card {
+      flex: 1;
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      cursor: grab;
+      user-select: none;
+      position: relative;
+    }
+
+    .color-card:active {
+      cursor: grabbing;
+    }
+
+    .color-card.dragging {
+      opacity: 0.4;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(8px);
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 0.9rem;
+      padding: 0;
+      box-shadow: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .edit-picker {
+      position: absolute;
+      opacity: 0;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+    }
+
+    .card-bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .wcag-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 6px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.2);
+      display: inline-block;
+      width: fit-content;
+    }
+
+    .color-role {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      opacity: 0.8;
+    }
+
+    .color-value {
+      font-weight: 800;
+      font-size: 1.1rem;
+      background: rgba(0, 0, 0, 0.12);
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    /* Ações de Exportação */
+    .export-panel {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow);
+    }
+
+    .export-panel h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .export-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Histórico */
+    .history-section {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .history-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .history-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .history-palette {
+      display: flex;
+      flex: 1;
+      height: 40px;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .history-item {
+      flex: 1;
+    }
+
+    .history-tag {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      min-width: 120px;
+    }
+
+    /* Filtros SVG de Daltonismo */
+    .blindness-protanopia { filter: url('#protanopia'); }
+    .blindness-deuteranopia { filter: url('#deuteranopia'); }
+    .blindness-tritanopia { filter: url('#tritanopia'); }
+    .blindness-achromatopsia { filter: url('#achromatopsia'); }
+
+    @media (max-width: 768px) {
+      .palette-container {
+        flex-direction: column;
+        height: auto;
+      }
+      .color-card {
+        height: 100px;
+        flex-direction: row;
+        align-items: center;
+      }
+      .export-panel {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Filtros SVG de Daltonismo embutidos -->
+  <svg style="display: none;">
+    <defs>
+      <filter id="protanopia">
+        <feColorMatrix type="matrix" values="0.56667,0.43333,0,0,0 0.55833,0.44167,0,0,0 0,0.24167,0.75833,0,0 0,0,0,1,0"/>
+      </filter>
+      <filter id="deuteranopia">
+        <feColorMatrix type="matrix" values="0.625,0.375,0,0,0 0.7,0.3,0,0,0 0,0.3,0.7,0,0 0,0,0,1,0"/>
+      </filter>
+      <filter id="tritanopia">
+        <feColorMatrix type="matrix" values="0.95,0.05,0,0,0 0,0.43333,0.56667,0,0 0,0.475,0.525,0,0 0,0,0,1,0"/>
+      </filter>
+      <filter id="achromatopsia">
+        <feColorMatrix type="matrix" values="0.299,0.587,0.114,0,0 0.299,0.587,0.114,0,0 0.299,0.587,0.114,0,0 0,0,0,1,0"/>
+      </filter>
+    </defs>
+  </svg>
+
+  <div id="toast" class="toast">Copiado para a área de transferência!</div>
+
+  <header>
+    <div class="brand">
+      <h1>Color Studio Ultimate</h1>
+      <p>Gerador, Acessibilidade & Edição Avançada de Cores</p>
+    </div>
+    <button id="btn-theme">🌓 Modo Escuro</button>
+  </header>
+
+  <main class="container">
+    <div class="mode-panel">
+      <div class="panel-row">
+        
+        <!-- Seleção de Algoritmo -->
+        <div class="control-group">
+          <label for="generation-mode">Algoritmo:</label>
+          <select id="generation-mode">
+            <option value="random">🎲 Totalmente Aleatório</option>
+            <option value="monochromatic">📐 Monocromática</option>
+            <option value="analogous">🌈 Análoga</option>
+            <option value="complementary">⚡ Complementar</option>
+            <option value="triadic">🔺 Triádica</option>
+            <option value="split">🔱 Complementar Dividida</option>
+          </select>
+        </div>
+
+        <!-- Cor Base -->
+        <div class="control-group">
+          <label for="base-color-picker">Cor Base:</label>
+          <input type="color" id="base-color-picker" value="#2563eb">
+          <input type="text" id="base-color-hex" value="#2563EB" size="7" maxlength="7">
+        </div>
+
+        <!-- Simulador de Daltonismo -->
+        <div class="control-group">
+          <label for="blindness-mode">Simular Visão:</label>
+          <select id="blindness-mode">
+            <option value="none">👁️ Visão Normal</option>
+            <option value="protanopia">🔴 Protanopia (Sem Vermelho)</option>
+            <option value="deuteranopia">🟢 Deuteranopia (Sem Verde)</option>
+            <option value="tritanopia">🔵 Tritanopia (Sem Azul)</option>
+            <option value="achromatopsia">⚪ Acromatopsia (Monocromático)</option>
+          </select>
+        </div>
+
+        <!-- Formato do Texto -->
+        <div class="control-group">
+          <label for="color-format">Exibir:</label>
+          <select id="color-format">
+            <option value="HEX">HEX</option>
+            <option value="RGB">RGB</option>
+            <option value="HSL">HSL</option>
+          </select>
+        </div>
+
+        <button id="btn-generate" class="primary-btn">Gerar Paleta (Espaço)</button>
+      </div>
+    </div>
+
+    <!-- Grade da Paleta -->
+    <div class="palette-wrapper">
+      <div id="palette-container" class="palette-container"></div>
+    </div>
+
+    <!-- Painel de Exportação -->
+    <div class="export-panel">
+      <h4>Exportar Paleta Atual:</h4>
+      <div class="export-buttons">
+        <button id="btn-export-png">🖼️ PNG</button>
+        <button id="btn-export-css">🎨 CSS Variables</button>
+        <button id="btn-export-tailwind">🌀 Tailwind Config</button>
+        <button id="btn-export-json">📄 JSON</button>
+      </div>
+    </div>
+
+    <!-- Histórico -->
+    <section class="history-section">
+      <div class="history-header">
+        <h3>Histórico Recente</h3>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Clique para restaurar</span>
+      </div>
+      <div id="history-container" class="history-container"></div>
+    </section>
+  </main>
+<script>
+  let palette = [];
+    let history = [];
+
+    const paletteContainer = document.getElementById('palette-container');
+    const btnGenerate = document.getElementById('btn-generate');
+    const btnTheme = document.getElementById('btn-theme');
+    const generationModeSelect = document.getElementById('generation-mode');
+    const blindnessModeSelect = document.getElementById('blindness-mode');
+    const baseColorPicker = document.getElementById('base-color-picker');
+    const baseColorHex = document.getElementById('base-color-hex');
+    const colorFormatSelect = document.getElementById('color-format');
+    const historyContainer = document.getElementById('history-container');
+    const toast = document.getElementById('toast');
+
+    // --- CONVERSÕES DE CORES ---
+    function hexToRgb(hex) {
+      let c = hex.replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      const num = parseInt(c, 16);
+      return [num >> 16, (num >> 8) & 255, num & 255];
+    }
+
+    function rgbToHex([r, g, b]) {
+      return "#" + [r, g, b].map(x => {
+        const h = Math.max(0, Math.min(255, Math.round(x))).toString(16);
+        return h.length === 1 ? '0' + h : h;
+      }).join('').toUpperCase();
+    }
+
+    function rgbToHsl([r, g, b]) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
+    }
+
+    function hslToRgb([h, s, l]) {
+      h = (h % 360 + 360) % 360;
+      s = Math.max(0, Math.min(100, s)) / 100;
+      l = Math.max(0, Math.min(100, l)) / 100;
+
+      const c = (1 - Math.abs(2 * l - 1)) * s;
+      const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+      const m = l - c / 2;
+
+      let r = 0, g = 0, b = 0;
+      if (0 <= h && h < 60) { r = c; g = x; b = 0; }
+      else if (60 <= h && h < 120) { r = x; g = c; b = 0; }
+      else if (120 <= h && h < 180) { r = 0; g = c; b = x; }
+      else if (180 <= h && h < 240) { r = 0; g = x; b = c; }
+      else if (240 <= h && h < 300) { r = x; g = 0; b = c; }
+      else if (300 <= h && h < 360) { r = c; g = 0; b = x; }
+
+      return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
+    }
+
+    // --- CÁLCULO DE CONTRASTE WCAG ---
+    function getLuminance([r, g, b]) {
+      const a = [r, g, b].map(v => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      });
+      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+    }
+
+    function getContrastRatio(rgb1, rgb2) {
+      const lum1 = getLuminance(rgb1);
+      const lum2 = getLuminance(rgb2);
+      const brightest = Math.max(lum1, lum2);
+      const darkest = Math.min(lum1, lum2);
+      return (brightest + 0.05) / (darkest + 0.05);
+    }
+
+    function getWcagRating(rgb) {
+      const contrastWithWhite = getContrastRatio(rgb, [255, 255, 255]);
+      const contrastWithBlack = getContrastRatio(rgb, [15, 23, 42]);
+      
+      const bestContrast = Math.max(contrastWithWhite, contrastWithBlack);
+      const textColor = contrastWithWhite > contrastWithBlack ? '#FFFFFF' : '#0F172A';
+
+      let rating = 'FAIL';
+      if (bestContrast >= 7) rating = 'AAA';
+      else if (bestContrast >= 4.5) rating = 'AA';
+
+      return {
+        text: `${bestContrast.toFixed(1)}:1 (${rating})`,
+        textColor: textColor
+      };
+    }
+
+    function formatColor(rgbArray) {
+      const format = colorFormatSelect.value;
+      if (format === 'HEX') return rgbToHex(rgbArray);
+      if (format === 'RGB') return `rgb(${rgbArray.join(', ')})`;
+      if (format === 'HSL') {
+        const [h, s, l] = rgbToHsl(rgbArray);
+        return `hsl(${h}, ${s}%, ${l}%)`;
+      }
+    }
+
+    // --- ALGORITMOS DE PALETA ---
+    function generatePaletteData() {
+      const mode = generationModeSelect.value;
+      const baseRgb = hexToRgb(baseColorPicker.value);
+      const [h, s, l] = rgbToHsl(baseRgb);
+
+      let newColors = [];
+
+      switch (mode) {
+        case 'monochromatic':
+          newColors = [
+            { hsl: [h, s, Math.max(15, l - 35)], role: 'Sombra' },
+            { hsl: [h, s, Math.max(25, l - 20)], role: 'Escuro' },
+            { hsl: [h, s, l], role: 'Base' },
+            { hsl: [h, Math.max(10, s - 15), Math.min(85, l + 20)], role: 'Claro' },
+            { hsl: [h, Math.max(10, s - 25), Math.min(95, l + 35)], role: 'Suave' }
+          ];
+          break;
+
+        case 'analogous':
+          newColors = [
+            { hsl: [(h - 40 + 360) % 360, s, l], role: 'Análoga 1' },
+            { hsl: [(h - 20 + 360) % 360, s, l], role: 'Análoga 2' },
+            { hsl: [h, s, l], role: 'Base' },
+            { hsl: [(h + 20) % 360, s, l], role: 'Análoga 3' },
+            { hsl: [(h + 40) % 360, s, l], role: 'Análoga 4' }
+          ];
+          break;
+
+        case 'complementary':
+          const compH = (h + 180) % 360;
+          newColors = [
+            { hsl: [h, s, Math.max(20, l - 20)], role: 'Base Escura' },
+            { hsl: [h, s, l], role: 'Base' },
+            { hsl: [h, Math.max(10, s - 20), Math.min(90, l + 30)], role: 'Base Clara' },
+            { hsl: [compH, s, l], role: 'Complementar' },
+            { hsl: [compH, s, Math.max(20, l - 20)], role: 'Comp. Escura' }
+          ];
+          break;
+
+        case 'triadic':
+          newColors = [
+            { hsl: [h, s, l], role: 'Base' },
+            { hsl: [h, s, Math.min(85, l + 25)], role: 'Base Acento' },
+            { hsl: [(h + 120) % 360, s, l], role: 'Triádica 1' },
+            { hsl: [(h + 240) % 360, s, l], role: 'Triádica 2' },
+            { hsl: [(h + 240) % 360, s, Math.max(20, l - 20)], role: 'Triádica 2 Escura' }
+          ];
+          break;
+
+        case 'split':
+          newColors = [
+            { hsl: [h, s, Math.max(20, l - 20)], role: 'Base Escura' },
+            { hsl: [h, s, l], role: 'Base' },
+            { hsl: [(h + 150) % 360, s, l], role: 'Dividida 1' },
+            { hsl: [(h + 210) % 360, s, l], role: 'Dividida 2' },
+            { hsl: [(h + 210) % 360, s, Math.min(85, l + 20)], role: 'Dividida 2 Clara' }
+          ];
+          break;
+
+        case 'random':
+        default:
+          newColors = Array.from({ length: 5 }, (_, i) => ({
+            hsl: [Math.floor(Math.random() * 360), Math.floor(Math.random() * 60) + 35, Math.floor(Math.random() * 50) + 30],
+            role: `Cor ${i + 1}`
+          }));
+          break;
+      }
+
+      return newColors.map(item => ({
+        rgb: hslToRgb(item.hsl),
+        role: item.role
+      }));
+    }
+
+    function generateNewPalette() {
+      const generatedData = generatePaletteData();
+
+      if (palette.length > 0) {
+        saveToHistory([...palette.map(c => [...c.rgb])], getModeLabel());
+      }
+
+      if (palette.length === 0) {
+        palette = generatedData.map(d => ({ ...d, locked: false }));
+      } else {
+        palette = palette.map((color, idx) => {
+          if (color.locked) return color;
+          return { rgb: generatedData[idx].rgb, role: generatedData[idx].role, locked: false };
+        });
+      }
+
+      renderPalette();
+    }
+
+    function getModeLabel() {
+      const opt = generationModeSelect.options[generationModeSelect.selectedIndex];
+      return opt.text.split(' ')[1] || 'Aleatório';
+    }
+
+    // --- RENDERIZAÇÃO DA PALETA + DRAG & DROP + EDIÇÃO ---
+    let draggedIndex = null;
+
+    function renderPalette() {
+      paletteContainer.innerHTML = '';
+      
+      // Aplica simulador de daltonismo
+      paletteContainer.className = 'palette-container';
+      const bMode = blindnessModeSelect.value;
+      if (bMode !== 'none') {
+        paletteContainer.classList.add(`blindness-${bMode}`);
+      }
+
+      palette.forEach((color, index) => {
+        const card = document.createElement('div');
+        card.className = 'color-card';
+        card.draggable = true;
+        card.dataset.index = index;
+        card.style.backgroundColor = `rgb(${color.rgb.join(',')})`;
+        
+        const wcagInfo = getWcagRating(color.rgb);
+        const textColor = wcagInfo.textColor;
+
+        card.innerHTML = `
+          <div class="card-top">
+            <button class="icon-btn lock-btn" style="color: ${textColor}" title="Travar Cor">
+              ${color.locked ? '🔒' : '🔓'}
+            </button>
+            <div style="position: relative;">
+              <button class="icon-btn" style="color: ${textColor}" title="Editar Cor Manualmente">✏️</button>
+              <input type="color" class="edit-picker" value="${rgbToHex(color.rgb)}">
+            </div>
+          </div>
+          <div class="card-bottom">
+            <span class="wcag-badge" style="color: ${textColor}">WCAG ${wcagInfo.text}</span>
+            <span class="color-role" style="color: ${textColor}">${color.role}</span>
+            <div class="color-value" style="color: ${textColor}">${formatColor(color.rgb)}</div>
+          </div>
+        `;
+
+        // Travar
+        card.querySelector('.lock-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          palette[index].locked = !palette[index].locked;
+          renderPalette();
+        });
+
+        // Edição Individual
+        const editPicker = card.querySelector('.edit-picker');
+        editPicker.addEventListener('input', (e) => {
+          palette[index].rgb = hexToRgb(e.target.value);
+          renderPalette();
+        });
+
+        // Copiar
+        card.querySelector('.color-value').addEventListener('click', () => {
+          copyToClipboard(formatColor(color.rgb));
+        });
+
+        // Eventos Drag and Drop
+        card.addEventListener('dragstart', (e) => {
+          draggedIndex = index;
+          card.classList.add('dragging');
+        });
+
+        card.addEventListener('dragend', () => {
+          card.classList.remove('dragging');
+        });
+
+        card.addEventListener('dragover', (e) => {
+          e.preventDefault();
+        });
+
+        card.addEventListener('drop', (e) => {
+          e.preventDefault();
+          if (draggedIndex !== null && draggedIndex !== index) {
+            const itemToMove = palette.splice(draggedIndex, 1)[0];
+            palette.splice(index, 0, itemToMove);
+            renderPalette();
+          }
+        });
+
+        paletteContainer.appendChild(card);
+      });
+    }
+
+    // --- EXPORTAÇÃO DE PALETAS ---
+    document.getElementById('btn-export-css').addEventListener('click', () => {
+      let css = ':root {\n';
+      palette.forEach((c, i) => {
+        css += `  --color-${i + 1}: ${rgbToHex(c.rgb)};\n`;
+      });
+      css += '}';
+      copyToClipboard(css);
+    });
+
+    document.getElementById('btn-export-tailwind').addEventListener('click', () => {
+      let tw = 'colors: {\n';
+      palette.forEach((c, i) => {
+        tw += `  'brand-${i + 1}': '${rgbToHex(c.rgb)}',\n`;
+      });
+      tw += '}';
+      copyToClipboard(tw);
+    });
+
+    document.getElementById('btn-export-json').addEventListener('click', () => {
+      const json = JSON.stringify(palette.map(c => ({
+        hex: rgbToHex(c.rgb),
+        rgb: c.rgb,
+        role: c.role
+      })), null, 2);
+      copyToClipboard(json);
+    });
+
+    // Exportar Imagem PNG via HTML5 Canvas
+    document.getElementById('btn-export-png').addEventListener('click', () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1000;
+      canvas.height = 400;
+      const ctx = canvas.getContext('2d');
+
+      const cardWidth = canvas.width / palette.length;
+
+      palette.forEach((color, i) => {
+        ctx.fillStyle = `rgb(${color.rgb.join(',')})`;
+        ctx.fillRect(i * cardWidth, 0, cardWidth, canvas.height);
+
+        const wcagInfo = getWcagRating(color.rgb);
+        ctx.fillStyle = wcagInfo.textColor;
+        ctx.font = 'bold 24px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(rgbToHex(color.rgb), i * cardWidth + cardWidth / 2, canvas.height - 40);
+      });
+
+      const link = document.createElement('a');
+      link.download = 'paleta-color-studio.png';
+      link.href = canvas.toDataURL();
+      link.click();
+      showToast('Download da Imagem PNG iniciado!');
+    });
+
+    // --- HISTÓRICO ---
+    function saveToHistory(rgbPalette, modeTag) {
+      history.unshift({ palette: rgbPalette, tag: modeTag });
+      if (history.length > 5) history.pop();
+      renderHistory();
+    }
+
+    function renderHistory() {
+      historyContainer.innerHTML = '';
+      history.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'history-row';
+
+        const tag = document.createElement('span');
+        tag.className = 'history-tag';
+        tag.textContent = item.tag;
+
+        const paletteDiv = document.createElement('div');
+        paletteDiv.className = 'history-palette';
+
+        item.palette.forEach(rgb => {
+          const colorBar = document.createElement('div');
+          colorBar.className = 'history-item';
+          colorBar.style.backgroundColor = `rgb(${rgb.join(',')})`;
+          paletteDiv.appendChild(colorBar);
+        });
+
+        paletteDiv.addEventListener('click', () => {
+          palette = item.palette.map((rgb, i) => ({ rgb, role: `Cor ${i + 1}`, locked: false }));
+          renderPalette();
+        });
+
+        row.appendChild(tag);
+        row.appendChild(paletteDiv);
+        historyContainer.appendChild(row);
+      });
+    }
+
+    // --- UTILITÁRIOS ---
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text);
+      showToast('Copiado para a área de transferência!');
+    }
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark-theme');
+      const isDark = document.body.classList.contains('dark-theme');
+      btnTheme.textContent = isDark ? '☀️ Modo Claro' : '🌓 Modo Escuro';
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+
+    btnGenerate.addEventListener('click', generateNewPalette);
+    btnTheme.addEventListener('click', toggleTheme);
+    colorFormatSelect.addEventListener('change', renderPalette);
+    generationModeSelect.addEventListener('change', generateNewPalette);
+    blindnessModeSelect.addEventListener('change', renderPalette);
+
+    baseColorPicker.addEventListener('input', (e) => {
+      baseColorHex.value = e.target.value.toUpperCase();
+      if (generationModeSelect.value !== 'random') generateNewPalette();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+      if (e.code === 'Space') { e.preventDefault(); generateNewPalette(); }
+      if (e.key.toLowerCase() === 'd') toggleTheme();
+    });
+
+    generateNewPalette();
+  </script>
+</body>
+</html>
