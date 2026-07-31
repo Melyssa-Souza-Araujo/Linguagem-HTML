@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Studio DAW FX - Multi-Track Studio</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --danger: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; padding: 24px; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 20px; }
+    
+    header { text-align: center; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+    header h1 { font-size: 2rem; background: linear-gradient(135deg, #60a5fa, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    /* Canvas Visualizador */
+    .visualizer-container { background: #000; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    canvas { width: 100%; height: 160px; display: block; }
+    .vis-controls { position: absolute; top: 12px; right: 12px; }
+
+    /* Painéis */
+    .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+    .row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+
+    .file-btn { background: #334155; color: var(--text); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+    input[type="file"] { display: none; }
+
+    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    button { background: var(--panel); color: var(--text); border: 1px solid var(--border); padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+    button:hover { background: var(--border); }
+    button.primary { background: var(--accent); border-color: var(--accent); }
+    button.primary:hover { background: var(--accent-hover); }
+    button.danger { background: var(--danger); border-color: var(--danger); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .countdown-overlay { font-size: 1.5rem; font-weight: bold; color: var(--warning); display: none; }
+
+    /* Grid de Efeitos */
+    .effects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .effect-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .effect-header { display: flex; justify-content: space-between; align-items: center; }
+
+    .slider-group { display: flex; flex-direction: column; gap: 4px; }
+    .slider-group label { font-size: 0.8rem; color: #94a3b8; display: flex; justify-content: space-between; }
+    input[type="range"] { width: 100%; accent-color: var(--accent); }
+
+    /* Switch iOS */
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider-round { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border); transition: .3s; border-radius: 24px; }
+    .slider-round:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+    input:checked + .slider-round { background-color: var(--accent); }
+    input:checked + .slider-round:before { transform: translateX(20px); }
+
+    .status-badge { font-size: 0.85rem; padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,0.05); }
+    .export-container { display: none; flex-direction: column; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Studio DAW FX & Workstation</h1>
+      <p>Estúdio completo de gravação, mixagem e efeitos em tempo real</p>
+    </header>
+
+    <!-- Visualizador -->
+    <div class="visualizer-container">
+      <canvas id="visualizer"></canvas>
+      <div class="vis-controls">
+        <button id="btn-vis-mode" style="font-size: 0.75rem; padding: 4px 8px;">📊 Espectro</button>
+      </div>
+    </div>
+
+    <!-- Pista de Música de Fundo / Trimmer -->
+    <div class="panel">
+      <div class="row">
+        <label class="file-btn">
+          📁 Carregar Instrumental / Track
+          <input type="file" id="music-upload" accept="audio/*">
+        </label>
+        <span id="music-name" style="font-size: 0.85rem; color: #94a3b8;">Nenhum arquivo carregado</span>
+      </div>
+      
+      <div class="row" id="music-player-controls" style="display: none;">
+        <button id="btn-play-music">▶️ Play Instrumental</button>
+        <div class="slider-group" style="flex: 1; max-width: 180px;">
+          <label>Volume Música <span id="val-music-vol">80%</span></label>
+          <input type="range" id="slider-music-vol" min="0" max="1" step="0.05" value="0.8">
+        </div>
+        <div class="slider-group" style="flex: 1; max-width: 200px;">
+          <label>Atraso de Início (Offset) <span id="val-music-offset">0.0s</span></label>
+          <input type="range" id="slider-music-offset" min="0" max="10" step="0.5" value="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- Painel de Gravação e Metrônomo -->
+    <div class="panel">
+      <div class="row">
+        <div class="btn-group">
+          <button id="btn-mic" class="primary">🎙️ Ligar Microfone</button>
+          <button id="btn-record" disabled>🔴 Gravar com Contagem</button>
+        </div>
+        
+        <div class="countdown-overlay" id="countdown-display">3... 2... 1...</div>
+        <div id="status" class="status-badge">Microfone Desconectado</div>
+      </div>
+
+      <!-- Exportação -->
+      <div class="export-container" id="export-panel">
+        <label style="font-size: 0.85rem; color: #94a3b8;">Sua Gravação está pronta:</label>
+        <audio id="audio-preview" controls style="width: 100%; height: 36px;"></audio>
+      </div>
+    </div>
+
+    <!-- Grid de Processamento e Efeitos -->
+    <div class="effects-grid">
+      
+      <!-- Auto-Tune -->
+      <div class="effect-card">
+        <div class="effect-header">
+          <h3>🎵 Auto-Tune (Dó Maior)</h3>
+          <label class="switch">
+            <input type="checkbox" id="toggle-autotune">
+            <span class="slider-round"></span>
+          </label>
+        </div>
+        <div id="autotune-note" style="font-weight: bold; font-size: 0.85rem; color: #60a5fa;">Nota: --</div>
+      </div>
+
+      <!-- Compressor de Dinâmica -->
+      <div class="effect-card">
+        <div class="effect-header">
+          <h3>🎙️ Compressor de Dinâmica</h3>
+          <label class="switch">
+            <input type="checkbox" id="toggle-compressor">
+            <span class="slider-round"></span>
+          </label>
+        </div>
+        <p style="font-size: 0.75rem; color: #94a3b8;">Nivela os picos da voz deixando o som encorpado.</p>
+      </div>
+
+      <!-- Sidechain Ducking -->
+      <div class="effect-card">
+        <div class="effect-header">
+          <h3>📉 Ducking (Abaixar Música)</h3>
+          <label class="switch">
+            <input type="checkbox" id="toggle-ducking">
+            <span class="slider-round"></span>
+          </label>
+        </div>
+        <p style="font-size: 0.75rem; color: #94a3b8;">Reduz a música de fundo enquanto a voz estiver ativa.</p>
+      </div>
+
+      <!-- Equalizador de 3 Bandas -->
+      <div class="effect-card">
+        <div class="effect-header">
+          <h3>🎚️ Equalizador (EQ)</h3>
+          <label class="switch">
+            <input type="checkbox" id="toggle-eq">
+            <span class="slider-round"></span>
+          </label>
+        </div>
+        <div class="slider-group">
+          <label>Graves (Bass) <span id="val-eq-low">0 dB</span></label>
+          <input type="range" id="slider-eq-low" min="-12" max="12" value="0">
+        </div>
+        <div class="slider-group">
+          <label>Médios (Mids) <span id="val-eq-mid">0 dB</span></label>
+          <input type="range" id="slider-eq-mid" min="-12" max="12" value="0">
+        </div>
+        <div class="slider-group">
+          <label>Agudos (High) <span id="val-eq-high">0 dB</span></label>
+          <input type="range" id="slider-eq-high" min="-12" max="12" value="0">
+        </div>
+      </div>
+
+      <!-- Distorção -->
+      <div class="effect-card">
+        <div class="effect-header">
+          <h3>🔥 Distorção</h3>
+          <label class="switch">
+            <input type="checkbox" id="toggle-distortion">
+            <span class="slider-round"></span>
+          </label>
+        </div>
+        <div class="slider-group">
+          <label>Intensidade <span id="val-distortion">20</span></label>
+          <input type="range" id="slider-distortion" min="0" max="100" value="20">
+        </div>
+      </div>
+
+      <!-- Eco / Delay -->
+      <div class="effect-card">
+        <div class="effect-header">
+          <h3>🔁 Eco / Delay</h3>
+          <label class="switch">
+            <input type="checkbox" id="toggle-delay">
+            <span class="slider-round"></span>
+          </label>
+        </div>
+        <div class="slider-group">
+          <label>Tempo <span id="val-delay">0.3s</span></label>
+          <input type="range" id="slider-delay" min="0.1" max="1" step="0.05" value="0.3">
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+       <script>
+    // --- ESTADO DA DAW ---
+    let audioCtx, micStream, sourceNode, analyserNode, mediaRecorder;
+    let musicAudioElement, musicSourceNode, musicGainNode;
+    let recordedChunks = [];
+    let isRecording = false;
+    let visMode = 'frequency';
+
+    // Nós de Processamento
+    let compressorNode, eqLow, eqMid, eqHigh, distortionNode, delayNode, delayFeedbackNode;
+
+    const canvas = document.getElementById('visualizer');
+    const canvasCtx = canvas.getContext('2d');
+    const btnMic = document.getElementById('btn-mic');
+    const btnRecord = document.getElementById('btn-record');
+    const btnVisMode = document.getElementById('btn-vis-mode');
+    const statusText = document.getElementById('status');
+    const audioPreview = document.getElementById('audio-preview');
+    const exportPanel = document.getElementById('export-panel');
+    const countdownDisplay = document.getElementById('countdown-display');
+
+    const musicUpload = document.getElementById('music-upload');
+    const musicName = document.getElementById('music-name');
+    const musicPlayerControls = document.getElementById('music-player-controls');
+    const btnPlayMusic = document.getElementById('btn-play-music');
+    const sliderMusicVol = document.getElementById('slider-music-vol');
+
+    const SCALE_NOTES = [130.81, 146.83, 164.81, 174.61, 196.00, 220.00, 246.94, 261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // --- INICIALIZAÇÃO DE ÁUDIO ---
+    async function initAudio() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        sourceNode = audioCtx.createMediaStreamSource(micStream);
+
+        analyserNode = audioCtx.createAnalyser();
+        analyserNode.fftSize = 2048;
+
+        // Instanciar Nós de Efeitos
+        compressorNode = audioCtx.createDynamicsCompressor();
+
+        eqLow = audioCtx.createBiquadFilter(); eqLow.type = 'lowshelf'; eqLow.frequency.value = 320;
+        eqMid = audioCtx.createBiquadFilter(); eqMid.type = 'peaking'; eqMid.frequency.value = 1000; eqMid.Q.value = 0.5;
+        eqHigh = audioCtx.createBiquadFilter(); eqHigh.type = 'highshelf'; eqHigh.frequency.value = 3200;
+
+        distortionNode = audioCtx.createWaveShaper();
+        delayNode = audioCtx.createDelay();
+        delayFeedbackNode = audioCtx.createGain(); delayFeedbackNode.gain.value = 0.4;
+
+        buildAudioGraph();
+        drawVisualizer();
+
+        btnMic.disabled = true;
+        btnMic.innerText = "🎙️ Microfone Ativo";
+        btnRecord.disabled = false;
+        statusText.innerText = "Estúdio Conectado";
+        statusText.style.color = "#10b981";
+
+      } catch (err) {
+        alert("Erro no Microfone: " + err.message);
+      }
+    }
+
+    // --- CADEIA DE ÁUDIO DINÂMICA ---
+    function buildAudioGraph() {
+      if (!sourceNode) return;
+
+      sourceNode.disconnect();
+      compressorNode.disconnect();
+      eqLow.disconnect(); eqMid.disconnect(); eqHigh.disconnect();
+      distortionNode.disconnect(); delayNode.disconnect();
+
+      let lastNode = sourceNode;
+
+      // 1. Compressor
+      if (document.getElementById('toggle-compressor').checked) {
+        lastNode.connect(compressorNode);
+        lastNode = compressorNode;
+      }
+
+      // 2. Equalizador 3 Bandas
+      if (document.getElementById('toggle-eq').checked) {
+        eqLow.gain.value = parseFloat(document.getElementById('slider-eq-low').value);
+        eqMid.gain.value = parseFloat(document.getElementById('slider-eq-mid').value);
+        eqHigh.gain.value = parseFloat(document.getElementById('slider-eq-high').value);
+
+        lastNode.connect(eqLow);
+        eqLow.connect(eqMid);
+        eqMid.connect(eqHigh);
+        lastNode = eqHigh;
+      }
+
+      // 3. Distorção
+      if (document.getElementById('toggle-distortion').checked) {
+        distortionNode.curve = makeDistortionCurve(parseInt(document.getElementById('slider-distortion').value));
+        lastNode.connect(distortionNode);
+        lastNode = distortionNode;
+      }
+
+      // 4. Eco / Delay
+      if (document.getElementById('toggle-delay').checked) {
+        delayNode.delayTime.value = parseFloat(document.getElementById('slider-delay').value);
+        lastNode.connect(delayNode);
+        delayNode.connect(delayFeedbackNode);
+        delayFeedbackNode.connect(delayNode);
+        delayNode.connect(analyserNode);
+      }
+
+      lastNode.connect(analyserNode);
+      analyserNode.connect(audioCtx.destination);
+    }
+
+    // --- SIDECHAIN DUCKING & AUTO-TUNE LOOP ---
+    function processAudioFeatures() {
+      if (!analyserNode) return;
+
+      const buffer = new Float32Array(analyserNode.fftSize);
+      analyserNode.getFloatTimeDomainData(buffer);
+
+      // 1. Ducking
+      if (document.getElementById('toggle-ducking').checked && musicGainNode) {
+        let sum = 0;
+        for (let i = 0; i < buffer.length; i++) sum += buffer[i] * buffer[i];
+        let rms = Math.sqrt(sum / buffer.length);
+        
+        // Se a voz for maior que o limiar, reduz volume da música
+        if (rms > 0.05) {
+          musicGainNode.gain.setTargetAtTime(0.2, audioCtx.currentTime, 0.1);
+        } else {
+          musicGainNode.gain.setTargetAtTime(parseFloat(sliderMusicVol.value), audioCtx.currentTime, 0.3);
+        }
+      }
+
+      // 2. Auto-Tune Pitch Detection
+      if (document.getElementById('toggle-autotune').checked) {
+        const pitch = autoCorrelate(buffer, audioCtx.sampleRate);
+        if (pitch !== -1) {
+          const closestNote = SCALE_NOTES.reduce((prev, curr) => Math.abs(curr - pitch) < Math.abs(prev - pitch) ? curr : prev);
+          document.getElementById('autotune-note').innerText = `Pitch: ${pitch.toFixed(1)}Hz ➔ Auto: ${closestNote.toFixed(1)}Hz`;
+        }
+      } else {
+        document.getElementById('autotune-note').innerText = "Nota: --";
+      }
+    }
+
+    // --- UPLOAD MÚSICA & OFFSET ---
+    musicUpload.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      musicName.innerText = file.name;
+      const fileURL = URL.createObjectURL(file);
+
+      if (musicAudioElement) musicAudioElement.pause();
+
+      musicAudioElement = new Audio(fileURL);
+      musicSourceNode = audioCtx.createMediaElementSource(musicAudioElement);
+      musicGainNode = audioCtx.createGain();
+
+      musicGainNode.gain.value = sliderMusicVol.value;
+      musicSourceNode.connect(musicGainNode);
+      musicGainNode.connect(audioCtx.destination);
+
+      musicPlayerControls.style.display = 'flex';
+      btnPlayMusic.innerText = "▶️ Play Instrumental";
+    });
+
+    btnPlayMusic.addEventListener('click', () => {
+      if (!musicAudioElement) return;
+      if (musicAudioElement.paused) {
+        musicAudioElement.play();
+        btnPlayMusic.innerText = "⏸️ Pausar Instrumental";
+      } else {
+        musicAudioElement.pause();
+        btnPlayMusic.innerText = "▶️ Play Instrumental";
+      }
+    });
+
+    // --- METRÔNOMO & CONTAGEM REGRESSIVA ---
+    function playBeep(freq, time) {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.frequency.value = freq;
+      gain.gain.value = 0.3;
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(time);
+      osc.stop(time + 0.1);
+    }
+
+    async function startCountdown() {
+      countdownDisplay.style.display = 'block';
+      let now = audioCtx.currentTime;
+
+      for (let i = 3; i > 0; i--) {
+        countdownDisplay.innerText = `${i}...`;
+        playBeep(880, now + (3 - i));
+        await new Promise(r => setTimeout(r, 1000));
+      }
+      countdownDisplay.innerText = "GRAVANDO!";
+      playBeep(1760, audioCtx.currentTime);
+      setTimeout(() => { countdownDisplay.style.display = 'none'; }, 1000);
+    }
+
+    // --- GRAVAÇÃO ---
+    async function toggleRecording() {
+      if (!isRecording) {
+        await startCountdown();
+
+        const dest = audioCtx.createMediaStreamDestination();
+        analyserNode.connect(dest);
+        if (musicGainNode) musicGainNode.connect(dest);
+
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(dest.stream);
+
+        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+          audioPreview.src = URL.createObjectURL(blob);
+          exportPanel.style.display = 'flex';
+        };
+
+        const offset = parseFloat(document.getElementById('slider-music-offset').value) * 1000;
+        setTimeout(() => {
+          if (musicAudioElement) musicAudioElement.play();
+        }, offset);
+
+        mediaRecorder.start();
+        isRecording = true;
+        btnRecord.innerText = "⏹️ Parar Gravação";
+        btnRecord.classList.add('danger');
+        statusText.innerText = "Gravando Mixagem...";
+        statusText.style.color = "#ef4444";
+      } else {
+        mediaRecorder.stop();
+        if (musicAudioElement) musicAudioElement.pause();
+
+        isRecording = false;
+        btnRecord.innerText = "🔴 Gravar com Contagem";
+        btnRecord.classList.remove('danger');
+        statusText.innerText = "Gravação Finalizada!";
+        statusText.style.color = "#10b981";
+      }
+    }
+
+    // --- VISUALIZADOR ---
+    function drawVisualizer() {
+      requestAnimationFrame(drawVisualizer);
+      processAudioFeatures();
+
+      const width = canvas.width;
+      const height = canvas.height;
+      canvasCtx.fillStyle = '#000000';
+      canvasCtx.fillRect(0, 0, width, height);
+
+      if (!analyserNode) return;
+
+      if (visMode === 'frequency') {
+        const bufferLength = analyserNode.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        analyserNode.getByteFrequencyData(dataArray);
+
+        const barWidth = (width / bufferLength) * 2.5;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+          const barHeight = (dataArray[i] / 255) * height;
+          canvasCtx.fillStyle = `hsl(${i * 2 + 180}, 100%, 50%)`;
+          canvasCtx.fillRect(x, height - barHeight, barWidth, barHeight);
+          x += barWidth + 1;
+        }
+      } else {
+        const bufferLength = analyserNode.fftSize;
+        const dataArray = new Uint8Array(bufferLength);
+        analyserNode.getByteTimeDomainData(dataArray);
+
+        canvasCtx.lineWidth = 2;
+        canvasCtx.strokeStyle = '#60a5fa';
+        canvasCtx.beginPath();
+
+        const sliceWidth = width * 1.0 / bufferLength;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+          const v = dataArray[i] / 128.0;
+          const y = v * height / 2;
+          if (i === 0) canvasCtx.moveTo(x, y);
+          else canvasCtx.lineTo(x, y);
+          x += sliceWidth;
+        }
+        canvasCtx.stroke();
+      }
+    }
+
+    // --- AUXILIARES MATEMÁTICOS ---
+    function makeDistortionCurve(amount) {
+      let k = amount, n_samples = 44100, curve = new Float32Array(n_samples), deg = Math.PI / 180;
+      for (let i = 0; i < n_samples; ++i) {
+        let x = i * 2 / n_samples - 1;
+        curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
+      }
+      return curve;
+    }
+
+    function autoCorrelate(buf, sampleRate) {
+      let SIZE = buf.length, rms = 0;
+      for (let i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
+      rms = Math.sqrt(rms / SIZE);
+      if (rms < 0.01) return -1;
+
+      let r1 = 0, r2 = SIZE - 1, thres = 0.2;
+      for (let i = 0; i < SIZE / 2; i++) if (Math.abs(buf[i]) < thres) { r1 = i; break; }
+      for (let i = 1; i < SIZE / 2; i++) if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; }
+
+      buf = buf.slice(r1, r2); SIZE = buf.length;
+      let c = new Array(SIZE).fill(0);
+      for (let i = 0; i < SIZE; i++)
+        for (let j = 0; j < SIZE - i; j++)
+          c[i] = c[i] + buf[j] * buf[j + i];
+
+      let d = 0; while (c[d] > c[d + 1]) d++;
+      let maxval = -1, maxpos = -1;
+      for (let i = d; i < SIZE; i++) {
+        if (c[i] > maxval) { maxval = c[i]; maxpos = i; }
+      }
+      return sampleRate / maxpos;
+    }
+
+    // Listeners
+    btnMic.addEventListener('click', initAudio);
+    btnRecord.addEventListener('click', toggleRecording);
+    btnVisMode.addEventListener('click', () => {
+      visMode = visMode === 'frequency' ? 'waveform' : 'frequency';
+      btnVisMode.innerText = visMode === 'frequency' ? '📊 Espectro' : '🌊 Onda';
+    });
+
+    const inputs = document.querySelectorAll('input[type="range"], input[type="checkbox"]');
+    inputs.forEach(input => {
+      input.addEventListener('input', (e) => {
+        const span = document.getElementById(`val-${e.target.id.replace('slider-', '')}`);
+        if (span) {
+          let unit = e.target.id.includes('offset') || e.target.id.includes('delay') ? 's' : (e.target.id.includes('eq') ? ' dB' : '');
+          span.innerText = e.target.value + unit;
+        }
+        buildAudioGraph();
+      });
+    });
+  </script>
+</body>
+</html>
