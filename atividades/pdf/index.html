@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Conversor Avançado EPUB para PDF</title>
+  <title>Conversor EPUB para PDF Enterprise</title>
   
-  <!-- Tailwind CSS CDN -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -20,7 +20,7 @@
     }
   </script>
 
-  <!-- Fontes Google -->
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code&family=Inter:wght@400;600;700&family=Merriweather&display=swap" rel="stylesheet">
 
   <!-- Dependências JavaScript -->
@@ -36,7 +36,6 @@
     .hide-images img {
       display: none !important;
     }
-    /* Estilos dinâmicos do preview */
     .preview-font-serif { font-family: 'Merriweather', serif; }
     .preview-font-sans { font-family: 'Inter', sans-serif; }
     .preview-font-mono { font-family: 'Fira Code', monospace; }
@@ -44,12 +43,12 @@
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen transition-colors duration-200">
 
-  <!-- Navbar -->
+  <!-- Header -->
   <header class="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
       <div class="flex items-center space-x-3">
         <svg class="w-8 h-8 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-        <h1 class="text-xl font-bold tracking-tight">EPUB2PDF <span class="text-xs bg-brand-500 text-white px-2 py-0.5 rounded-full font-normal">Pro</span></h1>
+        <h1 class="text-xl font-bold tracking-tight">EPUB2PDF <span class="text-xs bg-brand-500 text-white px-2 py-0.5 rounded-full font-normal">Ultra</span></h1>
       </div>
       <button id="theme-toggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
         <span id="theme-icon">🌙</span>
@@ -59,76 +58,73 @@
 
   <main class="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
     
-    <!-- Painel Esquerdo: Controles e Upload (5 cols) -->
+    <!-- Painel Esquerdo -->
     <section class="lg:col-span-5 space-y-6">
       
-      <!-- Zona Drag & Drop -->
+      <!-- Drag and Drop -->
       <div id="drop-zone" class="border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-brand-500 dark:hover:border-brand-500 bg-white dark:bg-gray-800 rounded-xl p-6 text-center cursor-pointer transition-all">
         <input type="file" id="file-input" accept=".epub" multiple class="hidden">
         <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48"><path d="M28 8H12a4 4 0 00-4 4v20a4 4 0 004 4h24a4 4 0 004-4V20L28 8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M28 8v12h12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <p class="mt-2 text-sm font-semibold">Arraste seus arquivos EPUB aqui</p>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">ou clique para selecionar vários arquivos (Batch)</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">ou clique para selecionar vários arquivos</p>
       </div>
 
       <!-- Fila de Arquivos -->
       <div id="queue-container" class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 hidden">
         <h3 class="text-sm font-semibold mb-3 flex items-center justify-between">
-          <span>Fila de Conversão</span>
+          <span>Fila de Processamento</span>
           <span id="queue-count" class="text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded">0</span>
         </h3>
         <ul id="file-queue" class="space-y-2 max-h-40 overflow-y-auto text-xs divide-y divide-gray-100 dark:divide-gray-700"></ul>
       </div>
 
-      <!-- Opções de Personalização do PDF -->
+      <!-- Configurações com Persistência -->
       <div class="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4">
-        <h2 class="font-semibold text-base border-b border-gray-100 dark:border-gray-700 pb-2">⚙️ Configurações do PDF</h2>
+        <h2 class="font-semibold text-base border-b border-gray-100 dark:border-gray-700 pb-2">⚙️ Ajustes do Documento</h2>
         
-        <!-- Formato da Página -->
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-medium mb-1">Tamanho da Página</label>
             <select id="cfg-format" class="w-full text-xs p-2 rounded bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600">
-              <option value="a4" selected>A4</option>
-              <option value="a5">A5 (Kindle / Tablet)</option>
+              <option value="a4">A4</option>
+              <option value="a5">A5 (E-readers)</option>
               <option value="letter">Letter</option>
             </select>
           </div>
           <div>
             <label class="block text-xs font-medium mb-1">Orientação</label>
             <select id="cfg-orientation" class="w-full text-xs p-2 rounded bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600">
-              <option value="portrait" selected>Retrato</option>
+              <option value="portrait">Retrato</option>
               <option value="landscape">Paisagem</option>
             </select>
           </div>
         </div>
 
-        <!-- Margens e Tipografia -->
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-medium mb-1">Margens</label>
             <select id="cfg-margin" class="w-full text-xs p-2 rounded bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600">
               <option value="5">Pequena (5mm)</option>
-              <option value="15" selected>Média (15mm)</option>
+              <option value="15">Média (15mm)</option>
               <option value="25">Grande (25mm)</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-medium mb-1">Fonte do Texto</label>
+            <label class="block text-xs font-medium mb-1">Fonte</label>
             <select id="cfg-font" class="w-full text-xs p-2 rounded bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600">
-              <option value="serif" selected>Serif (Merriweather)</option>
+              <option value="serif">Serif (Merriweather)</option>
               <option value="sans">Sans-serif (Inter)</option>
               <option value="mono">Monospace</option>
             </select>
           </div>
         </div>
 
-        <!-- Espaçamento e Imagens -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-medium mb-1">Tamanho / Entrelinha</label>
+            <label class="block text-xs font-medium mb-1">Espaçamento</label>
             <select id="cfg-spacing" class="w-full text-xs p-2 rounded bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600">
               <option value="1.2">Compacto (1.2x)</option>
-              <option value="1.6" selected>Normal (1.6x)</option>
+              <option value="1.6">Normal (1.6x)</option>
               <option value="2.0">Expandido (2.0x)</option>
             </select>
           </div>
@@ -142,39 +138,37 @@
         </div>
       </div>
 
-      <!-- Barra de Progresso Real -->
+      <!-- Barra de Progresso Real com Estimativa -->
       <div id="progress-container" class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 hidden">
         <div class="flex justify-between text-xs font-semibold mb-1">
           <span id="progress-status" class="text-brand-500">Iniciando...</span>
           <span id="progress-percent">0%</span>
         </div>
         <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
-          <div id="progress-bar" class="bg-brand-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+          <div id="progress-bar" class="bg-brand-600 h-2.5 rounded-full transition-all duration-200" style="width: 0%"></div>
         </div>
       </div>
 
-      <!-- Botão Principal -->
+      <!-- Botão de Ação -->
       <button id="process-btn" disabled class="w-full py-3 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl shadow transition duration-200 flex items-center justify-center space-x-2">
-        <span>Converter e Baixar Todos</span>
+        <span>Converter para PDF</span>
       </button>
 
     </section>
 
-    <!-- Painel Direito: Pré-visualização (7 cols) -->
+    <!-- Painel de Preview -->
     <section class="lg:col-span-7 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col h-[750px]">
       <h2 class="font-semibold text-base mb-4 flex justify-between items-center">
-        <span>👁️ Pré-visualização do Documento</span>
-        <span id="preview-meta" class="text-xs text-gray-400 font-normal">Nenhum livro carregado</span>
+        <span>👁️ Pré-visualização</span>
+        <span id="preview-meta" class="text-xs text-gray-400 font-normal">Nenhum arquivo carregado</span>
       </h2>
       
-      <!-- Container com Rolar (Scroll) do Preview -->
       <div class="flex-1 bg-gray-200 dark:bg-gray-900 rounded-lg p-4 overflow-y-auto border border-gray-300 dark:border-gray-700 flex justify-center">
-        <div id="preview-paper" class="bg-white text-gray-900 shadow-2xl p-8 min-h-full w-full max-w-[595px] preview-font-serif text-sm leading-relaxed transition-all">
+        <div id="preview-paper" class="bg-white text-gray-900 shadow-2xl p-8 min-h-full w-full max-w-[595px] preview-font-serif text-sm transition-all">
           <div id="preview-placeholder" class="h-full flex flex-col items-center justify-center text-gray-400 space-y-2 py-20">
             <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-            <p>Selecione um arquivo EPUB para visualizar o conteúdo</p>
+            <p>Selecione um arquivo EPUB para visualizar</p>
           </div>
-          <!-- O conteúdo do EPUB é injetado dinamicamente aqui -->
           <div id="preview-content" class="hidden space-y-6"></div>
         </div>
       </div>
@@ -183,11 +177,38 @@
   </main>
 
   <script>
-    // --- ESTADO DA APLICAÇÃO ---
+    // --- ESTADO & PERSISTÊNCIA ---
     const fileQueue = [];
     let isProcessing = false;
 
-    // --- ELEMENTOS DO DOM ---
+    const configKeys = ['format', 'orientation', 'margin', 'font', 'spacing', 'images'];
+    
+    // Carrega preferências salvas do LocalStorage
+    function loadSavedConfig() {
+      configKeys.forEach(key => {
+        const savedValue = localStorage.getItem(`epub2pdf_${key}`);
+        if (savedValue !== null) {
+          const el = document.getElementById(`cfg-${key}`);
+          if (el.type === 'checkbox') el.checked = savedValue === 'true';
+          else el.value = savedValue;
+        }
+      });
+    }
+
+    // Salva alterações no LocalStorage
+    function saveConfig(key, value) {
+      localStorage.setItem(`epub2pdf_${key}`, value);
+    }
+
+    configKeys.forEach(key => {
+      const el = document.getElementById(`cfg-${key}`);
+      el.addEventListener('change', (e) => {
+        saveConfig(key, el.type === 'checkbox' ? el.checked : el.value);
+        updatePreviewStyles();
+      });
+    });
+
+    // --- DOM ELEMENTS ---
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
     const queueContainer = document.getElementById('queue-container');
@@ -205,22 +226,14 @@
     const previewPlaceholder = document.getElementById('preview-placeholder');
     const previewMeta = document.getElementById('preview-meta');
 
-    // Configurações
-    const cfgFormat = document.getElementById('cfg-format');
-    const cfgOrientation = document.getElementById('cfg-orientation');
-    const cfgMargin = document.getElementById('cfg-margin');
-    const cfgFont = document.getElementById('cfg-font');
-    const cfgSpacing = document.getElementById('cfg-spacing');
-    const cfgImages = document.getElementById('cfg-images');
-
-    // --- DARK MODE TOGGLE ---
+    // Theme Toggle
     document.getElementById('theme-toggle').addEventListener('click', () => {
       document.documentElement.classList.toggle('dark');
       const isDark = document.documentElement.classList.contains('dark');
       document.getElementById('theme-icon').textContent = isDark ? '🌙' : '☀️';
     });
 
-    // --- DRAG AND DROP & UPLOAD DE ARQUIVOS ---
+    // --- FILE DRAG & DROP ---
     dropZone.addEventListener('click', () => fileInput.click());
     
     ['dragenter', 'dragover'].forEach(name => {
@@ -243,8 +256,7 @@
     });
 
     fileInput.addEventListener('change', (e) => {
-      const files = Array.from(e.target.files);
-      addFilesToQueue(files);
+      addFilesToQueue(Array.from(e.target.files));
     });
 
     function addFilesToQueue(files) {
@@ -280,35 +292,56 @@
     window.removeFile = function(index) {
       fileQueue.splice(index, 1);
       renderQueue();
-      if (fileQueue.length === 0) {
-        resetPreview();
-      }
+      if (fileQueue.length === 0) resetPreview();
     };
 
-    // --- SINCRONIZAR ESTILOS DE PRÉ-VISUALIZAÇÃO ---
     function updatePreviewStyles() {
-      previewPaper.className = `bg-white text-gray-900 shadow-2xl p-8 min-h-full w-full max-w-[595px] text-sm transition-all preview-font-${cfgFont.value}`;
-      previewPaper.style.lineHeight = cfgSpacing.value;
+      const fontVal = document.getElementById('cfg-font').value;
+      const spacingVal = document.getElementById('cfg-spacing').value;
+      const imagesVal = document.getElementById('cfg-images').checked;
+
+      previewPaper.className = `bg-white text-gray-900 shadow-2xl p-8 min-h-full w-full max-w-[595px] text-sm transition-all preview-font-${fontVal}`;
+      previewPaper.style.lineHeight = spacingVal;
       
-      if (!cfgImages.checked) {
-        previewPaper.classList.add('hide-images');
-      } else {
-        previewPaper.classList.remove('hide-images');
+      if (!imagesVal) previewPaper.classList.add('hide-images');
+      else previewPaper.classList.remove('hide-images');
+    }
+
+    // --- RENDERIZAÇÃO E TRATAMENTO DE IMAGENS EM BASE64 ---
+    async function resolveEpubImages(container, book) {
+      const images = container.querySelectorAll('img');
+      for (const img of images) {
+        const src = img.getAttribute('src');
+        if (src && !src.startsWith('data:')) {
+          try {
+            // Encontra o caminho relativo correto dentro do ZIP do EPUB
+            const resolvedPath = book.path.resolve(src);
+            const blob = await book.archive.getBlob(resolvedPath);
+            if (blob) {
+              const reader = new FileReader();
+              const base64Data = await new Promise((resolve) => {
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+              });
+              img.src = base64Data;
+            }
+          } catch (e) {
+            console.warn("Não foi possível carregar imagem interna:", src);
+          }
+        }
       }
     }
 
-    [cfgFont, cfgSpacing, cfgImages].forEach(el => el.addEventListener('change', updatePreviewStyles));
-
-    // --- CARREGAR PRÉ-VISUALIZAÇÃO & METADADOS DO PRIMEIRO EPUB ---
     async function loadPreview(file) {
+      let book = null;
       try {
         updatePreviewStyles();
         previewPlaceholder.classList.add('hidden');
         previewContent.classList.remove('hidden');
-        previewContent.innerHTML = `<p class="text-center text-gray-400">Carregando pré-visualização...</p>`;
+        previewContent.innerHTML = `<p class="text-center text-gray-400">Processando pré-visualização...</p>`;
 
         const arrayBuffer = await file.arrayBuffer();
-        const book = ePub(arrayBuffer);
+        book = ePub(arrayBuffer);
         await book.opened;
 
         const metadata = await book.loaded.metadata;
@@ -316,7 +349,6 @@
 
         previewContent.innerHTML = '';
 
-        // Tentar extrair a imagem da Capa
         try {
           const coverUrl = await book.coverUrl();
           if (coverUrl) {
@@ -325,21 +357,24 @@
             coverImg.className = "max-h-64 mx-auto mb-6 object-contain rounded shadow";
             previewContent.appendChild(coverImg);
           }
-        } catch (e) { console.log("Sem capa detectada."); }
+        } catch (e) {}
 
-        // Extrai os 3 primeiros capítulos para carregar a prévia rapidamente
         const spineItems = book.spine.spineItems.slice(0, 3);
         for (const item of spineItems) {
           const doc = await item.load(book.load.bind(book));
           const chapterDiv = document.createElement('div');
           chapterDiv.className = "mb-6 pb-6 border-b border-gray-100";
           chapterDiv.innerHTML = doc.innerHTML || doc;
+          
+          await resolveEpubImages(chapterDiv, book);
           previewContent.appendChild(chapterDiv);
         }
 
       } catch (err) {
         console.error("Erro na pré-visualização:", err);
         previewContent.innerHTML = `<p class="text-red-500 text-center">Erro ao carregar pré-visualização.</p>`;
+      } finally {
+        if (book) book.destroy(); // Limpeza de memória
       }
     }
 
@@ -347,10 +382,10 @@
       previewPlaceholder.classList.remove('hidden');
       previewContent.classList.add('hidden');
       previewContent.innerHTML = '';
-      previewMeta.textContent = 'Nenhum livro carregado';
+      previewMeta.textContent = 'Nenhum arquivo carregado';
     }
 
-    // --- PROCESSAMENTO E CONVERSÃO EM LOTES (BATCH) ---
+    // --- CONVERSÃO EM BATCH ASSÍNCRONA ---
     processBtn.addEventListener('click', async () => {
       if (fileQueue.length === 0 || isProcessing) return;
 
@@ -359,11 +394,10 @@
       progressContainer.classList.remove('hidden');
 
       for (let i = 0; i < fileQueue.length; i++) {
-        const file = fileQueue[i];
-        await convertEpubToPdf(file, i + 1, fileQueue.length);
+        await convertEpubToPdf(fileQueue[i], i + 1, fileQueue.length);
       }
 
-      updateProgress(100, "Todos os arquivos foram convertidos!");
+      updateProgress(100, "Todos os arquivos foram processados!");
       setTimeout(() => {
         progressContainer.classList.add('hidden');
         isProcessing = false;
@@ -377,72 +411,112 @@
       progressStatus.textContent = statusText;
     }
 
-    async function convertEpubToPdf(file, fileIndex, totalFiles) {
-      updateProgress(0, `[${fileIndex}/${totalFiles}] Lendo ${file.name}...`);
-      
-      const arrayBuffer = await file.arrayBuffer();
-      const book = ePub(arrayBuffer);
-      await book.opened;
-
-      const metadata = await book.loaded.metadata;
-      const pdfFilename = `${metadata.title || 'Livro'}${metadata.creator ? ' - ' + metadata.creator : ''}.pdf`;
-
-      // Container temporário para renderizar todo o livro fora da viewport
-      const renderContainer = document.createElement('div');
-      renderContainer.className = `preview-font-${cfgFont.value}`;
-      renderContainer.style.width = '700px'; 
-      renderContainer.style.lineHeight = cfgSpacing.value;
-      if (!cfgImages.checked) renderContainer.classList.add('hide-images');
-
-      // Tentar adicionar Capa na Primeira Página do PDF
-      try {
-        const coverUrl = await book.coverUrl();
-        if (coverUrl && cfgImages.checked) {
-          const coverDiv = document.createElement('div');
-          coverDiv.className = 'page-break flex justify-center items-center text-center py-10';
-          coverDiv.innerHTML = `<img src="${coverUrl}" style="max-height: 800px; margin: auto;">`;
-          renderContainer.appendChild(coverDiv);
-        }
-      } catch (e) {}
-
-      // Processar e Injetar Capítulos com Quebras Inteligentes de Página
-      const spine = book.spine.spineItems;
-      for (let j = 0; j < spine.length; j++) {
-        const item = spine[j];
-        const doc = await item.load(book.load.bind(book));
-        
-        const chapterDiv = document.createElement('div');
-        // Aplica a classe page-break inteligente a cada novo capítulo
-        chapterDiv.className = "page-break py-4";
-        chapterDiv.innerHTML = doc.innerHTML || doc;
-
-        renderContainer.appendChild(chapterDiv);
-
-        // Atualizar progresso em tempo real por capítulo
-        const chapterPercent = ((j + 1) / spine.length) * 80; 
-        updateProgress(chapterPercent, `[${fileIndex}/${totalFiles}] Extraindo capítulo ${j + 1} de ${spine.length}...`);
-      }
-
-      // Adiciona temporariamente ao DOM para captura do html2pdf
-      document.body.appendChild(renderContainer);
-
-      updateProgress(85, `[${fileIndex}/${totalFiles}] Renderizando PDF...`);
-
-      const pdfOptions = {
-        margin: parseInt(cfgMargin.value),
-        filename: pdfFilename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 1.5, useCORS: true, logging: false },
-        jsPDF: { unit: 'mm', format: cfgFormat.value, orientation: cfgOrientation.value },
-        pagebreak: { mode: ['css', 'legacy'] } // Ativa quebra de página inteligente via CSS
-      };
-
-      await html2pdf().set(pdfOptions).from(renderContainer).save();
-
-      // Limpeza da memória RAM
-      document.body.removeChild(renderContainer);
-      updateProgress(100, `[${fileIndex}/${totalFiles}] Concluído: ${file.name}`);
+    // Libera a Main Thread para manter a UI responsiva
+    function yieldThread() {
+      return new Promise(resolve => requestAnimationFrame(resolve));
     }
+
+    async function convertEpubToPdf(file, fileIndex, totalFiles) {
+      let book = null;
+      try {
+        updateProgress(0, `[${fileIndex}/${totalFiles}] Lendo ${file.name}...`);
+        
+        const arrayBuffer = await file.arrayBuffer();
+        book = ePub(arrayBuffer);
+        await book.opened;
+
+        const metadata = await book.loaded.metadata;
+        const bookTitle = metadata.title || 'Livro';
+        const pdfFilename = `${bookTitle}${metadata.creator ? ' - ' + metadata.creator : ''}.pdf`;
+
+        const renderContainer = document.createElement('div');
+        const fontVal = document.getElementById('cfg-font').value;
+        const spacingVal = document.getElementById('cfg-spacing').value;
+        const imagesVal = document.getElementById('cfg-images').checked;
+        const marginVal = parseInt(document.getElementById('cfg-margin').value);
+        const formatVal = document.getElementById('cfg-format').value;
+        const orientationVal = document.getElementById('cfg-orientation').value;
+
+        renderContainer.className = `preview-font-${fontVal}`;
+        renderContainer.style.width = '750px'; 
+        renderContainer.style.lineHeight = spacingVal;
+        if (!imagesVal) renderContainer.classList.add('hide-images');
+
+        // Adiciona Capa
+        try {
+          const coverUrl = await book.coverUrl();
+          if (coverUrl && imagesVal) {
+            const coverDiv = document.createElement('div');
+            coverDiv.className = 'page-break flex justify-center items-center text-center py-10';
+            coverDiv.innerHTML = `<img src="${coverUrl}" style="max-height: 800px; margin: auto;">`;
+            renderContainer.appendChild(coverDiv);
+          }
+        } catch (e) {}
+
+        const spine = book.spine.spineItems;
+        for (let j = 0; j < spine.length; j++) {
+          const item = spine[j];
+          const doc = await item.load(book.load.bind(book));
+          
+          const chapterDiv = document.createElement('div');
+          chapterDiv.className = "page-break py-4";
+          chapterDiv.innerHTML = doc.innerHTML || doc;
+
+          // Processamento e resolução das imagens internas
+          if (imagesVal) {
+            await resolveEpubImages(chapterDiv, book);
+          }
+
+          renderContainer.appendChild(chapterDiv);
+
+          const chapterPercent = ((j + 1) / spine.length) * 75; 
+          updateProgress(chapterPercent, `[${fileIndex}/${totalFiles}] Processando capítulo ${j + 1} de ${spine.length}...`);
+          
+          await yieldThread(); // Permite atualização suave da interface
+        }
+
+        document.body.appendChild(renderContainer);
+        updateProgress(80, `[${fileIndex}/${totalFiles}] Compilando documento PDF...`);
+
+        const pdfOptions = {
+          margin: marginVal,
+          filename: pdfFilename,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 1.5, useCORS: true, logging: false },
+          jsPDF: { unit: 'mm', format: formatVal, orientation: orientationVal },
+          pagebreak: { mode: ['css', 'legacy'] }
+        };
+
+        // Adição de Cabeçalho e Numeração de Páginas via JS-PDF
+        const worker = html2pdf().set(pdfOptions).from(renderContainer);
+        
+        await worker.toPdf().get('jspdf').then((pdf) => {
+          const totalPages = pdf.internal.getNumberOfPages();
+          for (let i = 1; i <= totalPages; i++) {
+            pdf.setPage(i);
+            pdf.setFontSize(8);
+            pdf.setTextColor(150);
+            
+            // Rodapé com paginação
+            pdf.text(`Página ${i} de ${totalPages}`, pdf.internal.pageSize.getWidth() - marginVal - 15, pdf.internal.pageSize.getHeight() - 5);
+            // Cabeçalho com o título
+            pdf.text(bookTitle.substring(0, 40), marginVal, 8);
+          }
+        }).save();
+
+        document.body.removeChild(renderContainer);
+        updateProgress(100, `[${fileIndex}/${totalFiles}] Concluído: ${file.name}`);
+
+      } catch (error) {
+        console.error("Erro na conversão:", error);
+        updateProgress(0, `Erro ao converter ${file.name}`);
+      } finally {
+        if (book) book.destroy(); // Garante a liberação de memória RAM
+      }
+    }
+
+    // Inicialização
+    loadSavedConfig();
   </script>
 </body>
 </html>
