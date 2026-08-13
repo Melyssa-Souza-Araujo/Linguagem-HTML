@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cardápio - Grão & Papel Cafeteria</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-color: #f7f5ed;
+      --green-dark: #1b4328;
+      --text-color: #111;
+      --accent-gold: #c6a666;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #eae7dc;
+      font-family: 'Roboto Condensed', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px 15px 100px 15px;
+    }
+
+    /* Badge de Aberto/Fechado */
+    .status-badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin-bottom: 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-badge.open { 
+      background-color: #d4edda; 
+      color: #155724; 
+    }
+
+    .status-badge.closed { 
+      background-color: #f8d7da; 
+      color: #721c24; 
+    }
+
+    .search-container {
+      width: 100%;
+      max-width: 500px;
+      margin-bottom: 15px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid var(--green-dark);
+      border-radius: 8px;
+      font-size: 1rem;
+      background-color: #fff;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .filter-container {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .filter-btn {
+      background-color: var(--green-dark);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Playfair Display', serif;
+    }
+
+    .filter-btn.active {
+      background-color: var(--accent-gold);
+      color: var(--green-dark);
+    }
+
+    .menu-card {
+      background-color: var(--bg-color);
+      width: 100%;
+      max-width: 500px;
+      padding: 25px 20px;
+      border-radius: 12px;
+      border: 3px solid var(--green-dark);
+      outline: 2px solid var(--green-dark);
+      outline-offset: -10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .menu-header { 
+      text-align: center; 
+      margin-bottom: 20px; 
+    }
+
+    .logo-container {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 10px auto;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid var(--accent-gold);
+    }
+
+    .logo-img { 
+      width: 100%;
+      height: 100%; 
+      object-fit: cover; 
+    }
+
+    .menu-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--green-dark);
+      text-transform: uppercase;
+    }
+
+    .ornament {
+      color: var(--green-dark);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 8px 0;
+    }
+    .ornament::before, .ornament::after {
+      content: ""; 
+      flex: 1; 
+      height: 1px; 
+      background-color: var(--green-dark);
+    }
+
+    .menu-item {
+      display: flex;
+      flex-direction: column;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(27, 67, 40, 0.15);
+    }
+
+    .item-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .item-name {
+      font-size: 1.15rem; 
+      font-weight: 700; 
+    }
+
+    .dots { 
+      flex-grow: 1; 
+      border-bottom: 2px dotted #888; 
+      margin: 0 8px; 
+    }
+
+    .item-price { 
+      font-size: 1.15rem; 
+      font-weight: 700; 
+      color: var(--green-dark); 
+    }
+
+    .item-subtext {
+      font-size: 0.9rem;
+      color: #555;
+      font-style: italic;
+      margin-bottom: 6px;
+    }
+
+    .item-actions {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+      margin-top: 5px;
+    }
+
+    .qty-btn {
+      background-color: var(--green-dark);
+      color: white;
+      border: none;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qty-number { 
+      font-weight: bold; 
+      min-width: 15px; 
+      text-align: center; 
+    }
+
+    .checkout-form {
+      margin-top: 25px;
+      padding-top: 15px;
+      border-top: 2px dashed var(--green-dark);
+    }
+
+    .form-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--green-dark);
+      margin-bottom: 15px;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: var(--green-dark);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      background-color: #fff;
+    }
+
+    .form-control:focus {
+      border-color: var(--green-dark);
+      box-shadow: 0 0 0 2px rgba(27, 67, 40, 0.1);
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .cart-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: var(--green-dark);
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+
+    .cart-info { 
+      font-size: 1.1rem; 
+    }
+
+    .cart-total { 
+      font-weight: bold; 
+      color: var(--accent-gold); 
+    }
+
+    .whatsapp-btn {
+      background-color: #25d366;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div id="status-badge" class="status-badge"></div>
+
+  <div class="search-container">
+    <input type="text" id="search-input" class="search-input" placeholder="🔍 Buscar item no cardápio..." oninput="handleSearch()">
+  </div>
+
+  <div class="filter-container">
+    <button class="filter-btn active" onclick="showCategory('salgados', event)">Salgados</button>
+    <button class="filter-btn" onclick="showCategory('bebidas', event)">Bebidas</button>
+    <button class="filter-btn" onclick="showCategory('bolos', event)">Bolos</button>
+  </div>
+
+  <div class="menu-card">
+    <div class="menu-header">
+      <div class="logo-container">
+        <img src="unnamed.png" alt="Logo Grão & Papel" class="logo-img">
+      </div>
+      <div class="ornament">🍃</div>
+      <h1 id="category-title" class="menu-title">SALGADOS</h1>
+      <div class="ornament">🍃</div>
+    </div>
+
+    <div id="menu-section"></div>
+
+    <div class="checkout-form">
+      <h2 class="form-title">📋 Dados para Envio do Pedido</h2>
+      
+      <div class="form-group">
+        <label for="customer-name">Seu Nome:*</label>
+        <input type="text" id="customer-name" class="form-control" placeholder="Ex: Maria Silva">
+      </div>
+
+      <div class="form-group">
+        <label for="order-type">Tipo de Pedido:*</label>
+        <select id="order-type" class="form-control">
+          <option value="Consumo na mesa">Consumo na Mesa</option>
+          <option value="Retirada no local">Retirada no Local</option>
+          <option value="Entrega">Entrega (Delivery)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="payment-method">Forma de Pagamento:*</label>
+        <select id="payment-method" class="form-control">
+          <option value="Pix">Pix</option>
+          <option value="Cartão de Crédito">Cartão de Crédito</option>
+          <option value="Cartão de Débito">Cartão de Débito</option>
+          <option value="Dinheiro">Dinheiro</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="order-notes">Observações:</label>
+        <textarea id="order-notes" class="form-control" placeholder="Ex: Café sem açúcar, coxinha bem quente..."></textarea>
+      </div>
+    </div>
+
+    <div class="ornament" style="margin-top: 20px;">🍃</div>
+  </div>
+
+  <div class="cart-bar">
+    <div class="cart-info">
+      Total: <span id="cart-total" class="cart-total">R$ 0,00</span>
+    </div>
+    <button class="whatsapp-btn" onclick="sendWhatsApp()">
+      📱 Pedir via WhatsApp
+    </button>
+  </div>
+
+  <script>
+    const PHONE_NUMBER = "5513992076390"; 
+
+    const menuData = {
+      salgados: [
+        { id: 1, name: "Coxinha de Frango", price: 8.00 },
+        { id: 2, name: "Coxinha de Costela", price: 9.00 },
+        { id: 3, name: "Coxinha de Carne Seca", price: 10.00 },
+        { id: 4, name: "Bolinho de Queijo", price: 8.00 },
+        { id: 5, name: "Bolinho de Carne", price: 8.00 },
+        { id: 6, name: "Kibe", price: 8.00 },
+        { id: 7, name: "Empada", price: 7.00 },
+        { id: 8, name: "Esfirra", price: 9.00 },
+        { id: 15, name: "Pão de Queijo", price: 4.00 }
+      ],
+      bebidas: [
+        { id: 16, name: "Café pequeno", price: 3.00 },
+        { id: 17, name: "Café médio", price: 5.00 },
+        { id: 18, name: "Café com leite", price: 6.00 },
+        { id: 19, name: "Chocolate quente", price: 6.00 },
+        { id: 9, name: "Guaraviton 500ml", price: 5.00 },
+        { id: 10, name: "Suco 450ml", price: 4.50, subtext: "(Açaí, Laranja e Uva)" },
+        { id: 11, name: "Suco de Caixinha 200ml", price: 3.00, subtext: "(Uva, Laranja)" },
+        { id: 12, name: "Refrigerante Garrafinha 200ml", price: 4.00, subtext: "(Tubaína, Coca-Cola, Coca-Cola Zero)" },
+        { id: 13, name: "Água 500ml", price: 3.00 },
+        { id: 14, name: "Refrigerante Lata 310ml", price: 5.00, subtext: "(Coca-Cola Zero)" },
+        { id: 26, name: "Schweppes Lata 350ml", price: 6.00 },
+        { id: 27, name: "Coca-Cola Lata 350ml", price: 6.00 }
+      ],
+      bolos: [
+        { id: 20, name: "Bolos Diversos (fatia)", price: 16.00 },
+        { id: 21, name: "Bolo Merengue (fatia)", price: 18.00 },
+        { id: 22, name: "Bolo Chocolate (fatia)", price: 18.00 },
+        { id: 23, name: "Bolo Simples (inteiro)", price: 20.00 },
+        { id: 24, name: "Bolo c/ Calda (inteiro)", price: 25.00 },
+        { id: 25, name: "Bolo Decorado (inteiro)", price: 30.00 }
+      ]
+    };
+
+    let cart = {};
+    let currentCategory = 'salgados';
+
+    function formatCurrency(val) {
+      return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function getAllItems() {
+      return [
+        ...menuData.salgados,
+        ...menuData.bebidas,
+        ...menuData.bolos
+      ];
+    }
+
+    function checkOpenStatus() {
+      const now = new Date();
+      const hour = now.getHours();
+      const badge = document.getElementById('status-badge');
+      
+      if (hour >= 8 && hour < 18) {
+        badge.className = "status-badge open";
+        badge.innerHTML = "🟢 Aberto Agora (08:00 - 18:00)";
+      } else {
+        badge.className = "status-badge closed";
+        badge.innerHTML = "🔴 Fechado no momento (Abrimos às 08:00)";
+      }
+    }
+
+    function updateQuantity(id, change) {
+      cart[id] = (cart[id] || 0) + change;
+      if (cart[id] <= 0) delete cart[id];
+      
+      renderMenu(currentCategory);
+      updateCartBar();
+    }
+
+    function updateCartBar() {
+      let total = 0;
+      const allItems = getAllItems();
+
+      for (let id in cart) {
+        const item = allItems.find(i => i.id == id);
+        if (item) total += item.price * cart[id];
+      }
+
+      document.getElementById('cart-total').textContent = formatCurrency(total);
+    }
+
+    function renderMenu(category, itemsToRender = null) {
+      const section = document.getElementById("menu-section");
+      const title = document.getElementById("category-title");
+
+      title.textContent = itemsToRender ? "BUSCA" : category.toUpperCase();
+      section.innerHTML = "";
+
+      const list = itemsToRender || menuData[category];
+
+      if (list.length === 0) {
+        section.innerHTML = "<p style='text-align:center; padding:20px; color:#666;'>Nenhum item encontrado.</p>";
+        return;
+      }
+
+      list.forEach(item => {
+        const qty = cart[item.id] || 0;
+        const itemElement = document.createElement("div");
+        itemElement.className = "menu-item";
+
+        itemElement.innerHTML = `
+          <div class="item-main">
+            <span class="item-name">${item.name}</span>
+            <span class="dots"></span>
+            <span class="item-price">${formatCurrency(item.price)}</span>
+          </div>
+          ${item.subtext ? `<div class="item-subtext">${item.subtext}</div>` : ""}
+          <div class="item-actions">
+            <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
+            <span class="qty-number">${qty}</span>
+            <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+          </div>
+        `;
+
+        section.appendChild(itemElement);
+      });
+    }
+
+    function showCategory(category, evt) {
+      document.getElementById('search-input').value = "";
+      currentCategory = category;
+      document.querySelectorAll(".filter-btn").forEach(btn => btn.classList.remove("active"));
+      if (evt) evt.target.classList.add("active");
+      renderMenu(category);
+    }
+
+    function handleSearch() {
+      const query = document.getElementById('search-input').value.toLowerCase().trim();
+      if (!query) {
+        renderMenu(currentCategory);
+        return;
+      }
+
+      const allItems = getAllItems();
+      const filtered = allItems.filter(item => 
+        item.name.toLowerCase().includes(query) || 
+        (item.subtext && item.subtext.toLowerCase().includes(query))
+      );
+
+      renderMenu(currentCategory, filtered);
+    }
+
+    function sendWhatsApp() {
+      const allItems = getAllItems();
+      let hasItems = false;
+      let total = 0;
+
+      for (let id in cart) {
+        if (cart[id] > 0) {
+          hasItems = true;
+          break;
+        }
+      }
+
+      if (!hasItems) {
+        alert("Por favor, adicione ao menos um item ao seu pedido!");
+        return;
+      }
+
+      const name = document.getElementById('customer-name').value.trim();
+      if (!name) {
+        alert("Por favor, preencha o seu nome antes de enviar o pedido.");
+        document.getElementById('customer-name').focus();
+        return;
+      }
+
+      const orderType = document.getElementById('order-type').value;
+      const paymentMethod = document.getElementById('payment-method').value;
+      const notes = document.getElementById('order-notes').value.trim();
+
+      let message = "*Novo Pedido - Grão & Papel Cafeteria*\n\n";
+      message += `👤 *Cliente:* ${name}\n`;
+      message += `📍 *Tipo:* ${orderType}\n`;
+      message += `💳 *Pagamento:* ${paymentMethod}\n`;
+      
+      if (notes) {
+        message += `📝 *Obs:* ${notes}\n`;
+      }
+
+      message += "\n*ITENS DO PEDIDO:*\n";
+
+      for (let id in cart) {
+        const item = allItems.find(i => i.id == id);
+        if (item && cart[id] > 0) {
+          const subtotal = item.price * cart[id];
+          total += subtotal;
+          message += `• ${cart[id]}x ${item.name} (${formatCurrency(subtotal)})\n`;
+        }
+      }
+
+      message += `\n💰 *TOTAL:* ${formatCurrency(total)}`;
+      
+      const encodedMessage = encodeURIComponent(message);
+      window.open(`https://wa.me/${PHONE_NUMBER}?text=${encodedMessage}`, '_blank');
+    }
+
+    checkOpenStatus();
+    renderMenu('salgados');
+  </script>
+</body>
+</html>
